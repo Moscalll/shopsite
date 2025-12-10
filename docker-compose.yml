@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  mysql_db:
+    image: mysql:8.0
+    container_name: shopsite-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 761943
+      MYSQL_DATABASE: shopsite_db
+      MYSQL_USER: shopsite_user
+      MYSQL_PASSWORD: 761943
+    ports:
+      - "3306:3306"
+    volumes:
+      # 数据库数据持久化
+      - db_data:/var/lib/mysql
+      # 挂载 SQL 初始化脚本目录
+      - ./src/main/resources/db:/docker-entrypoint-initdb.d
+
+volumes:
+  db_data:
