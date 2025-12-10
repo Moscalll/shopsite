@@ -1,4 +1,5 @@
 package com.example.shopsite.model;
+import com.example.shopsite.model.Role;
 
 import jakarta.persistence.*;
 import lombok.Data; // 确保 pom.xml 中有 Lombok 依赖

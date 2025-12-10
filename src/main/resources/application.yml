@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/shopsite_db?useSSL=false&serverTimezone=UTC
+    username: shopsite_user # 与 docker-compose.yml 保持一致
+    password: 761943 
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update # 开发阶段使用 'update'，测试阶段可改为 'validate'
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  # 端口配置
+  server:
+    port: 8080
