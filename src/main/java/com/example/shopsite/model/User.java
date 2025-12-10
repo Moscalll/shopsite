@@ -1,8 +1,8 @@
 package com.example.shopsite.model;
-import com.example.shopsite.model.Role;
 
+import java.util.List;
 import jakarta.persistence.*;
-import lombok.Data; // 确保 pom.xml 中有 Lombok 依赖
+import lombok.Data; 
 
 @Entity
 @Table(name = "user")
@@ -13,11 +13,13 @@ public class User {
     private Long id;
 
     private String username;
-    private String password; // 存储加密后的密码
+    private String password;
     private String email;
 
     @Enumerated(EnumType.STRING)
-    private Role role; // Role 是一个自定义的枚举类
-
-    // ... 其他字段
+    private Role role; 
+    
+    // 用户拥有的订单列表
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders;
 }

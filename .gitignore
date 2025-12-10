@@ -43,4 +43,7 @@ Thumbs.db
 
 # Environment Secrets (重要!)
 application-dev.yml, application-prod.yml 
-# 不要在 git 上存储 Docker 密码等敏感信息
+application.yml, application.properties 
+
+# Environment Secrets
+.env
