@@ -1,0 +1,36 @@
+
+spring:
+  # 2. 数据源配置：指向本地 Docker MySQL 容器
+  datasource:
+    url: jdbc:mysql://localhost:3306/shopsite_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # 3. JPA/Hibernate 配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true # 打印 SQL 语句，方便调试
+    properties:
+      hibernate:
+        format_sql: true # 格式化打印的 SQL
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # 4. Web 服务器配置
+  server:
+    port: 8080 # 本地运行端口
+
+
+# 6. 邮件服务配置（如果需要测试邮件发送）
+  mail:
+    host: localhost
+    port: 1025 # 建议使用 MailHog 或其他本地 SMTP 服务器进行测试
+    username: dev_test_user
+    password: dev_test_password
+
+# 7. 日志配置
+logging:
+  level:
+    com.example.shopsite: DEBUG # 提高你自己应用包的日志级别，方便调试
+    org.springframework.web: INFO

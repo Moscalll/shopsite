@@ -1,0 +1,15 @@
+# application-prod.yml (此文件被 gitignore 忽略)
+spring:
+  datasource:
+    # 线上阿里云 RDS 的内网地址或外部 IP
+    url: ${PROD_DB_URL}
+    username: ${PROD_DB_USERNAME}
+    password: ${PROD_DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate # 生产环境通常使用 'validate' 而不是 'update'
+    
+  mail:
+    username: prod_email_service_user
+    password: prod_email_password

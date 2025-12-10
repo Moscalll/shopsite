@@ -1,0 +1,33 @@
+### 1. 测试用户注册接口 (POST /api/auth/register)
+
+# 确保你的 Controller 路径是 /api/auth/register
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "testuser@example.com",
+  "password": "StrongPassword123"
+}
+
+### 2. 测试重复用户注册 (应该返回错误)
+
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "another@example.com",
+  "password": "PasswordAgain456"
+}
+
+### 3. 测试用户登录接口 (POST /api/auth/login)
+
+# 使用之前注册成功的用户名和密码
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "StrongPassword123" 
+}
