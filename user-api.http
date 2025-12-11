@@ -5,9 +5,9 @@ POST http://localhost:8080/api/auth/register
 Content-Type: application/json
 
 {
-  "username": "testuser",
-  "email": "testuser@example.com",
-  "password": "StrongPassword123"
+  "username": "newtestuser",
+  "email": "newtestuser@example.com",
+  "password": "NewStrongPassword123"
 }
 
 ### 2. 测试重复用户注册 (应该返回错误)
@@ -16,9 +16,9 @@ POST http://localhost:8080/api/auth/register
 Content-Type: application/json
 
 {
-  "username": "testuser",
-  "email": "another@example.com",
-  "password": "PasswordAgain456"
+  "username": "newtestuser",
+  "email": "newanother@example.com",
+  "password": "NewPasswordAgain456"
 }
 
 ### 3. 测试用户登录接口 (POST /api/auth/login)
@@ -28,6 +28,92 @@ POST http://localhost:8080/api/auth/login
 Content-Type: application/json
 
 {
-  "username": "testuser",
-  "password": "StrongPassword123" 
+  "username": "newtestuser",
+  "password": "NewStrongPassword123" 
 }
+
+### 4. 访问受保护资源（不带Token）
+GET http://localhost:8080/api/users/me
+Content-Type: application/json
+
+### 5. 访问受保护资源（带有效Token）
+# 🚨 替换 {{JWT_TOKEN}} 为上一步登录获取的真实 Token
+GET http://localhost:8080/api/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZXd0ZXN0dXNlciIsImlhdCI6MTc2NTQyMDg5MSwiZXhwIjoxNzY1NTA3MjkxfQ.zJ58CI5lCT_TavN5ET_rKwYeE5kEgBVrkzuBkPbZDRA
+
+
+### 6. 注册商家用户
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "newmerchant",
+  "email": "merchant@shopsite.com",
+  "password": "MerchantSecurePassword123"
+}
+
+### 7. 查询所有商品（所有人可见）
+GET http://localhost:8080/api/products
+
+
+### 8. 登录 newmerchant 获取 Token
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "newmerchant",
+  "password": "MerchantSecurePassword123" 
+}
+###🚨 复制返回的 Token
+
+### 9. 创建新商品 (POST /api/products)
+POST http://localhost:8080/api/products
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZXdtZXJjaGFudCIsImlhdCI6MTc2NTQzNzQ3MiwiZXhwIjoxNzY1NTIzODcyfQ.lxXxjaNs8KWStl1r_SarfckHQB-73hWGzuT1_t59HQQ
+
+{
+  "name": "商家A的新商品",
+  "description": "这是商家A通过POST接口创建的商品",
+  "price": 49.99,
+  "stock": 200
+}
+
+### 10. 注册新客户
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "clientuser",
+  "email": "client@shopsite.com",
+  "password": "ClientSecurePassword789"
+}
+### 登录客户并获取 Token
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "clientuser",
+  "password": "ClientSecurePassword789" 
+}
+
+### 11. 创建订单 (POST /api/orders)
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnR1c2VyIiwiaWF0IjoxNzY1NDM4MTQ3LCJleHAiOjE3NjU1MjQ1NDd9.d_OvSM9SyP6gOfjW9hue6DZXpr54fDkEITxd3I9SF7Q 
+
+{
+  "items": [
+    {
+      "productId": 2,
+      "quantity": 5
+    }
+  ]
+}
+
+### 12. 查询我的所有订单 (GET /api/orders/my)
+GET http://localhost:8080/api/orders/my
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnR1c2VyIiwiaWF0IjoxNzY1NDM4MTQ3LCJleHAiOjE3NjU1MjQ1NDd9.d_OvSM9SyP6gOfjW9hue6DZXpr54fDkEITxd3I9SF7Q 
+
+### 13. 查询订单详情 (GET /api/orders/4)
+GET http://localhost:8080/api/orders/4
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnR1c2VyIiwiaWF0IjoxNzY1NDM4MTQ3LCJleHAiOjE3NjU1MjQ1NDd9.d_OvSM9SyP6gOfjW9hue6DZXpr54fDkEITxd3I9SF7Q 

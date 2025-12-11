@@ -1,32 +1,41 @@
 package com.example.shopsite.model;
 
-import lombok.Data; 
-import java.math.BigDecimal;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.*;
-
-// Order.java 示例
 @Entity
-@Table(name = "shop_order") // 避免与 SQL 关键字 'ORDER' 冲突
+@Table(name = "shop_order") // 映射到你数据库中的 shop_order 表
 @Data
-public class Order {
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Order { // 使用 Order 类名
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY) // 多个订单对应一个用户
-    @JoinColumn(name = "user_id")
-    private User user;
+    // 订单拥有者
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user; 
 
-    private BigDecimal totalAmount;
+    @Column(nullable = false)
+    private Double totalAmount; // 订单总额
     
-    // 建议使用枚举类 OrderStatus
-    private String status; 
-    private LocalDateTime orderDate = LocalDateTime.now();
+    @Column(nullable = false)
+    private LocalDateTime orderDate = LocalDateTime.now(); // 下单时间
 
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status; // 订单状态 (待付款, 已发货, 已完成等)
+    
+    // 订单项：一个订单包含多个商品
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> items = new ArrayList<>(); // 包含的商品详情列表
+    private List<OrderItem> items;
 }

@@ -1,29 +1,38 @@
 package com.example.shopsite.model;
 
-import lombok.Data; 
-import java.math.BigDecimal;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
-// Product.java 示例
 @Entity
+@Table(name = "product")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Product {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
-    
-    @Lob // 用于存储较大的文本数据
+
     private String description;
+    
+    // 价格，通常用 BigDecimal，这里为了快速演示先用 Double
+    private Double price; 
+    
+    private Integer stock; // 库存
+    
+    @Column(nullable = false)
+    private Boolean isAvailable = true; // 是否上架
 
-    private BigDecimal price; // 使用 BigDecimal 存储货币值
-
-    private Integer stock;
-    private String imageUrl;
-    private Boolean isAvailable = true;
+    // 假设商品属于某个商家 (User)
+    @ManyToOne
+    @JoinColumn(name = "merchant_id", nullable = false)
+    private User merchant; 
 }

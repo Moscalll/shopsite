@@ -9,6 +9,7 @@ import com.example.shopsite.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.shopsite.security.JwtTokenProvider;
 
 import java.util.Optional;
 
@@ -17,11 +18,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // 注入密码加密器
+    private final JwtTokenProvider tokenProvider;
 
     // 依赖注入 UserRepository 和 PasswordEncoder
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider tokenProvider) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenProvider = tokenProvider;
     }
 
     @Override
@@ -39,16 +42,14 @@ public class UserServiceImpl implements UserService {
         }
 
         // 3. 构建用户实体
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        
-        // 4. 🚨 核心：对密码进行加密处理
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-        user.setPassword(encodedPassword);
-        
-        // 5. 设置默认角色为普通顾客
-        user.setRole(Role.CUSTOMER); 
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                // 4. 对密码进行加密处理
+                .password(passwordEncoder.encode(request.getPassword()))
+                // 5. 设置默认角色为普通顾客
+                .role(Role.CUSTOMER)
+                .build();
         
         // 6. 保存到数据库
         return userRepository.save(user);
@@ -74,10 +75,8 @@ public class UserServiceImpl implements UserService {
         // 🚨 检查用户输入的密码 (rawPassword) 是否匹配数据库中存储的加密密码 (encodedPassword)
         if (passwordEncoder.matches(rawPassword, encodedPassword)) {
             
-            // 4. 认证成功：返回一个占位的 Token (实际项目中需要生成 JWT)
-            // 💡 提示：在实际项目中，这里你会调用 JWT 服务来生成 Token
-            String mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6I" + user.getUsername();
-            return mockToken;
+            String jwtToken = tokenProvider.generateToken(user.getUsername());
+            return jwtToken;
             
         } else {
             // 5. 密码不匹配
