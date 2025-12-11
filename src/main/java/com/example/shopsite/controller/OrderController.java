@@ -6,6 +6,7 @@ import com.example.shopsite.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -65,6 +66,25 @@ public class OrderController {
         } catch (RuntimeException e) {
             // 捕获权限错误或订单不存在
             return new ResponseEntity(e.getMessage(), HttpStatus.NOT_FOUND); // NOT_FOUND 适合隐藏业务逻辑
+        }
+    }
+
+
+    /**
+     * POST /api/orders/{orderId}/pay
+     * 模拟客户支付成功 (需认证, 客户权限)
+     */
+    @PostMapping("/{orderId}/pay")
+    @PreAuthorize("hasAuthority('ROLE_CUSTOMER')") // 🚨 方法级权限控制
+    public ResponseEntity<Order> processOrderPayment(@PathVariable Long orderId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        
+        try {
+            Order updatedOrder = orderService.processPayment(orderId, username);
+            return ResponseEntity.ok(updatedOrder);
+        } catch (RuntimeException e) {
+            // 捕获业务异常，如状态错误或权限不足
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST); 
         }
     }
 }

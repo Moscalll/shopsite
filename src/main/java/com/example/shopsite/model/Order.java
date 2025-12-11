@@ -5,9 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "shop_order") // 映射到你数据库中的 shop_order 表
@@ -27,7 +27,7 @@ public class Order { // 使用 Order 类名
     private User user; 
 
     @Column(nullable = false)
-    private Double totalAmount; // 订单总额
+    private BigDecimal totalAmount; // 订单总额
     
     @Column(nullable = false)
     private LocalDateTime orderDate = LocalDateTime.now(); // 下单时间

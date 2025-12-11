@@ -64,12 +64,10 @@ Content-Type: application/json
   "username": "newmerchant",
   "password": "MerchantSecurePassword123" 
 }
-###🚨 复制返回的 Token
-
 ### 9. 创建新商品 (POST /api/products)
 POST http://localhost:8080/api/products
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZXdtZXJjaGFudCIsImlhdCI6MTc2NTQzNzQ3MiwiZXhwIjoxNzY1NTIzODcyfQ.lxXxjaNs8KWStl1r_SarfckHQB-73hWGzuT1_t59HQQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZXdtZXJjaGFudCIsImlhdCI6MTc2NTQ0MTE1OSwiZXhwIjoxNzY1NTI3NTU5fQ.jRVholi2R7e89OMaczhAejJaj3FpgDJUbgIBSs2alWs
 
 {
   "name": "商家A的新商品",
@@ -117,3 +115,101 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnR1c2VyIiwiaWF0IjoxN
 ### 13. 查询订单详情 (GET /api/orders/4)
 GET http://localhost:8080/api/orders/4
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnR1c2VyIiwiaWF0IjoxNzY1NDM4MTQ3LCJleHAiOjE3NjU1MjQ1NDd9.d_OvSM9SyP6gOfjW9hue6DZXpr54fDkEITxd3I9SF7Q 
+
+### 14. 客户创建商品
+POST http://localhost:8080/api/products
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnR1c2VyIiwiaWF0IjoxNzY1NDM4MTQ3LCJleHAiOjE3NjU1MjQ1NDd9.d_OvSM9SyP6gOfjW9hue6DZXpr54fDkEITxd3I9SF7Q 
+
+{
+  "name": "客户试图创建的商品",
+  "description": "这个应该失败",
+  "price": 10.00,
+  "stock": 10
+}
+
+
+### 15. 商家创建订单
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZXdtZXJjaGFudCIsImlhdCI6MTc2NTQzNzQ3MiwiZXhwIjoxNzY1NTIzODcyfQ.lxXxjaNs8KWStl1r_SarfckHQB-73hWGzuT1_t59HQQ
+
+{
+  "items": [
+    {
+      "productId": 2,
+      "quantity": 1
+    }
+  ]
+}
+
+### 16. 商家创建商品 (测试 BigDecimal 写入)
+POST http://localhost:8080/api/products
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZXdtZXJjaGFudCIsImlhdCI6MTc2NTQ0MTcxMCwiZXhwIjoxNzY1NTI4MTEwfQ.in6ANK6lVe6GKfudI8A9ZEl4p3UifTeEwwuVIOaY7-o
+
+{
+  "name": "BigDecimal测试商品",
+  "description": "测试价格精度",
+  "price": 12.34, 
+  "stock": 50,
+  "isAvailable": true
+}
+
+### 17. 客户创建订单 (验证 BigDecimal 计算)
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnR1c2VyIiwiaWF0IjoxNzY1NDQxOTUyLCJleHAiOjE3NjU1MjgzNTJ9._Bv9vQ6xnFoE1iso_fWscmABdrxnrIG9Nm4Iw7mX1m0 
+
+{
+  "items": [
+    {
+      "productId": 4, 
+      "quantity": 3
+    }
+  ]
+}
+
+### 18. 模拟订单支付成功 (POST /api/orders/5/pay)
+POST http://localhost:8080/api/orders/5/pay
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnR1c2VyIiwiaWF0IjoxNzY1NDQyMTcwLCJleHAiOjE3NjU1Mjg1NzB9.yG8QVOhr5CdWzLbHaEcarhI-LaKWJU3V0z2uTS_er_k
+
+### 19. 尝试重复支付已处理的订单 (POST /api/orders/5/pay)
+POST http://localhost:8080/api/orders/5/pay
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnR1c2VyIiwiaWF0IjoxNzY1NDQyMTcwLCJleHAiOjE3NjU1Mjg1NzB9.yG8QVOhr5CdWzLbHaEcarhI-LaKWJU3V0z2uTS_er_k
+
+### 20. 登录 ADMIN 用户
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "platformadmin",
+  "password": "AdminSecurePassword123" 
+}
+
+### 21. ADMIN 查询所有订单列表 (GET /api/admin/orders)
+GET http://localhost:8080/api/admin/orders
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwbGF0Zm9ybWFkbWluIiwiaWF0IjoxNzY1NDQ0ODQ4LCJleHAiOjE3NjU1MzEyNDh9.AznUpQ3ixCHiI_c3rgSnCBStTP55QAwur-APSCXPwwM
+
+### 22. ADMIN 查询任意订单详情 (GET /api/admin/orders/5)
+GET http://localhost:8080/api/admin/orders/5
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwbGF0Zm9ybWFkbWluIiwiaWF0IjoxNzY1NDQ0ODQ4LCJleHAiOjE3NjU1MzEyNDh9.AznUpQ3ixCHiI_c3rgSnCBStTP55QAwur-APSCXPwwM
+
+### 23. CUSTOMER 尝试查询所有订单列表 (GET /api/admin/orders)
+GET http://localhost:8080/api/admin/orders
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnR1c2VyIiwiaWF0IjoxNzY1NDQ0OTA2LCJleHAiOjE3NjU1MzEzMDZ9.9f1YA0AVAA7d9p-UwrBAMqfU3hHcGWr0MphCQ76mA-0
+
+
+### 24. 测试库存不足异常 (POST /api/orders)
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnR1c2VyIiwiaWF0IjoxNzY1NDQ0OTA2LCJleHAiOjE3NjU1MzEzMDZ9.9f1YA0AVAA7d9p-UwrBAMqfU3hHcGWr0MphCQ76mA-0
+
+{
+  "items": [
+    {
+      "productId": 4, 
+      "quantity": 50 
+    }
+  ]
+}

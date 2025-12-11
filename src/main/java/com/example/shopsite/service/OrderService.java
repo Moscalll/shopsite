@@ -9,4 +9,8 @@ public interface OrderService {
     Order createOrder(OrderCreationRequest request, String username);
     List<Order> findMyOrders(String username);
     Order findOrderDetails(Long orderId, String username);
+
+    Order processPayment(Long orderId, String username);
+    List<Order> findAllOrders(); // 管理员/商家查看所有订单
+    Order findOrderDetailsForAdmin(Long orderId); // 管理员/商家查看任意订单详情
 }

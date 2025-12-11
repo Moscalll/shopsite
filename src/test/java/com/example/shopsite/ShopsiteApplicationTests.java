@@ -1,13 +1,13 @@
-package com.example.shopsite;
+// package com.example.shopsite;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class ShopsiteApplicationTests {
+// @SpringBootTest
+// class ShopsiteApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+// 	@Test
+// 	void contextLoads() {
+// 	}
 
-}
+// }

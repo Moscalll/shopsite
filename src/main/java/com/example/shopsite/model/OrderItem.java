@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -34,5 +37,5 @@ public class OrderItem {
     private Integer quantity; // 购买数量
 
     @Column(nullable = false)
-    private Double priceAtOrder; // 购买时的单价
+    private BigDecimal priceAtOrder; // 购买时的单价
 }

@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "product")
@@ -23,8 +24,8 @@ public class Product {
 
     private String description;
     
-    // 价格，通常用 BigDecimal，这里为了快速演示先用 Double
-    private Double price; 
+    @Column(nullable = false, precision = 10, scale = 2) // 🚨 数据库精度设置
+    private BigDecimal price; 
     
     private Integer stock; // 库存
     
