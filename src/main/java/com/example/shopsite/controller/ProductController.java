@@ -3,7 +3,6 @@ package com.example.shopsite.controller;
 import com.example.shopsite.model.Product;
 import com.example.shopsite.repository.ProductRepository;
 import org.springframework.http.ResponseEntity;
-
 import com.example.shopsite.dto.ProductCreationRequest; // 导入 DTO
 import com.example.shopsite.service.ProductService; // 导入 Service
 import jakarta.validation.Valid;
@@ -11,12 +10,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication; // 导入 Authentication
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.stereotype.Controller;
 import java.util.List;
+import org.springframework.ui.Model;
 
+
+
+@Controller 
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
+
+    
 
     private final ProductRepository productRepository;
     private final ProductService productService; // 🚨 注入 Service
@@ -24,6 +29,16 @@ public class ProductController {
     public ProductController(ProductRepository productRepository, ProductService productService) {
         this.productRepository = productRepository;
         this.productService = productService;
+    }
+
+
+    @GetMapping("/") // 首页路由
+    public String listProducts(Model model) { // 🚨 返回 String，接受 Model
+        List<Product> products = productService.findAllAvailableProducts();
+        
+        model.addAttribute("pageTitle", "所有商品");
+        model.addAttribute("products", products); // 将数据模型添加到 Model 中
+        return "product/list"; // 对应 templates/product/list.html
     }
 
     /**

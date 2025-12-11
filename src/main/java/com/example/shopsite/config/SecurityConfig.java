@@ -8,71 +8,89 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain; // 引入 SecurityFilterChain
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import com.example.shopsite.security.JwtAuthenticationFilter;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+//import org.springframework.security.config.http.SessionCreationPolicy;  引入 SessionCreationPolicy
+
 
 @Configuration
-@EnableWebSecurity // 启用 Spring Security 的 Web 安全功能
-@EnableMethodSecurity // 🚨 推荐：启用方法级别的安全注解，比如 @PreAuthorize
+@EnableWebSecurity
+@EnableMethodSecurity // 启用方法级别的安全注解
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    // 🚨 移除了 JwtAuthenticationFilter 的依赖注入和构造函数
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
-
-    // 1. PasswordEncoder Bean (之前已添加)
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 2. 🚨 核心修改点：配置安全过滤器链
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 禁用 CSRF 保护 (适用于 API 项目，如果使用 cookie/session 需谨慎)
-            .csrf(csrf -> csrf.disable()) 
-
-            // 1. 🚨 配置无状态会话管理 (JWT 关键)
-            // 告诉 Spring Security 不要创建或使用 Session
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
+            // 🚨 移除：不再禁用 CSRF，因为 Session 认证需要 CSRF 保护
+            // 🚨 移除：不再配置 SessionCreationPolicy.STATELESS，恢复到默认的基于 Session 的认证
             
             // 配置请求授权
             .authorizeHttpRequests(auth -> auth
-               // 1. 公开路由
-                .requestMatchers("/api/auth/**").permitAll() 
-                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // 允许所有人查询商品
+                
+                // 1. 🚨 允许匿名访问的页面路由和静态资源（前端）
+                .requestMatchers(
+                    "/",                        // 首页商品列表
+                    "/login",                   // 登录页面
+                    "/register",                // 注册页面
+                    "/error",
+                    "/css/**",                  // 静态资源
+                    "/js/**",                   // 静态资源
+                    "/images/**",               // 静态资源
+                    "/webjars/**"               // 静态资源
+                ).permitAll() 
+                
+                // 2. 允许匿名访问的后端 API（认证和查询商品）
+                .requestMatchers("/api/auth/register").permitAll() // 允许注册 API 访问
+                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll() // 允许登录 API 访问（如果你使用自定义认证接口）
+                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // 允许所有人查询商品 API
 
-                // 2. 商家/管理员路由
-                // 只有 MERCHANT 或 ADMIN 才能创建/修改/删除商品
+                // 3. 🚨 关键修正：分离商家/管理员路由
+                // 只有 MERCHANT 或 ADMIN 才能创建商品 (POST)
                 .requestMatchers(HttpMethod.POST, "/api/products").hasAnyAuthority("ROLE_MERCHANT", "ROLE_ADMIN")
+                
+                // 只有 MERCHANT 或 ADMIN 才能更新商品 (PUT)
                 .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyAuthority("ROLE_MERCHANT", "ROLE_ADMIN")
+                
+                // 只有 MERCHANT 或 ADMIN 才能删除商品 (DELETE)
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority("ROLE_MERCHANT", "ROLE_ADMIN")
                 
-                // 3. 客户路由
-                // 只有 CUSTOMER 才能创建订单
+                // 4. 保护客户订单 API 路由
                 .requestMatchers(HttpMethod.POST, "/api/orders").hasAuthority("ROLE_CUSTOMER")
-
-                // 4. 其他所有 /api/orders/my 和 /api/orders/{id} 接口只需要认证即可
-                // 因为订单详情和列表的权限控制（只能看自己的）已经在 Service 层完成了。
-                .requestMatchers("/api/orders/**").authenticated() 
+                .requestMatchers("/api/orders/**").authenticated() // 其他订单相关 API 需要认证
                 
-                // 5. 任何其他未明确指定的请求都需要认证
+                // 5. 其他所有未明确指定的请求（包括未在上面的 /api/** 中列出的）
                 .anyRequest().authenticated()
             )
-            // 禁用默认的 HTTP Basic 认证（或者只配置需要使用的认证方式）
-            .httpBasic(httpBasic -> httpBasic.disable())
-            .formLogin(formLogin -> formLogin.disable());
-        
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
+            
+            // 🚨 关键：启用并配置基于 Session 的表单登录
+            .formLogin(form -> form
+                .loginPage("/login")             // 指定自定义登录页面 GET 请求
+                .loginProcessingUrl("/login")    // 指定处理登录表单的 POST 请求路径
+                .defaultSuccessUrl("/", true)    // 登录成功后跳转
+                .failureUrl("/login?error")      // 登录失败后跳转，带上错误参数
+                .permitAll()                     // 允许所有人访问登录路径
+            )
+            
+            // 🚨 关键：启用并配置登出
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login")      // 登出后跳转到登录页
+                .permitAll()
+            )
+            
+            // 🚨 关键：禁用 JWT 过滤器
+            // 移除了 http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            // 移除了 httpBasic(httpBasic -> httpBasic.disable()) 和 formLogin(formLogin -> formLogin.disable())
+            
+            // 允许 /api/auth/register POST 请求不携带 CSRF Token（如果你不希望为 API 客户端提供 token）
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/auth/register")); 
+            
         return http.build();
     }
 }

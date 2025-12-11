@@ -19,4 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // 4. 精确查找（优化查询）
     Optional<Product> findByIdAndIsAvailableTrue(Long id);
+
+    // 🚨 新增：根据 JPA 命名规范，查找 isAvailable 为 true 且 stock 大于指定值的商品
+    List<Product> findByIsAvailableTrueAndStockGreaterThan(Integer stock);
 }

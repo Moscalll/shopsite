@@ -8,6 +8,7 @@ import com.example.shopsite.repository.UserRepository;
 import com.example.shopsite.service.ProductService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -39,5 +40,11 @@ public class ProductServiceImpl implements ProductService {
 
         // 3. 保存并返回
         return productRepository.save(product);
+    }
+
+    @Override // 🚨 新增方法实现
+    public List<Product> findAllAvailableProducts() {
+        // 假设我们只显示 isAvailable = true 且 stock > 0 的商品
+        return productRepository.findByIsAvailableTrueAndStockGreaterThan(0);
     }
 }
