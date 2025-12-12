@@ -22,7 +22,41 @@ public class ViewController {
 
     @GetMapping("/")
     public String indexPage(Model model) {
-        // ... (首页逻辑，返回 "index" 或 "product/list")
+        model.addAttribute("pageTitle", "商城首页");
+        return "layout/main";
+    }
+
+    // 帮助页面
+    @GetMapping("/help")
+    public String helpPage(Model model) {
+        model.addAttribute("pageTitle", "帮助中心");
+        // 假设帮助模板路径是 utility/help.html
+        ///model.addAttribute("content", "utility/help :: body"); 
+        return "layout/main"; 
+    }
+
+// 关于页面
+    @GetMapping("/about")
+    public String aboutPage(Model model) {
+        model.addAttribute("pageTitle", "关于我们");
+        // 假设关于模板路径是 utility/about.html
+        //model.addAttribute("content", "utility/about :: body"); 
+        return "layout/main"; 
+    }
+
+    // 消息中心（需要登录，未登录 Spring Security 会跳转到 /login）
+    @GetMapping("/message")
+    public String messagePage(Model model) {
+        model.addAttribute("pageTitle", "消息中心");
+       // model.addAttribute("content", "user/message :: body"); 
+        return "layout/main"; 
+    }
+
+    // 收藏夹（需要登录）
+    @GetMapping("/favorite")
+    public String favoritePage(Model model) {
+        model.addAttribute("pageTitle", "我的收藏");
+        //model.addAttribute("content", "user/favorite :: body"); 
         return "layout/main"; 
     }
 }
