@@ -21,8 +21,7 @@
                         
                         <!-- 表单提交到控制器端点，不是API端点 -->
                         <form th:action="@{/register}" method="post">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                            <input type="hidden" name="role" value="CUSTOMER"> 
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /> 
                             
                             <div th:if="${registrationSuccess}" class="alert alert-success" role="alert">
                                 注册成功！请 <a th:href="@{/login}" class="alert-link">登录</a>。
@@ -53,6 +52,15 @@
                                 <label for="confirmPassword" class="form-label">确认密码</label>
                                 <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required 
                                        placeholder="再次输入密码">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="role" class="form-label">注册类型</label>
+                                <select class="form-select" id="role" name="role" required>
+                                    <option value="CUSTOMER" selected>客户</option>
+                                    <option value="MERCHANT">商户</option>
+                                </select>
+                                <small class="form-text text-muted">选择您的账户类型：客户可以购买商品，商户可以上架商品</small>
                             </div>
                             
                             <div class="mb-3 form-check">

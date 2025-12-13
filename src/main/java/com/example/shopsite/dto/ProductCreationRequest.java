@@ -15,6 +15,8 @@ public class ProductCreationRequest {
     private String name;
 
     private String description;
+    private Long categoryId;
+    private String imageUrl;
     
     @NotNull(message = "价格不能为空")
     @Min(value = 0, message = "价格必须大于0")

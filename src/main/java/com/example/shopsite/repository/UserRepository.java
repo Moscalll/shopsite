@@ -1,8 +1,10 @@
 package com.example.shopsite.repository;
 
+import com.example.shopsite.model.Role;
 import com.example.shopsite.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.util.List;
 import java.util.Optional;
 
 // 1. @Repository 注解是可选的，但推荐加上
@@ -20,4 +22,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * 根据邮箱查询用户。
      */
     Optional<User> findByEmail(String email);
+    
+    /**
+     * 根据角色查询用户列表（用于管理员查询商户）
+     */
+    List<User> findByRole(Role role);
 }

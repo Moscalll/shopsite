@@ -10,11 +10,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/orders")
-public class AdminOrderController {
+public class AdminOrderRestController {
 
     private final OrderService orderService;
 
-    public AdminOrderController(OrderService orderService) {
+    public AdminOrderRestController(OrderService orderService) {
         this.orderService = orderService;
     }
 
@@ -45,3 +45,4 @@ public class AdminOrderController {
         }
     }
 }
+

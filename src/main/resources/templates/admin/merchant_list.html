@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: '商户管理'">商户管理</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body>
+    <div th:replace="index/fragments :: navbar"></div>
+
+    <main class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>商户管理</h1>
+            <div>
+                <a th:href="@{/admin/orders}" class="btn btn-outline-primary me-2">订单管理</a>
+                <a th:href="@{/}" class="btn btn-outline-secondary">返回首页</a>
+            </div>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}">操作成功</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}">错误信息</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${#lists.isEmpty(merchants)}" class="text-center py-5">
+            <p class="text-muted">暂无商户</p>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(merchants)}">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>邮箱</th>
+                            <th>角色</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="merchant : ${merchants}">
+                            <td th:text="${merchant.id}">1</td>
+                            <td th:text="${merchant.username}">商户名</td>
+                            <td th:text="${merchant.email}">email@example.com</td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${merchant.role.name() == 'MERCHANT'} ? 'bg-success' : 'bg-secondary'">
+                                    <span th:switch="${merchant.role.name()}">
+                                        <span th:case="'MERCHANT'">商户</span>
+                                        <span th:case="'CUSTOMER'">客户</span>
+                                        <span th:case="'ADMIN'">管理员</span>
+                                    </span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${merchant.role.name() == 'MERCHANT'} ? 'bg-success' : 'bg-secondary'">
+                                    <span th:text="${merchant.role.name() == 'MERCHANT' ? '启用' : '禁用'}">启用</span>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a th:href="@{/admin/merchants/{id}(id=${merchant.id})}" 
+                                       class="btn btn-sm btn-outline-primary">详情</a>
+                                    <form th:action="@{/admin/merchants/{id}/toggle-role(id=${merchant.id})}" 
+                                          method="post" class="d-inline">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" 
+                                                class="btn btn-sm"
+                                                th:classappend="${merchant.role.name() == 'MERCHANT'} ? 'btn-warning' : 'btn-success'"
+                                                th:text="${merchant.role.name() == 'MERCHANT' ? '禁用' : '启用'}"
+                                                onclick="return confirm('确定要' + (this.textContent === '禁用' ? '禁用' : '启用') + '该商户吗？')">
+                                            操作
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="index/fragments :: footer"></div>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
+

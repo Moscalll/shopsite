@@ -177,4 +177,52 @@ public class OrderServiceImpl implements OrderService {
         // 权限校验在 Controller 层完成，这里只负责返回数据
         return order;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Order> findOrdersByMerchant(User merchant) {
+        return orderRepository.findOrdersByMerchant(merchant);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Order findOrderDetailsForMerchant(Long orderId, User merchant) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("订单不存在: " + orderId));
+
+        // 验证订单是否包含该商户的商品
+        boolean hasMerchantProduct = order.getItems().stream()
+                .anyMatch(item -> item.getProduct().getMerchant().getId().equals(merchant.getId()));
+
+        if (!hasMerchantProduct) {
+            throw new RuntimeException("无权访问该订单");
+        }
+
+        // 强制加载订单项
+        order.getItems().size();
+        return order;
+    }
+
+    @Override
+    @Transactional
+    public Order shipOrder(Long orderId, User merchant) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("订单不存在: " + orderId));
+
+        // 验证订单是否包含该商户的商品
+        boolean hasMerchantProduct = order.getItems().stream()
+                .anyMatch(item -> item.getProduct().getMerchant().getId().equals(merchant.getId()));
+
+        if (!hasMerchantProduct) {
+            throw new RuntimeException("无权处理该订单");
+        }
+
+        // 只有已付款的订单才能发货
+        if (order.getStatus() != OrderStatus.PROCESSING) {
+            throw new BusinessException("订单状态不允许发货: " + order.getStatus());
+        }
+
+        order.setStatus(OrderStatus.SHIPPED);
+        return orderRepository.save(order);
+    }
 }

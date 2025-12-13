@@ -35,7 +35,9 @@ public class SecurityConfig {
                 
                 // 1. 🚨 允许匿名访问的页面路由和静态资源（前端）
                 .requestMatchers(
-                    "/",                        // 首页商品列表
+                    "/",                        // 首页
+                    "/products",                // 商品列表
+                    "/product/**",              // 商品详情
                     "/login",                   // 登录页面
                     "/register",                // 注册页面
                     "/error",
@@ -50,7 +52,16 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll() // 允许登录 API 访问（如果你使用自定义认证接口）
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // 允许所有人查询商品 API
 
-                // 3. 🚨 关键修正：分离商家/管理员路由
+                // 3. 用户端路由（需要认证）
+                .requestMatchers("/cart/**", "/favorites/**", "/orders/**").authenticated()
+
+                // 4. 商户端路由（需要MERCHANT或ADMIN角色）
+                .requestMatchers("/merchant/**").hasAnyAuthority("ROLE_MERCHANT", "ROLE_ADMIN")
+                
+                // 5. 管理员端路由（需要ADMIN角色）
+                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                
+                // 6. 🚨 关键修正：分离商家/管理员路由
                 // 只有 MERCHANT 或 ADMIN 才能创建商品 (POST)
                 .requestMatchers(HttpMethod.POST, "/api/products").hasAnyAuthority("ROLE_MERCHANT", "ROLE_ADMIN")
                 
@@ -60,11 +71,11 @@ public class SecurityConfig {
                 // 只有 MERCHANT 或 ADMIN 才能删除商品 (DELETE)
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority("ROLE_MERCHANT", "ROLE_ADMIN")
                 
-                // 4. 保护客户订单 API 路由
+                // 7. 保护客户订单 API 路由
                 .requestMatchers(HttpMethod.POST, "/api/orders").hasAuthority("ROLE_CUSTOMER")
                 .requestMatchers("/api/orders/**").authenticated() // 其他订单相关 API 需要认证
                 
-                // 5. 其他所有未明确指定的请求（包括未在上面的 /api/** 中列出的）
+                // 8. 其他所有未明确指定的请求（包括未在上面的 /api/** 中列出的）
                 .anyRequest().authenticated()
             )
             

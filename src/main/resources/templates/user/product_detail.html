@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${product.name + ' - ' + pageTitle}">商品详情</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body>
+    <div th:replace="index/fragments :: navbar"></div>
+
+    <main class="container py-4">
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <span th:text="${error}">错误信息</span>
+        </div>
+
+        <div th:if="${product}" class="row">
+            <!-- 商品图片 -->
+            <div class="col-md-6 mb-4">
+                <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}" 
+                     class="img-fluid rounded shadow" 
+                     th:alt="${product.name}"
+                     style="max-height: 500px; object-fit: cover;">
+            </div>
+
+            <!-- 商品信息 -->
+            <div class="col-md-6">
+                <h1 class="mb-3" th:text="${product.name}">商品名称</h1>
+                <p class="text-muted mb-3" th:text="${product.description}">商品描述</p>
+                
+                <div class="mb-3">
+                    <h3 class="text-danger">
+                        ¥<span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 2, 'POINT')}">99.00</span>
+                    </h3>
+                </div>
+
+                <div class="mb-3">
+                    <p class="mb-1"><strong>分类：</strong><span th:text="${product.category.name}">分类名称</span></p>
+                    <p class="mb-1"><strong>库存：</strong><span th:text="${product.stock}">10</span> 件</p>
+                    <p class="mb-1"><strong>商户：</strong><span th:text="${product.merchant.username}">商户名称</span></p>
+                </div>
+
+                <div class="mb-4" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/cart/add}" method="post" class="mb-3">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <input type="hidden" name="productId" th:value="${product.id}">
+                        <div class="row g-2">
+                            <div class="col-auto">
+                                <label for="quantity" class="form-label">数量：</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="quantity" 
+                                       name="quantity" 
+                                       value="1" 
+                                       min="1" 
+                                       th:max="${product.stock}" 
+                                       required>
+                            </div>
+                            <div class="col-auto d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary">加入购物车</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="d-flex gap-2">
+                        <form th:action="@{/favorites/add/{id}(id=${product.id})}" method="post" th:if="${!isFavorite}">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="bi bi-heart"></i> 收藏
+                            </button>
+                        </form>
+                        <form th:action="@{/favorites/remove/{id}(id=${product.id})}" method="post" th:if="${isFavorite}">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-heart-fill"></i> 已收藏
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div sec:authorize="!isAuthenticated()">
+                    <p class="text-muted">请 <a th:href="@{/login}">登录</a> 后购买或收藏商品</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="index/fragments :: footer"></div>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
+

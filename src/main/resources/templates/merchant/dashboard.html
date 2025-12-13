@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title th:text="${pageTitle}"></title>
+</head>
+<body>
+    <h1>商户后台管理</h1>
+    <h2>我的商品列表</h2>
+    
+    <p><a th:href="@{/merchant/product/new}">+ 上新商品</a></p>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>图片</th>
+                <th>名称</th>
+                <th>价格</th>
+                <th>库存</th>
+                <th>分类</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="product : ${products}">
+                <td th:text="${product.id}">1</td>
+                <td><img th:src="${product.imageUrl}" style="width: 50px; height: 50px;"></td>
+                <td th:text="${product.name}">亚麻T恤</td>
+                <td th:text="${product.price}">199.00</td>
+                <td th:text="${product.stock}">100</td>
+                <td th:text="${product.category.name}">服装</td>
+                <td th:text="${product.isAvailable ? '上架中' : '已下架'}">上架中</td>
+                <td>
+                    <a th:href="@{/merchant/product/edit/{id}(id=${product.id})}">编辑</a>
+                    <a th:href="@{/merchant/product/delete/{id}(id=${product.id})}">下架</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

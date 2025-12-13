@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+    <header th:fragment="navbar">
+        <nav class="navbar navbar-expand-lg sticky-top bg-muji-green">
+            <div class="container-fluid">
+                
+                <a class="navbar-brand text-muji-dark me-5" th:href="@{/}">
+                    <i class="bi bi-box-seam"></i> KIKA ShopSite
+                </a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    
+                    <ul class="navbar-nav mx-auto">
+                        <li class="nav-item">
+                            <a class="nav-link text-muji-dark" th:href="@{/}">首页</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-muji-dark" th:href="@{/message}">消息中心</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-muji-dark" th:href="@{/favorites}">收藏夹</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-muji-dark" th:href="@{/help}">帮助</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-muji-dark" th:href="@{/about}">关于</a>
+                        </li>
+                    </ul>
+                    
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item me-3">
+                            <form class="d-flex" th:action="@{/search}" method="get">
+                                <input class="form-control form-control-sm me-2" 
+                                       type="search" 
+                                       name="q"
+                                       placeholder="搜索商品" 
+                                       aria-label="Search" 
+                                       style="width: 150px;"
+                                       th:value="${keyword ?: ''}">
+                                <button class="btn btn-outline-dark btn-sm" type="submit"><i class="bi bi-search"></i></button>
+                            </form>
+                        </li>
+                        
+                        <li class="nav-item" sec:authorize="!isAuthenticated()">
+                             <a class="nav-link text-muji-dark" th:href="@{/login}">
+                                <i class="bi bi-person"></i> 登录/注册
+                            </a>
+                        </li>
+
+                        <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                            <a class="nav-link dropdown-toggle text-muji-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i> <span sec:authentication="name">用户名</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" th:href="@{/profile}">个人中心</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form th:action="@{/logout}" method="post">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" class="dropdown-item">登出</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        <li class="nav-item ms-3">
+                            <a class="nav-link text-muji-dark" th:href="@{/cart}">
+                                 <i class="bi bi-bag"></i> 购物车
+                            </a>
+                        </li>
+                    </ul>
+                </div>  
+            </div>
+        </nav>
+    </header>
+
+    <footer th:fragment="footer">
+        <footer class="footer-muji-grey py-4 mt-auto">
+            <div class="container">
+                <p class="mb-0 text-center">&copy; 2025 ShopSite. All rights reserved.</p>
+            </div>
+        </footer>
+    </footer>
+    
+
+</body>
+</html>

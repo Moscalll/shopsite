@@ -1,0 +1,75 @@
+<section th:fragment="body">
+    
+    <div class="alert bg-light-subtle text-center mb-4 text-muji-dark" role="alert" style="border: 1px solid #D3D3D3;">
+        📢 **店铺公告:** 全场新品 7 折限时优惠，活动截止至本周末！
+    </div>
+    
+    <div id="mujiCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
+        <div class="carousel-inner" style="border-radius: 5px;">
+            <div th:each="banner, iterStat : ${banners}" 
+                 th:classappend="${iterStat.first} ? 'active'" 
+                 class="carousel-item">
+                
+                <img th:src="@{${banner.imageUrl}}" 
+                     class="d-block w-100" 
+                     th:alt="${banner.title}" 
+                     style="height: 400px; object-fit: cover;">
+                
+                <div class="carousel-caption d-none d-md-block text-dark" style="background-color: rgba(255, 255, 255, 0.7); border-radius: 5px; color: #333333 !important;">
+                    <h5 th:text="${banner.title}">简约生活，从这里开始</h5>
+                    <p th:text="${banner.description}"></p>
+                </div>
+            </div>
+             <div th:if="${#lists.isEmpty(banners)}" class="carousel-item active">
+                 <img src="https://via.placeholder.com/1200x400/E8E8E8/333333?text=Placeholder+Banner" class="d-block w-100" alt="Placeholder Banner" style="height: 400px; object-fit: cover;">
+            </div>
+        </div>
+        </div>
+    
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2 class="text-muji-dark">| 优选商品 |</h2>
+            <hr class="w-25 mx-auto" style="border-top: 2px solid #A5B699;">
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h3 class="mb-4 text-muji-dark">本周特集</h3>
+        </div>
+        
+        <div class="col-lg-3 col-md-6" th:each="item : ${featuredItems}">
+            <div class="card h-100 shadow-sm border-0">
+                <img th:src="@{${item.imageUrl}}" class="card-img-top" th:alt="${item.name}" style="height: 200px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${item.name}">特集商品名</h5>
+                    <p class="card-text text-muted" th:text="${item.price}">¥99.00</p>
+                    <a th:href="@{/product/{id}(id=${item.id})}" class="btn btn-outline-dark btn-sm">查看详情</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12" th:if="${#lists.isEmpty(featuredItems)}">
+            <p class="text-center text-muted">本周特集正在准备中...</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h3 class="mb-4 text-muji-dark">新品上市</h3>
+        </div>
+        <div class="col-12">
+             <a th:href="@{/new}" class="btn btn-light w-100" style="border: 1px solid #A5B699;">查看所有新品 <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h3 class="mb-4 text-muji-dark">热销排行榜</h3>
+        </div>
+         <div class="col-12">
+             <a th:href="@{/top-sellers}" class="btn btn-light w-100" style="border: 1px solid #A5B699;">查看完整榜单 <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+    
+</section>

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.shopsite.security.JwtTokenProvider;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,6 +31,16 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional // 确保整个操作在事务中执行
     public User registerUser(UserRegistrationRequest request) {
+        return registerUser(request, Role.CUSTOMER);
+    }
+    
+    @Override
+    @Transactional // 确保整个操作在事务中执行
+    public User registerUser(UserRegistrationRequest request, Role role) {
+        // 不允许注册管理员角色
+        if (role == Role.ADMIN) {
+            throw new RuntimeException("不允许注册管理员账户");
+        }
         
         // 1. 检查用户名是否已存在
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
@@ -47,8 +58,8 @@ public class UserServiceImpl implements UserService {
                 .email(request.getEmail())
                 // 4. 对密码进行加密处理
                 .password(passwordEncoder.encode(request.getPassword()))
-                // 5. 设置默认角色为普通顾客
-                .role(Role.CUSTOMER)
+                // 5. 设置角色
+                .role(role)
                 .build();
         
         // 6. 保存到数据库
@@ -82,5 +93,27 @@ public class UserServiceImpl implements UserService {
             // 5. 密码不匹配
             throw new RuntimeException("用户名或密码错误");
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> findAllMerchants() {
+        return userRepository.findByRole(Role.MERCHANT);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+    }
+
+    @Override
+    @Transactional
+    public User updateUserRole(Long userId, Role newRole) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+        user.setRole(newRole);
+        return userRepository.save(user);
     }
 }
