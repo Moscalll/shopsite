@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: '客户详情'">客户详情</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body>
+    <div th:replace="index/fragments :: navbar"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <nav class="col-md-3 col-lg-2 sidebar" style="min-height: calc(100vh - 56px); background-color: #f8f9fa; padding: 20px 0;">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/dashboard}">
+                            <i class="bi bi-grid"></i> 商品管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/orders}">
+                            <i class="bi bi-cart"></i> 订单管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/statistics}">
+                            <i class="bi bi-bar-chart"></i> 销售统计
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/merchant/customers}">
+                            <i class="bi bi-people"></i> 客户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/logs}">
+                            <i class="bi bi-clock-history"></i> 浏览/购买日志
+                        </a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <a class="nav-link" th:href="@{/}">
+                            <i class="bi bi-house"></i> 返回首页
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- 主内容区 -->
+            <main class="col-md-9 col-lg-10" style="padding: 20px;">
+                <div th:if="${error}" class="alert alert-danger" role="alert">
+                    <span th:text="${error}">错误信息</span>
+                </div>
+
+                <div th:if="${customer}">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1>客户详情</h1>
+                        <a th:href="@{/merchant/customers}" class="btn btn-outline-secondary">返回客户列表</a>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">客户信息</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>客户ID：</strong><span th:text="${customer.id}">1</span></p>
+                                    <p><strong>用户名：</strong><span th:text="${customer.username}">用户名</span></p>
+                                    <p><strong>邮箱：</strong><span th:text="${customer.email}">email@example.com</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>订单总数：</strong><span th:text="${#lists.size(orders)}">0</span></p>
+                                    <p><strong>总消费：</strong>
+                                        ¥<span th:text="${#numbers.formatDecimal(
+                                            #lists.sum(orders.![totalAmount]), 
+                                            0, 'COMMA', 2, 'POINT'
+                                        )}">0.00</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">订单历史</h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${#lists.isEmpty(orders)}" class="text-center py-3">
+                                <p class="text-muted">该客户暂无订单</p>
+                            </div>
+                            <div th:if="${!#lists.isEmpty(orders)}" class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>订单号</th>
+                                            <th>下单时间</th>
+                                            <th>订单总额</th>
+                                            <th>状态</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="order : ${orders}">
+                                            <td th:text="${order.id}">12345</td>
+                                            <td th:text="${#temporals.format(order.orderDate, 'yyyy-MM-dd HH:mm')}">2025-01-01</td>
+                                            <td>
+                                                ¥<span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge" 
+                                                      th:classappend="${order.status.name() == 'PENDING_PAYMENT'} ? 'bg-warning' : 
+                                                                      (${order.status.name() == 'PROCESSING'} ? 'bg-info' : 
+                                                                      (${order.status.name() == 'SHIPPED'} ? 'bg-primary' : 
+                                                                      (${order.status.name() == 'DELIVERED'} ? 'bg-success' : 
+                                                                      (${order.status.name() == 'COMPLETED'} ? 'bg-success' : 'bg-secondary'))))">
+                                                    <span th:switch="${order.status.name()}">
+                                                        <span th:case="'PENDING_PAYMENT'">待付款</span>
+                                                        <span th:case="'PROCESSING'">处理中</span>
+                                                        <span th:case="'SHIPPED'">已发货</span>
+                                                        <span th:case="'DELIVERED'">已送达</span>
+                                                        <span th:case="'COMPLETED'">已完成</span>
+                                                        <span th:case="'CANCELLED'">已取消</span>
+                                                    </span>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a th:href="@{/merchant/orders/{id}(id=${order.id})}" 
+                                                   class="btn btn-sm btn-outline-primary">查看详情</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="index/fragments :: footer"></div>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <style>
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin: 5px 10px;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #e9ecef;
+        }
+        .sidebar .nav-link.active {
+            background-color: #A5B699;
+            color: white;
+        }
+    </style>
+</body>
+</html>
+
+
+

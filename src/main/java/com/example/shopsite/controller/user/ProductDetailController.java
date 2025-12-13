@@ -5,6 +5,7 @@ import com.example.shopsite.model.User;
 import com.example.shopsite.repository.UserRepository;
 import com.example.shopsite.service.FavoriteService;
 import com.example.shopsite.service.ProductService;
+import com.example.shopsite.service.SalesLogService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,12 +20,14 @@ public class ProductDetailController {
     private final ProductService productService;
     private final FavoriteService favoriteService;
     private final UserRepository userRepository;
+    private final SalesLogService salesLogService;
 
     public ProductDetailController(ProductService productService, FavoriteService favoriteService,
-                                   UserRepository userRepository) {
+                                   UserRepository userRepository, SalesLogService salesLogService) {
         this.productService = productService;
         this.favoriteService = favoriteService;
         this.userRepository = userRepository;
+        this.salesLogService = salesLogService;
     }
 
     /**
@@ -43,13 +46,16 @@ public class ProductDetailController {
         model.addAttribute("product", product);
         model.addAttribute("pageTitle", product.getName());
 
-        // 如果用户已登录，检查是否已收藏
+        // 如果用户已登录，检查是否已收藏，并记录浏览日志
         if (authentication != null && authentication.isAuthenticated()) {
             String username = authentication.getName();
             Optional<User> userOpt = userRepository.findByUsername(username);
             if (userOpt.isPresent()) {
-                boolean isFavorite = favoriteService.isFavorite(id, userOpt.get());
+                User user = userOpt.get();
+                boolean isFavorite = favoriteService.isFavorite(id, user);
                 model.addAttribute("isFavorite", isFavorite);
+                // 记录浏览日志
+                salesLogService.logView(id, user);
             }
         } else {
             model.addAttribute("isFavorite", false);

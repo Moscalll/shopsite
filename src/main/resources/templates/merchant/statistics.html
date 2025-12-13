@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: '销售统计'">销售统计</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body>
+    <div th:replace="index/fragments :: navbar"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <nav class="col-md-3 col-lg-2 sidebar" style="min-height: calc(100vh - 56px); background-color: #f8f9fa; padding: 20px 0;">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/dashboard}">
+                            <i class="bi bi-grid"></i> 商品管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/orders}">
+                            <i class="bi bi-cart"></i> 订单管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/merchant/statistics}">
+                            <i class="bi bi-bar-chart"></i> 销售统计
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/customers}">
+                            <i class="bi bi-people"></i> 客户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/logs}">
+                            <i class="bi bi-clock-history"></i> 浏览/购买日志
+                        </a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <a class="nav-link" th:href="@{/}">
+                            <i class="bi bi-house"></i> 返回首页
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- 主内容区 -->
+            <main class="col-md-9 col-lg-10" style="padding: 20px;">
+                <h1 class="mb-4">销售统计</h1>
+
+                <!-- 统计卡片 -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title text-muted">总销售额</h5>
+                                <h2 class="text-success">
+                                    ¥<span th:text="${#numbers.formatDecimal(totalSales, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title text-muted">总订单数</h5>
+                                <h2 class="text-primary" th:text="${totalOrders}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title text-muted">已完成订单</h5>
+                                <h2 class="text-info" th:text="${completedOrders}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 订单状态统计 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">订单状态分布</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3" th:each="entry : ${orderStatusCount}">
+                                <div class="border rounded p-3 text-center">
+                                    <p class="mb-1 text-muted">
+                                        <span th:switch="${entry.key}">
+                                            <span th:case="'PENDING_PAYMENT'">待付款</span>
+                                            <span th:case="'PROCESSING'">处理中</span>
+                                            <span th:case="'SHIPPED'">已发货</span>
+                                            <span th:case="'DELIVERED'">已送达</span>
+                                            <span th:case="'COMPLETED'">已完成</span>
+                                            <span th:case="'CANCELLED'">已取消</span>
+                                        </span>
+                                    </p>
+                                    <h4 th:text="${entry.value}">0</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 热销商品排行 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">热销商品 Top 10</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>排名</th>
+                                        <th>商品名称</th>
+                                        <th>销量</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="result, iterStat : ${topProducts}">
+                                        <td th:text="${iterStat.index + 1}">1</td>
+                                        <td th:text="${result[0].name}">商品名称</td>
+                                        <td th:text="${result[1]}">0</td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(topProducts)}">
+                                        <td colspan="3" class="text-center text-muted">暂无销售数据</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="index/fragments :: footer"></div>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <style>
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin: 5px 10px;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #e9ecef;
+        }
+        .sidebar .nav-link.active {
+            background-color: #A5B699;
+            color: white;
+        }
+    </style>
+</body>
+</html>
+
+
+

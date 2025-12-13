@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: '确认订单'">确认订单</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body>
+    <div th:replace="index/fragments :: navbar"></div>
+
+    <main class="container py-4">
+        <h1 class="mb-4">确认订单</h1>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}">错误信息</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <!-- 商品清单 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">商品清单</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>商品</th>
+                                        <th>单价</th>
+                                        <th>数量</th>
+                                        <th>小计</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="item : ${cartItems}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img th:src="${item.product.imageUrl ?: '/images/placeholder.jpg'}" 
+                                                     class="me-3" 
+                                                     style="width: 60px; height: 60px; object-fit: cover;">
+                                                <div>
+                                                    <strong th:text="${item.product.name}">商品名称</strong>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            ¥<span th:text="${#numbers.formatDecimal(item.product.price, 0, 'COMMA', 2, 'POINT')}">99.00</span>
+                                        </td>
+                                        <td th:text="${item.quantity}">1</td>
+                                        <td>
+                                            <strong>
+                                                ¥<span th:text="${#numbers.formatDecimal(item.product.price * item.quantity, 0, 'COMMA', 2, 'POINT')}">99.00</span>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- 订单汇总 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">订单汇总</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>商品总额：</span>
+                            <span>¥<span th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>订单总额：</strong>
+                            <strong class="text-danger fs-5">
+                                ¥<span th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 收货信息 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">收货信息</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>收货人：</strong><span th:text="${user.username}">用户名</span></p>
+                        <p><strong>邮箱：</strong><span th:text="${user.email}">email@example.com</span></p>
+                        <p class="text-muted small">确认邮件将发送到此邮箱</p>
+                    </div>
+                </div>
+
+                <!-- 提交订单 -->
+                <form th:action="@{/payment/create-order}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-primary btn-lg w-100">提交订单</button>
+                </form>
+                <a th:href="@{/cart}" class="btn btn-outline-secondary w-100 mt-2">返回购物车</a>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="index/fragments :: footer"></div>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
+

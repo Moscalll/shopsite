@@ -1,0 +1,99 @@
+package com.example.shopsite.controller.user;
+
+import com.example.shopsite.model.CartItem;
+import com.example.shopsite.model.User;
+import com.example.shopsite.repository.UserRepository;
+import com.example.shopsite.service.CartService;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+@Controller
+@RequestMapping("/checkout")
+public class CheckoutController {
+
+    private final CartService cartService;
+    private final UserRepository userRepository;
+
+    public CheckoutController(CartService cartService, UserRepository userRepository) {
+        this.cartService = cartService;
+        this.userRepository = userRepository;
+    }
+
+    /**
+     * GET /checkout - 确认订单页面（从购物车）
+     */
+    @GetMapping
+    public String checkoutPage(Model model, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        String username = authentication.getName();
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        
+        if (userOpt.isEmpty()) {
+            return "redirect:/login";
+        }
+
+        User user = userOpt.get();
+        List<CartItem> cartItems = cartService.getCartItems(user);
+        
+        if (cartItems.isEmpty()) {
+            return "redirect:/cart";
+        }
+
+        // 计算总金额
+        BigDecimal totalAmount = cartItems.stream()
+                .map(item -> item.getProduct().getPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        model.addAttribute("cartItems", cartItems);
+        model.addAttribute("totalAmount", totalAmount);
+        model.addAttribute("user", user);
+        model.addAttribute("pageTitle", "确认订单");
+
+        return "user/checkout";
+    }
+
+    /**
+     * GET /checkout/direct - 直接购买（从商品详情页）
+     */
+    @GetMapping("/direct")
+    public String directCheckout(@RequestParam Long productId,
+                                 @RequestParam(defaultValue = "1") Integer quantity,
+                                 Model model, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        String username = authentication.getName();
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        
+        if (userOpt.isEmpty()) {
+            return "redirect:/login";
+        }
+
+        User user = userOpt.get();
+        
+        // 将商品添加到购物车（临时），用于显示在确认订单页面
+        try {
+            cartService.addToCart(productId, quantity, user);
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            return "redirect:/product/" + productId;
+        }
+
+        // 重定向到确认订单页面
+        return "redirect:/checkout";
+    }
+}
+

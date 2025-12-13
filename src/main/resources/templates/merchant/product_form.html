@@ -1,46 +1,179 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title th:text="${pageTitle}"></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: '商品管理'">商品管理</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
 </head>
 <body>
-    <h1 th:text="${pageTitle}">创建新商品</h1>
-    
-    <form th:action="@{/merchant/save}" th:object="${product}" method="post">
-        
-        <input type="hidden" th:field="*{id}" />
+    <div th:replace="index/fragments :: navbar"></div>
 
-        <label for="name">商品名称:</label>
-        <input type="text" id="name" th:field="*{name}" required><br/>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <nav class="col-md-3 col-lg-2 sidebar" style="min-height: calc(100vh - 56px); background-color: #f8f9fa; padding: 20px 0;">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/merchant/dashboard}">
+                            <i class="bi bi-grid"></i> 商品管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/orders}">
+                            <i class="bi bi-cart"></i> 订单管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/statistics}">
+                            <i class="bi bi-bar-chart"></i> 销售统计
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/customers}">
+                            <i class="bi bi-people"></i> 客户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/logs}">
+                            <i class="bi bi-clock-history"></i> 浏览/购买日志
+                        </a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <a class="nav-link" th:href="@{/}">
+                            <i class="bi bi-house"></i> 返回首页
+                        </a>
+                    </li>
+                </ul>
+            </nav>
 
-        <label for="description">描述:</label>
-        <textarea id="description" th:field="*{description}"></textarea><br/>
+            <!-- 主内容区 -->
+            <main class="col-md-9 col-lg-10" style="padding: 20px;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 th:text="${pageTitle}">创建新商品</h1>
+                    <a th:href="@{/merchant/dashboard}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> 返回列表
+                    </a>
+                </div>
 
-        <label for="price">价格:</label>
-        <input type="number" id="price" th:field="*{price}" step="0.01" required><br/>
+                <div class="card">
+                    <div class="card-body">
+                        <form th:action="@{/merchant/save}" th:object="${product}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <input type="hidden" th:field="*{id}" />
 
-        <label for="stock">库存:</label>
-        <input type="number" id="stock" th:field="*{stock}" required><br/>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">商品名称 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="name" th:field="*{name}" required>
+                                    </div>
 
-        <label for="imageUrl">主图URL:</label>
-        <input type="text" id="imageUrl" th:field="*{imageUrl}"><br/>
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">商品描述</label>
+                                        <textarea class="form-control" id="description" th:field="*{description}" rows="4"></textarea>
+                                    </div>
 
-        <label for="categoryId">选择类别:</label>
-        <select id="categoryId" name="categoryId" required>
-            <option 
-                th:each="cat : ${categories}" 
-                th:value="${cat.id}" 
-                th:text="${cat.name}"
-                th:selected="${product.category != null and product.category.id == cat.id}"
-            ></option>
-        </select><br/>
-        
-        <label for="isAvailable">是否上架:</label>
-        <input type="checkbox" id="isAvailable" th:field="*{isAvailable}"><br/>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="price" class="form-label">价格 <span class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">¥</span>
+                                                <input type="number" class="form-control" id="price" th:field="*{price}" step="0.01" min="0" required>
+                                            </div>
+                                        </div>
 
-        <button type="submit">保存商品</button>
-    </form>
-    
-    <p><a th:href="@{/merchant/dashboard}">返回商品列表</a></p>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="stock" class="form-label">库存 <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="stock" th:field="*{stock}" min="0" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="categoryId" class="form-label">商品分类 <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="categoryId" name="categoryId" required>
+                                            <option value="">请选择分类</option>
+                                            <option 
+                                                th:each="cat : ${categories}" 
+                                                th:value="${cat.id}" 
+                                                th:text="${cat.name}"
+                                                th:selected="${product.category != null and product.category.id == cat.id}"
+                                            ></option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="imageUrl" class="form-label">商品图片URL</label>
+                                        <input type="url" class="form-control" id="imageUrl" th:field="*{imageUrl}" placeholder="https://example.com/image.jpg">
+                                        <small class="form-text text-muted">请输入商品主图的完整URL地址</small>
+                                    </div>
+
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="isAvailable" th:field="*{isAvailable}">
+                                        <label class="form-check-label" for="isAvailable">
+                                            立即上架
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">商品预览</label>
+                                        <div class="border rounded p-3 text-center" style="min-height: 300px; background-color: #f8f9fa;">
+                                            <img id="previewImage" 
+                                                 th:src="${product.imageUrl ?: '/images/placeholder.jpg'}" 
+                                                 class="img-fluid rounded mb-2" 
+                                                 style="max-height: 250px; object-fit: cover;"
+                                                 onerror="this.src='/images/placeholder.jpg'">
+                                            <p class="mb-0 text-muted" id="previewName" th:text="${product.name ?: '商品名称'}">商品名称</p>
+                                            <p class="mb-0" id="previewPrice" th:text="${product.price ?: '¥0.00'}">¥0.00</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> 保存商品
+                                </button>
+                                <a th:href="@{/merchant/dashboard}" class="btn btn-secondary">取消</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="index/fragments :: footer"></div>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <script>
+        // 实时预览
+        document.getElementById('name').addEventListener('input', function() {
+            document.getElementById('previewName').textContent = this.value || '商品名称';
+        });
+        document.getElementById('price').addEventListener('input', function() {
+            document.getElementById('previewPrice').textContent = '¥' + (parseFloat(this.value) || 0).toFixed(2);
+        });
+        document.getElementById('imageUrl').addEventListener('input', function() {
+            document.getElementById('previewImage').src = this.value || '/images/placeholder.jpg';
+        });
+    </script>
+    <style>
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin: 5px 10px;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #e9ecef;
+        }
+        .sidebar .nav-link.active {
+            background-color: #A5B699;
+            color: white;
+        }
+    </style>
 </body>
 </html>

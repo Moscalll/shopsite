@@ -6,6 +6,7 @@ import com.example.shopsite.model.User;
 import com.example.shopsite.repository.CartItemRepository;
 import com.example.shopsite.repository.ProductRepository;
 import com.example.shopsite.service.CartService;
+import com.example.shopsite.service.SalesLogService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +17,13 @@ public class CartServiceImpl implements CartService {
 
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final SalesLogService salesLogService;
 
-    public CartServiceImpl(CartItemRepository cartItemRepository, ProductRepository productRepository) {
+    public CartServiceImpl(CartItemRepository cartItemRepository, ProductRepository productRepository,
+                          SalesLogService salesLogService) {
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
+        this.salesLogService = salesLogService;
     }
 
     @Override
@@ -51,7 +55,10 @@ public class CartServiceImpl implements CartService {
                     .product(product)
                     .quantity(quantity)
                     .build();
-            return cartItemRepository.save(cartItem);
+            CartItem saved = cartItemRepository.save(cartItem);
+            // 记录加购日志
+            salesLogService.logAddToCart(productId, user);
+            return saved;
         }
     }
 

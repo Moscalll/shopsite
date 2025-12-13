@@ -7,8 +7,11 @@ import com.example.shopsite.repository.OrderItemRepository;
 import com.example.shopsite.repository.OrderRepository;
 import com.example.shopsite.repository.ProductRepository;
 import com.example.shopsite.repository.UserRepository;
+import com.example.shopsite.service.CartService;
 import com.example.shopsite.service.OrderService;
+import com.example.shopsite.service.SalesLogService;
 import com.example.shopsite.exception.BusinessException;
+import com.example.shopsite.model.CartItem;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -23,12 +26,87 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemRepository orderItemRepository; // 🚨 需要创建这个 Repository
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final SalesLogService salesLogService;
+    private final CartService cartService;
 
-    public OrderServiceImpl(OrderRepository orderRepository, OrderItemRepository orderItemRepository, ProductRepository productRepository, UserRepository userRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, OrderItemRepository orderItemRepository, 
+                           ProductRepository productRepository, UserRepository userRepository,
+                           SalesLogService salesLogService, CartService cartService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.salesLogService = salesLogService;
+        this.cartService = cartService;
+    }
+
+    @Override
+    @Transactional
+    public Order createOrderFromCart(User user) {
+        // 从购物车获取商品
+        List<CartItem> cartItems = cartService.getCartItems(user);
+        
+        if (cartItems.isEmpty()) {
+            throw new BusinessException("购物车为空，无法创建订单");
+        }
+
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        // 创建订单实体
+        Order newOrder = Order.builder()
+                .user(user)
+                .orderDate(LocalDateTime.now())
+                .status(OrderStatus.PENDING_PAYMENT)
+                .items(new ArrayList<>())
+                .build();
+
+        // 处理购物车中的每个商品
+        for (CartItem cartItem : cartItems) {
+            Product product = cartItem.getProduct();
+            Integer quantity = cartItem.getQuantity();
+
+            if (!product.getIsAvailable() || product.getStock() < quantity) {
+                throw new BusinessException("商品 " + product.getName() + " 库存不足或已下架");
+            }
+
+            // 计算单项总价
+            BigDecimal quantityBd = BigDecimal.valueOf(quantity);
+            BigDecimal itemPrice = product.getPrice().multiply(quantityBd);
+            totalAmount = totalAmount.add(itemPrice);
+
+            // 扣减库存
+            product.setStock(product.getStock() - quantity);
+            productRepository.save(product);
+
+            // 创建订单项
+            OrderItem orderItem = OrderItem.builder()
+                    .order(newOrder)
+                    .product(product)
+                    .quantity(quantity)
+                    .priceAtOrder(product.getPrice())
+                    .build();
+
+            orderItems.add(orderItem);
+
+            // 记录购买日志
+            salesLogService.logPurchase(product.getId(), user);
+        }
+
+        // 更新订单总价
+        newOrder.setTotalAmount(totalAmount);
+
+        // 保存订单
+        Order savedOrder = orderRepository.save(newOrder);
+
+        // 保存订单项
+        for (OrderItem item : orderItems) {
+            item.setOrder(savedOrder);
+            orderItemRepository.save(item);
+        }
+
+        savedOrder.setItems(orderItems);
+        return savedOrder;
     }
 
     @Override
@@ -81,6 +159,9 @@ public class OrderServiceImpl implements OrderService {
                     .build();
             
             orderItems.add(orderItem);
+            
+            // 记录购买日志
+            salesLogService.logPurchase(itemRequest.getProductId(), customer);
         }
 
         // 4. 更新订单总价和订单项关联

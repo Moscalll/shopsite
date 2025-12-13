@@ -104,6 +104,19 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 退货操作（仅前端展示） -->
+            <div class="card mb-4" th:if="${order.status.name() == 'DELIVERED' || order.status.name() == 'COMPLETED'}">
+                <div class="card-header">
+                    <h5 class="mb-0">退货处理</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">管理员可以在此处理退货申请（此功能仅前端展示，后端暂未实现）</p>
+                    <button type="button" class="btn btn-warning" onclick="alert('退货功能暂未实现，仅前端展示')">
+                        <i class="bi bi-arrow-counterclockwise"></i> 处理退货
+                    </button>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -111,4 +124,6 @@
     <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>
+
+
 

@@ -59,6 +59,12 @@
                                 <i class="bi bi-person-circle"></i> <span sec:authentication="name">用户名</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li sec:authorize="hasRole('ADMIN')">
+                                    <a class="dropdown-item" th:href="@{/admin/merchants}">管理后台</a>
+                                </li>
+                                <li sec:authorize="hasRole('MERCHANT')">
+                                    <a class="dropdown-item" th:href="@{/merchant/dashboard}">商户后台</a>
+                                </li>
                                 <li><a class="dropdown-item" th:href="@{/profile}">个人中心</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>

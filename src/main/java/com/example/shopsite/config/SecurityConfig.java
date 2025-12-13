@@ -3,6 +3,7 @@ package com.example.shopsite.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import com.example.shopsite.security.CustomAuthenticationSuccessHandler;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,7 +18,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity // 启用方法级别的安全注解
 public class SecurityConfig {
 
-    // 🚨 移除了 JwtAuthenticationFilter 的依赖注入和构造函数
+    private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+
+    public SecurityConfig(CustomAuthenticationSuccessHandler authenticationSuccessHandler) {
+        this.authenticationSuccessHandler = authenticationSuccessHandler;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -83,7 +88,7 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/login")             // 指定自定义登录页面 GET 请求
                 .loginProcessingUrl("/login")    // 指定处理登录表单的 POST 请求路径
-                .defaultSuccessUrl("/", true)    // 登录成功后跳转
+                .successHandler(authenticationSuccessHandler) // 使用自定义成功处理器，根据角色跳转
                 .failureUrl("/login?error")      // 登录失败后跳转，带上错误参数
                 .permitAll()                     // 允许所有人访问登录路径
             )

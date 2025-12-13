@@ -3,6 +3,7 @@ package com.example.shopsite.controller;
 import com.example.shopsite.model.Product;
 import com.example.shopsite.model.User;
 import com.example.shopsite.model.Category;
+import com.example.shopsite.repository.ProductRepository;
 import com.example.shopsite.service.ProductService;
 import com.example.shopsite.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,11 +24,13 @@ public class MerchantController {
 
     private final ProductService productService;
     private final CategoryService categoryService;
+    private final ProductRepository productRepository;
 
     @Autowired
-    public MerchantController(ProductService productService, CategoryService categoryService) {
+    public MerchantController(ProductService productService, CategoryService categoryService, ProductRepository productRepository) {
         this.productService = productService;
         this.categoryService = categoryService;
+        this.productRepository = productRepository;
     }
 
     /**
@@ -93,17 +97,91 @@ public class MerchantController {
     public String saveProduct(
             @ModelAttribute Product product, 
             @RequestParam Long categoryId, // 从表单中获取 categoryId
-            @AuthenticationPrincipal User merchant) {
+            @AuthenticationPrincipal User merchant,
+            RedirectAttributes redirectAttributes) {
 
-        if (product.getId() == null) {
-            // 创建新商品
-            productService.createProduct(product, categoryId, merchant);
-        } else {
-            // 更新现有商品
-            productService.updateProduct(product.getId(), product, merchant);
+        try {
+            if (product.getId() == null) {
+                // 创建新商品
+                productService.createProduct(product, categoryId, merchant);
+                redirectAttributes.addFlashAttribute("success", "商品创建成功");
+            } else {
+                // 更新现有商品
+                productService.updateProduct(product.getId(), product, merchant);
+                redirectAttributes.addFlashAttribute("success", "商品更新成功");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/merchant/dashboard";
         }
 
         // 完成后重定向到商户后台列表
+        return "redirect:/merchant/dashboard";
+    }
+    
+    /**
+     * POST /merchant/product/toggle/{id}
+     * 切换商品上架/下架状态
+     */
+    @PostMapping("/product/toggle/{id}")
+    public String toggleProductStatus(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User merchant,
+            RedirectAttributes redirectAttributes) {
+        try {
+            Optional<Product> productOpt = productService.findAvailableProductById(id);
+            if (productOpt.isEmpty()) {
+                // 尝试查找下架的商品
+                productOpt = productRepository.findById(id);
+            }
+            
+            if (productOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "商品不存在");
+                return "redirect:/merchant/dashboard";
+            }
+            
+            Product product = productOpt.get();
+            if (!product.getMerchant().getId().equals(merchant.getId())) {
+                redirectAttributes.addFlashAttribute("error", "无权操作该商品");
+                return "redirect:/merchant/dashboard";
+            }
+            
+            product.setIsAvailable(!product.getIsAvailable());
+            productRepository.save(product);
+            redirectAttributes.addFlashAttribute("success", product.getIsAvailable() ? "商品已上架" : "商品已下架");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/merchant/dashboard";
+    }
+    
+    /**
+     * POST /merchant/product/delete/{id}
+     * 删除商品
+     */
+    @PostMapping("/product/delete/{id}")
+    public String deleteProduct(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User merchant,
+            RedirectAttributes redirectAttributes) {
+        try {
+            Optional<Product> productOpt = productRepository.findById(id);
+            if (productOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "商品不存在");
+                return "redirect:/merchant/dashboard";
+            }
+            
+            Product product = productOpt.get();
+            if (!product.getMerchant().getId().equals(merchant.getId())) {
+                redirectAttributes.addFlashAttribute("error", "无权删除该商品");
+                return "redirect:/merchant/dashboard";
+            }
+            
+            productRepository.delete(product);
+            redirectAttributes.addFlashAttribute("success", "商品已删除");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/merchant/dashboard";
     }
 }

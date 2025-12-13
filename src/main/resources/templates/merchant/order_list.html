@@ -10,11 +10,49 @@
 <body>
     <div th:replace="index/fragments :: navbar"></div>
 
-    <main class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>订单管理</h1>
-            <a th:href="@{/merchant/dashboard}" class="btn btn-outline-secondary">返回商品管理</a>
-        </div>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <nav class="col-md-3 col-lg-2 sidebar" style="min-height: calc(100vh - 56px); background-color: #f8f9fa; padding: 20px 0;">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/dashboard}">
+                            <i class="bi bi-grid"></i> 商品管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/merchant/orders}">
+                            <i class="bi bi-cart"></i> 订单管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/statistics}">
+                            <i class="bi bi-bar-chart"></i> 销售统计
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/customers}">
+                            <i class="bi bi-people"></i> 客户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/logs}">
+                            <i class="bi bi-clock-history"></i> 浏览/购买日志
+                        </a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <a class="nav-link" th:href="@{/}">
+                            <i class="bi bi-house"></i> 返回首页
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- 主内容区 -->
+            <main class="col-md-9 col-lg-10" style="padding: 20px;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>订单管理</h1>
+                </div>
 
         <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
             <span th:text="${success}">操作成功</span>
@@ -90,11 +128,27 @@
                     </tbody>
                 </table>
             </div>
+            </main>
         </div>
-    </main>
+    </div>
 
     <div th:replace="index/fragments :: footer"></div>
     <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <style>
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin: 5px 10px;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #e9ecef;
+        }
+        .sidebar .nav-link.active {
+            background-color: #A5B699;
+            color: white;
+        }
+    </style>
 </body>
 </html>
 

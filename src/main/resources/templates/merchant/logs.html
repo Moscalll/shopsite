@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: '浏览/购买日志'">浏览/购买日志</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body>
+    <div th:replace="index/fragments :: navbar"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <nav class="col-md-3 col-lg-2 sidebar" style="min-height: calc(100vh - 56px); background-color: #f8f9fa; padding: 20px 0;">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/dashboard}">
+                            <i class="bi bi-grid"></i> 商品管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/orders}">
+                            <i class="bi bi-cart"></i> 订单管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/statistics}">
+                            <i class="bi bi-bar-chart"></i> 销售统计
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/customers}">
+                            <i class="bi bi-people"></i> 客户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/merchant/logs}">
+                            <i class="bi bi-clock-history"></i> 浏览/购买日志
+                        </a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <a class="nav-link" th:href="@{/}">
+                            <i class="bi bi-house"></i> 返回首页
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- 主内容区 -->
+            <main class="col-md-9 col-lg-10" style="padding: 20px;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>浏览/购买日志</h1>
+                    <div>
+                        <a th:href="@{/merchant/logs}" 
+                           th:classappend="${actionType == null or actionType.isEmpty()} ? 'btn btn-primary' : 'btn btn-outline-primary'"
+                           class="btn btn-sm">全部</a>
+                        <a th:href="@{/merchant/logs(actionType='VIEW')}" 
+                           th:classappend="${actionType == 'VIEW'} ? 'btn btn-primary' : 'btn btn-outline-primary'"
+                           class="btn btn-sm">浏览</a>
+                        <a th:href="@{/merchant/logs(actionType='PURCHASE')}" 
+                           th:classappend="${actionType == 'PURCHASE'} ? 'btn btn-primary' : 'btn btn-outline-primary'"
+                           class="btn btn-sm">购买</a>
+                        <a th:href="@{/merchant/logs(actionType='ADD_TO_CART')}" 
+                           th:classappend="${actionType == 'ADD_TO_CART'} ? 'btn btn-primary' : 'btn btn-outline-primary'"
+                           class="btn btn-sm">加购</a>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(logs)}" class="text-center py-5">
+                    <p class="text-muted">暂无日志记录</p>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(logs)}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>时间</th>
+                                <th>客户</th>
+                                <th>操作类型</th>
+                                <th>商品ID</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="log : ${logs}">
+                                <td th:text="${#temporals.format(log.logTime, 'yyyy-MM-dd HH:mm:ss')}">2025-01-01 12:00:00</td>
+                                <td th:text="${log.user != null ? log.user.username : '匿名'}">用户名</td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${log.actionType == 'VIEW'} ? 'bg-info' : 
+                                                          (${log.actionType == 'PURCHASE'} ? 'bg-success' : 
+                                                          (${log.actionType == 'ADD_TO_CART'} ? 'bg-warning' : 'bg-secondary'))">
+                                        <span th:switch="${log.actionType}">
+                                            <span th:case="'VIEW'">浏览</span>
+                                            <span th:case="'PURCHASE'">购买</span>
+                                            <span th:case="'ADD_TO_CART'">加购</span>
+                                            <span th:case="*">其他</span>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td th:text="${log.productId}">1</td>
+                                <td>
+                                    <a th:href="@{/product/{id}(id=${log.productId})}" 
+                                       class="btn btn-sm btn-outline-primary"
+                                       th:if="${log.productId != null}">查看商品</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="index/fragments :: footer"></div>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <style>
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin: 5px 10px;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #e9ecef;
+        }
+        .sidebar .nav-link.active {
+            background-color: #A5B699;
+            color: white;
+        }
+    </style>
+</body>
+</html>
+
+
+

@@ -1,42 +1,164 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title th:text="${pageTitle}"></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: '商品管理'">商品管理</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
 </head>
 <body>
-    <h1>商户后台管理</h1>
-    <h2>我的商品列表</h2>
-    
-    <p><a th:href="@{/merchant/product/new}">+ 上新商品</a></p>
+    <div th:replace="index/fragments :: navbar"></div>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>图片</th>
-                <th>名称</th>
-                <th>价格</th>
-                <th>库存</th>
-                <th>分类</th>
-                <th>状态</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="product : ${products}">
-                <td th:text="${product.id}">1</td>
-                <td><img th:src="${product.imageUrl}" style="width: 50px; height: 50px;"></td>
-                <td th:text="${product.name}">亚麻T恤</td>
-                <td th:text="${product.price}">199.00</td>
-                <td th:text="${product.stock}">100</td>
-                <td th:text="${product.category.name}">服装</td>
-                <td th:text="${product.isAvailable ? '上架中' : '已下架'}">上架中</td>
-                <td>
-                    <a th:href="@{/merchant/product/edit/{id}(id=${product.id})}">编辑</a>
-                    <a th:href="@{/merchant/product/delete/{id}(id=${product.id})}">下架</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <nav class="col-md-3 col-lg-2 sidebar" style="min-height: calc(100vh - 56px); background-color: #f8f9fa; padding: 20px 0;">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/merchant/dashboard}">
+                            <i class="bi bi-grid"></i> 商品管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/orders}">
+                            <i class="bi bi-cart"></i> 订单管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/statistics}">
+                            <i class="bi bi-bar-chart"></i> 销售统计
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/customers}">
+                            <i class="bi bi-people"></i> 客户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/merchant/logs}">
+                            <i class="bi bi-clock-history"></i> 浏览/购买日志
+                        </a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <a class="nav-link" th:href="@{/}">
+                            <i class="bi bi-house"></i> 返回首页
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- 主内容区 -->
+            <main class="col-md-9 col-lg-10" style="padding: 20px;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>商品管理</h1>
+                    <a th:href="@{/merchant/product/new}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> 上新商品
+                    </a>
+                </div>
+
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${success}">操作成功</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${error}">错误信息</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div th:if="${#lists.isEmpty(products)}" class="text-center py-5">
+                    <p class="text-muted mb-4">暂无商品，开始添加您的第一个商品吧！</p>
+                    <a th:href="@{/merchant/product/new}" class="btn btn-primary">添加商品</a>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(products)}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>图片</th>
+                                <th>商品名称</th>
+                                <th>价格</th>
+                                <th>库存</th>
+                                <th>分类</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="product : ${products}">
+                                <td th:text="${product.id}">1</td>
+                                <td>
+                                    <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}" 
+                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+                                </td>
+                                <td>
+                                    <a th:href="@{/product/{id}(id=${product.id})}" 
+                                       class="text-decoration-none"
+                                       th:text="${product.name}">商品名称</a>
+                                </td>
+                                <td>
+                                    ¥<span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 2, 'POINT')}">99.00</span>
+                                </td>
+                                <td th:text="${product.stock}">100</td>
+                                <td th:text="${product.category.name}">分类</td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${product.isAvailable} ? 'bg-success' : 'bg-secondary'">
+                                        <span th:text="${product.isAvailable ? '上架' : '下架'}">上架</span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a th:href="@{/merchant/product/edit/{id}(id=${product.id})}" 
+                                           class="btn btn-outline-primary">编辑</a>
+                                        <form th:action="@{/merchant/product/toggle/{id}(id=${product.id})}" 
+                                              method="post" 
+                                              class="d-inline"
+                                              th:if="${product.isAvailable}">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="btn btn-outline-warning" onclick="return confirm('确定要下架该商品吗？')">下架</button>
+                                        </form>
+                                        <form th:action="@{/merchant/product/toggle/{id}(id=${product.id})}" 
+                                              method="post" 
+                                              class="d-inline"
+                                              th:if="${!product.isAvailable}">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="btn btn-outline-success">上架</button>
+                                        </form>
+                                        <form th:action="@{/merchant/product/delete/{id}(id=${product.id})}" 
+                                              method="post" 
+                                              class="d-inline">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('确定要删除该商品吗？此操作不可恢复！')">删除</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="index/fragments :: footer"></div>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <style>
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin: 5px 10px;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #e9ecef;
+        }
+        .sidebar .nav-link.active {
+            background-color: #A5B699;
+            color: white;
+        }
+    </style>
 </body>
 </html>

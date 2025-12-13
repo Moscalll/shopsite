@@ -22,3 +22,5 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     void deleteByUserAndProduct(User user, Product product);
 }
 
+
+
