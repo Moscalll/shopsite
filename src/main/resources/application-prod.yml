@@ -1,15 +1,66 @@
-# application-prod.yml (此文件被 gitignore 忽略)
+# application-prod.yml (生产环境配置)
 spring:
   datasource:
     # 线上阿里云 RDS 的内网地址或外部 IP
-    url: ${PROD_DB_URL}
-    username: ${PROD_DB_USERNAME}
-    password: ${PROD_DB_PASSWORD}
+    url: ${PROD_DB_URL:jdbc:mysql://your-rds-endpoint:3306/shopsite_db?useSSL=true&serverTimezone=Asia/Shanghai}
+    username: ${PROD_DB_USERNAME:your_username}
+    password: ${PROD_DB_PASSWORD:your_password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
 
   jpa:
     hibernate:
       ddl-auto: validate # 生产环境通常使用 'validate' 而不是 'update'
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQL8Dialect
     
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
   mail:
-    username: prod_email_service_user
-    password: prod_email_password
+    host: smtp.aliyun.com
+    port: 465
+    username: ${MAIL_USERNAME:your_email@example.com}
+    password: ${MAIL_PASSWORD:your_password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+            required: true
+
+# 服务器配置
+server:
+  port: 8080
+  compression:
+    enabled: true
+  error:
+    include-message: never
+    include-stacktrace: never
+
+# 文件上传配置
+file:
+  upload:
+    dir: /var/www/shopsite/uploads/
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.example.shopsite: INFO
+  file:
+    name: /var/log/shopsite/application.log
+    max-size: 10MB
+    max-history: 30
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
