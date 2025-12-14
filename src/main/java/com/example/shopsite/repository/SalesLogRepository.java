@@ -15,3 +15,5 @@ public interface SalesLogRepository extends JpaRepository<SalesLog, Long> {
 
 
 
+
+

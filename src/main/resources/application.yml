@@ -20,10 +20,25 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: 50MB
+      max-request-size: 50MB
       file-size-threshold: 2KB
       location: ${java.io.tmpdir}
+
+# 服务器配置
+server:
+  port: 8080
+  # Tomcat 文件上传配置（解决 FileCountLimitExceededException）
+  tomcat:
+    max-swallow-size: 52428800  # 50MB in bytes
+    max-http-form-post-size: 52428800  # 50MB in bytes
+    max-connections: 200
+    # 禁用参数数量限制（关键配置）
+    max-parameter-count: -1
+    connection-timeout: 20000
+    threads:
+      max: 200
+      min-spare: 10
 
 # 文件上传目录配置
 file:

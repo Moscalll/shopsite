@@ -60,7 +60,8 @@
                 <div class="card">
                     <div class="card-body">
                         <form th:action="@{/merchant/save}" th:object="${product}" method="post" enctype="multipart/form-data">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <!-- 移除手动添加的 CSRF token，th:field 会自动处理 -->
+                            <!-- <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /> -->
                             <input type="hidden" th:field="*{id}" />
 
                             <div class="row">

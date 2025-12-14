@@ -172,3 +172,5 @@ echo "1. 查看 $DEPLOY_DIR/README.txt 了解部署步骤"
 echo "2. 查看 DEPLOYMENT.md 了解详细部署指南"
 echo "3. 将 $DEPLOY_DIR 目录中的文件上传到服务器"
 
+
+

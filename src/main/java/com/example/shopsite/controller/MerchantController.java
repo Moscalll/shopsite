@@ -4,13 +4,14 @@ import com.example.shopsite.model.Product;
 import com.example.shopsite.model.User;
 import com.example.shopsite.model.Category;
 import com.example.shopsite.repository.ProductRepository;
+import com.example.shopsite.repository.UserRepository; // 添加这个导入
 import com.example.shopsite.service.ProductService;
 import com.example.shopsite.service.CategoryService;
 import com.example.shopsite.service.FileUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.security.access.prepost.PreAuthorize; // 权限注解
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder; // 添加这个导入
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -28,14 +29,17 @@ public class MerchantController {
     private final CategoryService categoryService;
     private final ProductRepository productRepository;
     private final FileUploadService fileUploadService;
+    private final UserRepository userRepository; // 添加这个字段
 
     @Autowired
     public MerchantController(ProductService productService, CategoryService categoryService, 
-                            ProductRepository productRepository, FileUploadService fileUploadService) {
+                            ProductRepository productRepository, FileUploadService fileUploadService,
+                            UserRepository userRepository) { // 添加这个参数
         this.productService = productService;
         this.categoryService = categoryService;
         this.productRepository = productRepository;
         this.fileUploadService = fileUploadService;
+        this.userRepository = userRepository; // 添加这个赋值
     }
 
     /**
@@ -43,7 +47,16 @@ public class MerchantController {
      * 商户后台主页/商品列表
      */
     @GetMapping("/dashboard")
-    public String dashboard(@AuthenticationPrincipal User merchant, Model model) {
+    public String dashboard(Model model) {
+        // 从 SecurityContext 获取当前登录用户的用户名
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            model.addAttribute("error", "用户未找到");
+            return "merchant/dashboard";
+        }
+        User merchant = userOpt.get();
+
         // 1. 获取当前商户的所有商品
         List<Product> products = productService.findProductsByMerchant(merchant);
 
@@ -61,12 +74,20 @@ public class MerchantController {
     @GetMapping({"/product/new", "/product/edit/{id}"})
     public String showProductForm(
             @PathVariable(required = false) Long id,
-            @AuthenticationPrincipal User merchant, 
             Model model) {
+        
+        // 从 SecurityContext 获取当前登录用户的用户名
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            model.addAttribute("error", "用户未找到");
+            return "merchant/dashboard";
+        }
+        User merchant = userOpt.get();
                 
         List<Category> categories = categoryService.findAllCategories();
         model.addAttribute("categories", categories);
-        model.addAttribute("product", new Product()); // 默认新建商品对象
+        model.addAttribute("product", new Product());
 
         if (id != null) {
             // 编辑现有商品逻辑
@@ -100,10 +121,21 @@ public class MerchantController {
     @PostMapping("/save")
     public String saveProduct(
             @ModelAttribute Product product, 
-            @RequestParam Long categoryId, // 从表单中获取 categoryId
+            @RequestParam Long categoryId,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
-            @AuthenticationPrincipal User merchant,
             RedirectAttributes redirectAttributes) {
+
+        // 从 SecurityContext 获取当前登录用户的用户名
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        
+        // 从数据库加载 User 实体
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "用户未找到");
+            return "redirect:/merchant/dashboard";
+        }
+        
+        User merchant = userOpt.get();
 
         try {
             // 处理图片上传
@@ -122,6 +154,8 @@ public class MerchantController {
                 if (product.getImageUrl() == null || product.getImageUrl().isEmpty()) {
                     product.setImageUrl("/images/placeholder.jpg"); // 默认图片
                 }
+                // 确保 merchant 被设置（双重保险）
+                product.setMerchant(merchant);
                 productService.createProduct(product, categoryId, merchant);
                 redirectAttributes.addFlashAttribute("success", "商品创建成功");
             } else {
@@ -136,11 +170,9 @@ public class MerchantController {
                         try {
                             fileUploadService.deleteImage(existingProduct.getImageUrl());
                         } catch (Exception e) {
-                            // 记录日志但不影响更新
                             System.err.println("删除旧图片失败: " + e.getMessage());
                         }
                     } else if (product.getImageUrl() == null || product.getImageUrl().isEmpty()) {
-                        // 如果没有上传新图片且没有设置URL，保留原图片
                         product.setImageUrl(existingProduct.getImageUrl());
                     }
                 }
@@ -152,7 +184,6 @@ public class MerchantController {
             return "redirect:/merchant/dashboard";
         }
 
-        // 完成后重定向到商户后台列表
         return "redirect:/merchant/dashboard";
     }
     
@@ -163,7 +194,6 @@ public class MerchantController {
     @PostMapping("/product/toggle/{id}")
     public String toggleProductStatus(
             @PathVariable Long id,
-            @AuthenticationPrincipal User merchant,
             RedirectAttributes redirectAttributes) {
         try {
             Optional<Product> productOpt = productService.findAvailableProductById(id);
@@ -178,6 +208,15 @@ public class MerchantController {
             }
             
             Product product = productOpt.get();
+            // 从 SecurityContext 获取当前登录用户的用户名
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            if (userOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "用户未找到");
+                return "redirect:/merchant/dashboard";
+            }
+            User merchant = userOpt.get();
+
             if (!product.getMerchant().getId().equals(merchant.getId())) {
                 redirectAttributes.addFlashAttribute("error", "无权操作该商品");
                 return "redirect:/merchant/dashboard";
@@ -199,7 +238,6 @@ public class MerchantController {
     @PostMapping("/product/delete/{id}")
     public String deleteProduct(
             @PathVariable Long id,
-            @AuthenticationPrincipal User merchant,
             RedirectAttributes redirectAttributes) {
         try {
             Optional<Product> productOpt = productRepository.findById(id);
@@ -209,6 +247,15 @@ public class MerchantController {
             }
             
             Product product = productOpt.get();
+            // 从 SecurityContext 获取当前登录用户的用户名
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            if (userOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "用户未找到");
+                return "redirect:/merchant/dashboard";
+            }
+            User merchant = userOpt.get();
+
             if (!product.getMerchant().getId().equals(merchant.getId())) {
                 redirectAttributes.addFlashAttribute("error", "无权删除该商品");
                 return "redirect:/merchant/dashboard";
