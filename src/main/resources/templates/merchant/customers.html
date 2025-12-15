@@ -35,11 +35,6 @@
                             <i class="bi bi-people"></i> 客户管理
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/merchant/logs}">
-                            <i class="bi bi-clock-history"></i> 浏览/购买日志
-                        </a>
-                    </li>
                     <li class="nav-item mt-3">
                         <a class="nav-link" th:href="@{/}">
                             <i class="bi bi-house"></i> 返回首页
@@ -107,9 +102,18 @@
             background-color: #A5B699;
             color: white;
         }
+        .sidebar .nav-link:focus,
+        .sidebar .nav-link:active,
+        .sidebar .nav-link:focus-visible {
+            outline: none;
+            box-shadow: none;
+            background-color: inherit;
+            color: #333;
+        }
     </style>
 </body>
 </html>
+
 
 
 

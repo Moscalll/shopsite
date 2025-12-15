@@ -36,7 +36,7 @@ public class CartController {
 
         String username = authentication.getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
+
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
@@ -56,17 +56,17 @@ public class CartController {
      * POST /cart/add - 添加到购物车
      */
     @PostMapping("/add")
-    public String addToCart(@RequestParam Long productId, 
-                           @RequestParam(defaultValue = "1") Integer quantity,
-                           Authentication authentication,
-                           RedirectAttributes redirectAttributes) {
+    public String addToCart(@RequestParam Long productId,
+            @RequestParam(defaultValue = "1") Integer quantity,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
 
         String username = authentication.getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
+
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
@@ -86,16 +86,16 @@ public class CartController {
      */
     @PostMapping("/update/{id}")
     public String updateCartItem(@PathVariable Long id,
-                                @RequestParam Integer quantity,
-                                Authentication authentication,
-                                RedirectAttributes redirectAttributes) {
+            @RequestParam Integer quantity,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
 
         String username = authentication.getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
+
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
@@ -115,15 +115,15 @@ public class CartController {
      */
     @PostMapping("/remove/{id}")
     public String removeFromCart(@PathVariable Long id,
-                                Authentication authentication,
-                                RedirectAttributes redirectAttributes) {
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
 
         String username = authentication.getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
+
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
@@ -143,14 +143,14 @@ public class CartController {
      */
     @PostMapping("/clear")
     public String clearCart(Authentication authentication,
-                           RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
 
         String username = authentication.getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
+
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
@@ -160,10 +160,29 @@ public class CartController {
 
         return "redirect:/cart";
     }
+
+    // import java.util.stream.Collectors;
+
+    @PostMapping("/removeSelected")
+    public String removeSelected(@RequestParam("cartItemIds") List<Long> cartItemIds,
+            Authentication authentication,
+            RedirectAttributes ra) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        Optional<User> userOpt = userRepository.findByUsername(authentication.getName());
+        if (userOpt.isEmpty()) {
+            return "redirect:/login";
+        }
+        try {
+            User user = userOpt.get();
+            for (Long id : cartItemIds) {
+                cartService.removeFromCart(id, user);
+            }
+            ra.addFlashAttribute("success", "已删除选中的商品");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/cart";
+    }
 }
-
-
-
-
-
-
