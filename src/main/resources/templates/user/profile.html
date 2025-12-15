@@ -70,6 +70,68 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 新增：浏览/购买日志 -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">我的浏览/购买日志</h5>
+                        <div>
+                            <a th:href="@{/profile}" 
+                               th:classappend="${actionType == null or actionType.isEmpty()} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
+                               class="btn btn-sm">全部</a>
+                            <a th:href="@{/profile(actionType='VIEW')}" 
+                               th:classappend="${actionType == 'VIEW'} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
+                               class="btn btn-sm">浏览</a>
+                            <a th:href="@{/profile(actionType='PURCHASE')}" 
+                               th:classappend="${actionType == 'PURCHASE'} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
+                               class="btn btn-sm">购买</a>
+                            <a th:href="@{/profile(actionType='ADD_TO_CART')}" 
+                               th:classappend="${actionType == 'ADD_TO_CART'} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
+                               class="btn btn-sm">加购</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${logs == null or #lists.isEmpty(logs)}" class="text-center py-3">
+                            <p class="text-muted">暂无浏览/购买记录</p>
+                        </div>
+                        <div th:if="${logs != null and !#lists.isEmpty(logs)}" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>时间</th>
+                                        <th>操作类型</th>
+                                        <th>商品ID</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="log : ${logs}">
+                                        <td th:text="${#temporals.format(log.logTime, 'yyyy-MM-dd HH:mm:ss')}">2025-01-01 12:00:00</td>
+                                        <td>
+                                            <span class="badge" 
+                                                  th:classappend="${log.actionType == 'VIEW'} ? 'bg-info' : 
+                                                                  (${log.actionType == 'PURCHASE'} ? 'bg-success' : 
+                                                                  (${log.actionType == 'ADD_TO_CART'} ? 'bg-warning' : 'bg-secondary'))">
+                                                <span th:switch="${log.actionType}">
+                                                    <span th:case="'VIEW'">浏览</span>
+                                                    <span th:case="'PURCHASE'">购买</span>
+                                                    <span th:case="'ADD_TO_CART'">加购</span>
+                                                    <span th:case="*">其他</span>
+                                                </span>
+                                            </span>
+                                        </td>
+                                        <td th:text="${log.productId}">1</td>
+                                        <td>
+                                            <a th:href="@{/product/{id}(id=${log.productId})}" 
+                                               class="btn btn-sm btn-outline-primary"
+                                               th:if="${log.productId != null}">查看商品</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>

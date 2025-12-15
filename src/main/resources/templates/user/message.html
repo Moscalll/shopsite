@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: '消息中心'">消息中心</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body>
+    <div th:replace="index/fragments :: navbar"></div>
+
+    <main class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>消息中心</h1>
+            <div>
+                <form th:action="@{/message/read-all}" method="post" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-outline-primary btn-sm" 
+                            th:if="${unreadCount > 0}">
+                        全部标记为已读 (<span th:text="${unreadCount}">0</span>)
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}">成功</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}">错误</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${#lists.isEmpty(messages)}" class="text-center py-5">
+            <p class="text-muted">暂无消息</p>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(messages)}" class="list-group">
+            <div class="list-group-item" th:each="message : ${messages}" 
+                 th:classappend="${!message.isRead} ? 'list-group-item-warning' : ''">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <p class="mb-1" th:text="${message.content}">消息内容</p>
+                        <small class="text-muted" th:text="${#temporals.format(message.createTime, 'yyyy-MM-dd HH:mm:ss')}">
+                            2025-01-01 12:00:00
+                        </small>
+                        <a th:href="@{/orders/{id}(id=${message.relatedOrderId})}" 
+                           th:if="${message.relatedOrderId != null}"
+                           class="btn btn-sm btn-outline-primary ms-2">查看订单</a>
+                    </div>
+                    <div>
+                        <form th:action="@{/message/{id}/read(id=${message.id})}" method="post" 
+                              th:if="${!message.isRead}" class="d-inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">标记已读</button>
+                        </form>
+                        <span th:if="${message.isRead}" class="badge bg-success">已读</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="index/fragments :: footer"></div>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

@@ -17,16 +17,23 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     
                     <ul class="navbar-nav mx-auto">
-                        <li class="nav-item">
+                        <li class="nav-item me-4">
                             <a class="nav-link text-muji-dark" th:href="@{/}">首页</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-muji-dark" th:href="@{/message}">消息中心</a>
+                        <li class="nav-item me-4">
+                            <a class="nav-link text-muji-dark position-relative" th:href="@{/message}">
+                                消息中心
+                                <span th:if="${unreadMessageCount != null and unreadMessageCount > 0}" 
+                                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                      style="font-size: 0.6em; padding: 0.25em 0.4em;">
+                                    <span th:text="${unreadMessageCount}">0</span>
+                                </span>
+                            </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item me-4">
                             <a class="nav-link text-muji-dark" th:href="@{/favorites}">收藏夹</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item me-4">
                             <a class="nav-link text-muji-dark" th:href="@{/help}">帮助</a>
                         </li>
                         <li class="nav-item">
@@ -35,7 +42,7 @@
                     </ul>
                     
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item me-3">
+                        <li class="nav-item me-3" style="margin-top: 5px;">
                             <form class="d-flex" th:action="@{/search}" method="get">
                                 <input class="form-control form-control-sm me-2" 
                                        type="search" 
@@ -59,12 +66,6 @@
                                 <i class="bi bi-person-circle"></i> <span sec:authentication="name">用户名</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <li sec:authorize="hasRole('ADMIN')">
-                                    <a class="dropdown-item" th:href="@{/admin/merchants}">管理后台</a>
-                                </li>
-                                <li sec:authorize="hasRole('MERCHANT')">
-                                    <a class="dropdown-item" th:href="@{/merchant/dashboard}">商户后台</a>
-                                </li>
                                 <li><a class="dropdown-item" th:href="@{/profile}">个人中心</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
@@ -76,9 +77,18 @@
                             </ul>
                         </li>
                         
-                        <li class="nav-item ms-3">
-                            <a class="nav-link text-muji-dark" th:href="@{/cart}">
-                                 <i class="bi bi-bag"></i> 购物车
+                        <li class="nav-item ms-4" sec:authorize="isAuthenticated()">
+                            <!-- 管理员：显示管理后台 -->
+                            <a class="nav-link text-muji-dark" th:href="@{/admin/merchants}" sec:authorize="hasRole('ADMIN')">
+                                <i class="bi bi-gear"></i> 管理后台
+                            </a>
+                            <!-- 商户：显示商户后台 -->
+                            <a class="nav-link text-muji-dark" th:href="@{/merchant/dashboard}" sec:authorize="hasRole('MERCHANT')">
+                                <i class="bi bi-shop"></i> 商户后台
+                            </a>
+                            <!-- 普通用户：显示购物车 -->
+                            <a class="nav-link text-muji-dark" th:href="@{/cart}" sec:authorize="hasRole('CUSTOMER')">
+                                <i class="bi bi-bag"></i> 购物车
                             </a>
                         </li>
                     </ul>

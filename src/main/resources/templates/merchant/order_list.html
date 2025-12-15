@@ -117,11 +117,57 @@
                             <td>
                                 <div class="d-flex gap-2">
                                     <a th:href="@{/merchant/orders/{id}(id=${order.id})}" class="btn btn-sm btn-outline-primary">详情</a>
+                                    
+                                    <!-- 发货按钮 -->
                                     <form th:action="@{/merchant/orders/{id}/ship(id=${order.id})}" method="post" 
                                           th:if="${order.status.name() == 'PROCESSING'}" class="d-inline">
                                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('确认发货？')">发货</button>
                                     </form>
+                                    
+                                    <!-- 取消订单按钮 -->
+                                    <form th:action="@{/merchant/orders/{id}/cancel(id=${order.id})}" method="post" 
+                                          th:if="${order.status.name() == 'PENDING_PAYMENT' or order.status.name() == 'PROCESSING'}" class="d-inline">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确认取消该订单？')">取消</button>
+                                    </form>
+                                    
+                                    <!-- 修改状态下拉菜单 -->
+                                    <div class="dropdown d-inline">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            修改状态
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <form th:action="@{/merchant/orders/{id}/update-status(id=${order.id})}" method="post">
+                                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                    <input type="hidden" name="status" value="PROCESSING" />
+                                                    <button type="submit" class="dropdown-item">处理中</button>
+                                                </form>
+                                            </li>
+                                            <li>
+                                                <form th:action="@{/merchant/orders/{id}/update-status(id=${order.id})}" method="post">
+                                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                    <input type="hidden" name="status" value="SHIPPED" />
+                                                    <button type="submit" class="dropdown-item">已发货</button>
+                                                </form>
+                                            </li>
+                                            <li>
+                                                <form th:action="@{/merchant/orders/{id}/update-status(id=${order.id})}" method="post">
+                                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                    <input type="hidden" name="status" value="DELIVERED" />
+                                                    <button type="submit" class="dropdown-item">已送达</button>
+                                                </form>
+                                            </li>
+                                            <li>
+                                                <form th:action="@{/merchant/orders/{id}/update-status(id=${order.id})}" method="post">
+                                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                    <input type="hidden" name="status" value="COMPLETED" />
+                                                    <button type="submit" class="dropdown-item">已完成</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </td>
                         </tr>

@@ -24,14 +24,14 @@ public class ViewController {
         model.addAttribute("pageTitle", "用户登录");
         return "auth/login"; // 对应 templates/auth/login.html
     }
-    
+
     // 注册页面
     @GetMapping("/register")
     public String registerPage(Model model) {
         model.addAttribute("pageTitle", "用户注册");
         return "auth/register"; // 对应 templates/auth/register.html
     }
-    
+
     // 处理注册表单提交
     @PostMapping("/register")
     public String handleRegister(
@@ -41,18 +41,18 @@ public class ViewController {
             @RequestParam String confirmPassword,
             @RequestParam String role,
             RedirectAttributes redirectAttributes) {
-        
+
         // 验证密码
         if (!password.equals(confirmPassword)) {
             redirectAttributes.addFlashAttribute("registrationError", "两次输入的密码不一致");
             return "redirect:/register";
         }
-        
+
         if (password.length() < 6) {
             redirectAttributes.addFlashAttribute("registrationError", "密码长度至少需要6个字符");
             return "redirect:/register";
         }
-        
+
         // 验证角色
         Role userRole;
         try {
@@ -65,13 +65,13 @@ public class ViewController {
             redirectAttributes.addFlashAttribute("registrationError", "无效的角色");
             return "redirect:/register";
         }
-        
+
         // 创建注册请求
         UserRegistrationRequest request = new UserRegistrationRequest();
         request.setUsername(username);
         request.setEmail(email);
         request.setPassword(password);
-        
+
         try {
             userService.registerUser(request, userRole);
             redirectAttributes.addFlashAttribute("registrationSuccess", true);
@@ -86,21 +86,15 @@ public class ViewController {
     @GetMapping("/help")
     public String helpPage(Model model) {
         model.addAttribute("pageTitle", "帮助中心");
-        return "layout/help"; 
+        return "layout/help";
     }
 
-// 关于页面
+    // 关于页面
     @GetMapping("/about")
     public String aboutPage(Model model) {
         model.addAttribute("pageTitle", "关于我们");
-        return "layout/about"; 
+        return "layout/about";
     }
 
-    // 消息中心（需要登录，未登录 Spring Security 会跳转到 /login）
-    @GetMapping("/message")
-    public String messagePage(Model model) {
-        model.addAttribute("pageTitle", "消息中心");
-       // model.addAttribute("content", "user/message :: body"); 
-        return "layout/main"; 
-    }
+
 }

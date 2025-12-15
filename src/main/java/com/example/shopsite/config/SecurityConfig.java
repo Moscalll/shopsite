@@ -49,6 +49,7 @@ public class SecurityConfig {
                     "/css/**",                  // 静态资源
                     "/js/**",                   // 静态资源
                     "/images/**",               // 静态资源
+                    "/uploads/**",
                     "/webjars/**"               // 静态资源
                 ).permitAll() 
                 

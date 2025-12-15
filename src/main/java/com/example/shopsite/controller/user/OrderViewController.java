@@ -8,6 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -49,7 +51,7 @@ public class OrderViewController {
         }
 
         String username = authentication.getName();
-        
+
         try {
             Order order = orderService.findOrderDetails(id, username);
             model.addAttribute("order", order);
@@ -60,5 +62,24 @@ public class OrderViewController {
             return "error/404";
         }
     }
-}
 
+    @PostMapping("/{id}/cancel")
+    public String cancelOrder(@PathVariable Long id,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        String username = authentication.getName();
+
+        try {
+            orderService.cancelOrderByCustomer(id, username);
+            redirectAttributes.addFlashAttribute("success", "订单已取消");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/orders";
+    }
+}

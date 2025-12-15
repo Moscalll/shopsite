@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +37,7 @@ public class FavoriteController {
 
         String username = authentication.getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
+
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
@@ -55,15 +56,16 @@ public class FavoriteController {
      */
     @PostMapping("/add/{productId}")
     public String addFavorite(@PathVariable Long productId,
-                             Authentication authentication,
-                             RedirectAttributes redirectAttributes) {
+            @RequestHeader(value = "Referer", required = false) String referer,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
 
         String username = authentication.getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
+
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
@@ -75,23 +77,31 @@ public class FavoriteController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
 
-        return "redirect:/product/" + productId;
+        // 返回到来源页面，如果没有来源页面则返回首页
+        if (referer != null && !referer.isEmpty()) {
+            // 移除域名，只保留路径部分
+            String path = referer.replaceFirst("^https?://[^/]+", "");
+            return "redirect:" + path;
+        }
+        return "redirect:/";
     }
+
+    
 
     /**
      * POST /favorites/remove/{productId} - 取消收藏
      */
     @PostMapping("/remove/{productId}")
     public String removeFavorite(@PathVariable Long productId,
-                                Authentication authentication,
-                                RedirectAttributes redirectAttributes) {
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
 
         String username = authentication.getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
+
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
@@ -106,8 +116,3 @@ public class FavoriteController {
         return "redirect:/favorites";
     }
 }
-
-
-
-
-

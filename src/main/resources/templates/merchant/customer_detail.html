@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,13 +8,15 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/custom.css}">
 </head>
+
 <body>
     <div th:replace="index/fragments :: navbar"></div>
 
     <div class="container-fluid">
         <div class="row">
             <!-- 侧边栏 -->
-            <nav class="col-md-3 col-lg-2 sidebar" style="min-height: calc(100vh - 56px); background-color: #f8f9fa; padding: 20px 0;">
+            <nav class="col-md-3 col-lg-2 sidebar"
+                style="min-height: calc(100vh - 56px); background-color: #f8f9fa; padding: 20px 0;">
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/merchant/dashboard}">
@@ -69,15 +72,13 @@
                                 <div class="col-md-6">
                                     <p><strong>客户ID：</strong><span th:text="${customer.id}">1</span></p>
                                     <p><strong>用户名：</strong><span th:text="${customer.username}">用户名</span></p>
-                                    <p><strong>邮箱：</strong><span th:text="${customer.email}">email@example.com</span></p>
+                                    <p><strong>邮箱：</strong><span th:text="${customer.email}">email@example.com</span>
+                                    </p>
                                 </div>
                                 <div class="col-md-6">
                                     <p><strong>订单总数：</strong><span th:text="${#lists.size(orders)}">0</span></p>
                                     <p><strong>总消费：</strong>
-                                        ¥<span th:text="${#numbers.formatDecimal(
-                                            #lists.sum(orders.![totalAmount]), 
-                                            0, 'COMMA', 2, 'POINT'
-                                        )}">0.00</span>
+                                        ¥<span th:text="${#numbers.formatDecimal(totalSpent, 0, 'COMMA', 2, 'POINT')}">0.00</span>
                                     </p>
                                 </div>
                             </div>
@@ -106,13 +107,15 @@
                                     <tbody>
                                         <tr th:each="order : ${orders}">
                                             <td th:text="${order.id}">12345</td>
-                                            <td th:text="${#temporals.format(order.orderDate, 'yyyy-MM-dd HH:mm')}">2025-01-01</td>
+                                            <td th:text="${#temporals.format(order.orderDate, 'yyyy-MM-dd HH:mm')}">
+                                                2025-01-01</td>
                                             <td>
-                                                ¥<span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                                ¥<span
+                                                    th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
                                             </td>
                                             <td>
-                                                <span class="badge" 
-                                                      th:classappend="${order.status.name() == 'PENDING_PAYMENT'} ? 'bg-warning' : 
+                                                <span class="badge"
+                                                    th:classappend="${order.status.name() == 'PENDING_PAYMENT'} ? 'bg-warning' : 
                                                                       (${order.status.name() == 'PROCESSING'} ? 'bg-info' : 
                                                                       (${order.status.name() == 'SHIPPED'} ? 'bg-primary' : 
                                                                       (${order.status.name() == 'DELIVERED'} ? 'bg-success' : 
@@ -128,8 +131,70 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <a th:href="@{/merchant/orders/{id}(id=${order.id})}" 
-                                                   class="btn btn-sm btn-outline-primary">查看详情</a>
+                                                <a th:href="@{/merchant/orders/{id}(id=${order.id})}"
+                                                    class="btn btn-sm btn-outline-primary">查看详情</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 新增：浏览/购买日志 -->
+                    <div class="card mt-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">浏览/购买日志</h5>
+                            <div>
+                                <a th:href="@{'/merchant/customers/' + ${customer.id}}"
+                                    th:classappend="${actionType == null or actionType.isEmpty()} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
+                                    class="btn btn-sm">全部</a>
+                                <a th:href="@{'/merchant/customers/' + ${customer.id} + '?actionType=VIEW'}"
+                                    th:classappend="${actionType == 'VIEW'} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
+                                    class="btn btn-sm">浏览</a>
+                                <a th:href="@{'/merchant/customers/' + ${customer.id} + '?actionType=PURCHASE'}"
+                                    th:classappend="${actionType == 'PURCHASE'} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
+                                    class="btn btn-sm">购买</a>
+                                <a th:href="@{'/merchant/customers/' + ${customer.id} + '?actionType=ADD_TO_CART'}"
+                                    th:classappend="${actionType == 'ADD_TO_CART'} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
+                                    class="btn btn-sm">加购</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${logs == null or #lists.isEmpty(logs)}" class="text-center py-3">
+                                <p class="text-muted">该客户暂无浏览/购买日志</p>
+                            </div>
+                            <div th:if="${logs != null and !#lists.isEmpty(logs)}" class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>时间</th>
+                                            <th>操作类型</th>
+                                            <th>商品ID</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="log : ${logs}">
+                                            <td th:text="${#temporals.format(log.logTime, 'yyyy-MM-dd HH:mm:ss')}">2025-01-01 12:00:00</td>
+                                            <td>
+                                                <span class="badge"
+                                                    th:classappend="${log.actionType == 'VIEW'} ? 'bg-info' : 
+                                                                      (${log.actionType == 'PURCHASE'} ? 'bg-success' : 
+                                                                      (${log.actionType == 'ADD_TO_CART'} ? 'bg-warning' : 'bg-secondary'))">
+                                                    <span th:switch="${log.actionType}">
+                                                        <span th:case="'VIEW'">浏览</span>
+                                                        <span th:case="'PURCHASE'">购买</span>
+                                                        <span th:case="'ADD_TO_CART'">加购</span>
+                                                        <span th:case="*">其他</span>
+                                                    </span>
+                                                </span>
+                                            </td>
+                                            <td th:text="${log.productId}">1</td>
+                                            <td>
+                                                <a th:href="@{/product/{id}(id=${log.productId})}"
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    th:if="${log.productId != null}">查看商品</a>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -151,18 +216,16 @@
             border-radius: 5px;
             margin: 5px 10px;
         }
+
         .sidebar .nav-link:hover {
             background-color: #e9ecef;
         }
+
         .sidebar .nav-link.active {
             background-color: #A5B699;
             color: white;
         }
     </style>
 </body>
+
 </html>
-
-
-
-
-

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/custom.css}">
 </head>
+
 <body>
     <div th:replace="index/fragments :: navbar"></div>
 
@@ -25,12 +27,14 @@
                         <div>
                             <h5 class="mb-1">订单号: <span th:text="${order.id}">12345</span></h5>
                             <p class="text-muted small mb-0">
-                                下单时间: <span th:text="${#temporals.format(order.orderDate, 'yyyy-MM-dd HH:mm')}">2025-01-01 12:00</span>
+                                下单时间: <span
+                                    th:text="${#temporals.format(order.orderDate, 'yyyy-MM-dd HH:mm')}">2025-01-01
+                                    12:00</span>
                             </p>
                         </div>
                         <div class="text-end">
-                            <span class="badge" 
-                                  th:classappend="${order.status.name() == 'PENDING_PAYMENT'} ? 'bg-warning' : 
+                            <span class="badge"
+                                th:classappend="${order.status.name() == 'PENDING_PAYMENT'} ? 'bg-warning' : 
                                                   (${order.status.name() == 'PROCESSING'} ? 'bg-info' : 
                                                   (${order.status.name() == 'SHIPPED'} ? 'bg-primary' : 
                                                   (${order.status.name() == 'DELIVERED'} ? 'bg-success' : 
@@ -46,7 +50,8 @@
                             </span>
                             <p class="mb-0 mt-2">
                                 <strong class="text-danger">
-                                    总计: ¥<span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                    总计: ¥<span
+                                        th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
                                 </strong>
                             </p>
                         </div>
@@ -55,19 +60,19 @@
                     <div class="row g-2 mb-3">
                         <div class="col-md-6" th:each="item : ${order.items}">
                             <div class="d-flex align-items-center">
-                                <img th:src="${item.product.imageUrl ?: '/images/placeholder.jpg'}" 
-                                     class="me-2" 
-                                     style="width: 60px; height: 60px; object-fit: cover;">
+                                <img th:src="${item.product.imageUrl ?: '/images/placeholder.jpg'}" class="me-2"
+                                    style="width: 60px; height: 60px; object-fit: cover;">
                                 <div class="flex-grow-1">
                                     <p class="mb-0">
-                                        <a th:href="@{/product/{id}(id=${item.product.id})}" 
-                                           class="text-decoration-none">
+                                        <a th:href="@{/product/{id}(id=${item.product.id})}"
+                                            class="text-decoration-none">
                                             <strong th:text="${item.product.name}">商品名称</strong>
                                         </a>
                                     </p>
                                     <p class="text-muted small mb-0">
-                                        数量: <span th:text="${item.quantity}">1</span> × 
-                                        ¥<span th:text="${#numbers.formatDecimal(item.priceAtOrder, 0, 'COMMA', 2, 'POINT')}">99.00</span>
+                                        数量: <span th:text="${item.quantity}">1</span> ×
+                                        ¥<span
+                                            th:text="${#numbers.formatDecimal(item.priceAtOrder, 0, 'COMMA', 2, 'POINT')}">99.00</span>
                                     </p>
                                 </div>
                             </div>
@@ -76,10 +81,17 @@
 
                     <div class="d-flex gap-2">
                         <a th:href="@{/orders/{id}(id=${order.id})}" class="btn btn-outline-primary btn-sm">查看详情</a>
-                        <form th:action="@{/api/orders/{id}/pay(id=${order.id})}" method="post" 
-                              th:if="${order.status.name() == 'PENDING_PAYMENT'}" class="d-inline">
+                        <form th:action="@{/api/orders/{id}/pay(id=${order.id})}" method="post"
+                            th:if="${order.status.name() == 'PENDING_PAYMENT'}" class="d-inline">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <button type="submit" class="btn btn-primary btn-sm">立即付款</button>
+                        </form>
+                        <form th:action="@{/orders/{id}/cancel(id=${order.id})}" method="post"
+                            th:if="${order.status.name() != 'CANCELLED' and order.status.name() != 'COMPLETED' and order.status.name() != 'SHIPPED' and order.status.name() != 'DELIVERED'}"
+                            class="d-inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                onclick="return confirm('确定要取消该订单吗？')">取消订单</button>
                         </form>
                     </div>
                 </div>
@@ -90,9 +102,5 @@
     <div th:replace="index/fragments :: footer"></div>
     <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
+
 </html>
-
-
-
-
-

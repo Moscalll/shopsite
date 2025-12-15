@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/custom.css}">
 </head>
+
 <body>
     <div th:replace="index/fragments :: navbar"></div>
 
@@ -18,17 +20,15 @@
         <div th:if="${product}" class="row">
             <!-- 商品图片 -->
             <div class="col-md-6 mb-4">
-                <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}" 
-                     class="img-fluid rounded shadow" 
-                     th:alt="${product.name}"
-                     style="max-height: 500px; object-fit: cover;">
+                <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}" class="img-fluid rounded shadow"
+                    th:alt="${product.name}" style="max-height: 500px; object-fit: cover;">
             </div>
 
             <!-- 商品信息 -->
             <div class="col-md-6">
                 <h1 class="mb-3" th:text="${product.name}">商品名称</h1>
                 <p class="text-muted mb-3" th:text="${product.description}">商品描述</p>
-                
+
                 <div class="mb-3">
                     <h3 class="text-danger">
                         ¥<span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 2, 'POINT')}">99.00</span>
@@ -45,42 +45,39 @@
                     <form th:action="@{/cart/add}" method="post" class="mb-3">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <input type="hidden" name="productId" th:value="${product.id}">
-                        <div class="row g-2">
+                        <div class="row g-2" style="gap:20px;">
                             <div class="col-auto">
                                 <label for="quantity" class="form-label">数量：</label>
-                                <input type="number" 
-                                       class="form-control" 
-                                       id="quantity" 
-                                       name="quantity" 
-                                       value="1" 
-                                       min="1" 
-                                       th:max="${product.stock}" 
-                                       required>
+                                <input type="number" class="form-control" id="quantity" name="quantity" value="1"
+                                    min="1" th:max="${product.stock}" required>
                             </div>
-                            <div class="col-auto d-flex align-items-end">
+                            <div class="col-auto d-flex align-items-end" style="gap:20px;">
                                 <button type="submit" class="btn btn-primary">加入购物车</button>
+                                <form th:action="@{/favorites/add/{id}(id=${product.id})}" method="post"
+                                    th:if="${!isFavorite}">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" class="btn btn-outline-danger">
+                                        <i class="bi bi-heart"></i> 收藏
+                                    </button>
+                                </form>
+                                <form th:action="@{/favorites/remove/{id}(id=${product.id})}" method="post"
+                                    th:if="${isFavorite}">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="bi bi-heart-fill"></i> 已收藏
+                                    </button>
+                                </form>
+                                <a th:href="@{/checkout/direct?productId={id}&quantity=1(id=${product.id})}"
+                                    class="btn btn-warning">
+                                    <i class="bi bi-bag-check"></i> 立即购买
+                                </a>
                             </div>
                         </div>
                     </form>
 
-                    <div class="d-flex gap-2 flex-wrap">
-                        <form th:action="@{/favorites/add/{id}(id=${product.id})}" method="post" th:if="${!isFavorite}">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                            <button type="submit" class="btn btn-outline-danger">
-                                <i class="bi bi-heart"></i> 收藏
-                            </button>
-                        </form>
-                        <form th:action="@{/favorites/remove/{id}(id=${product.id})}" method="post" th:if="${isFavorite}">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                            <button type="submit" class="btn btn-danger">
-                                <i class="bi bi-heart-fill"></i> 已收藏
-                            </button>
-                        </form>
-                        <a th:href="@{/checkout/direct?productId={id}&quantity=1(id=${product.id})}" 
-                           class="btn btn-warning">
-                            <i class="bi bi-bag-check"></i> 立即购买
-                        </a>
-                    </div>
+                    <!-- <div class="d-flex gap-2 flex-wrap">
+                        
+                    </div> -->
                 </div>
 
                 <div sec:authorize="!isAuthenticated()">
@@ -93,7 +90,5 @@
     <div th:replace="index/fragments :: footer"></div>
     <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
+
 </html>
-
-
-
