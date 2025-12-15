@@ -2,31 +2,54 @@
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${pageTitle} ?: '商户管理'">商户管理</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-    <link rel="stylesheet" th:href="@{/css/custom.css}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${pageTitle} ?: '商户管理'">商户管理</title>
+  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/custom.css}">
 </head>
 
 <body>
-    <div th:replace="admin/layout :: layout(~{::content})">
-      <div th:fragment="content">
+  <div th:replace="index/fragments :: navbar"></div>
+  <div class="container-fluid">
+    <div class="row">
+
+      <nav class="col-md-3 col-lg-2 sidebar">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link active" th:href="@{/admin/merchants}">
+              <i class="bi bi-shop"></i> 商户管理
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" th:href="@{/admin/orders}">
+              <i class="bi bi-receipt"></i> 订单管理
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" th:href="@{/admin/products}">
+              <i class="bi bi-box-seam"></i> 商品管理
+            </a>
+          </li>
+          <li class="nav-item mt-3">
+            <a class="nav-link" th:href="@{/}">
+              <i class="bi bi-house"></i> 返回首页
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <main class="col-md-9 col-lg-10 main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h1>商户管理</h1>
-          <div>
-            <a th:href="@{/admin/orders}" class="btn btn-outline-primary me-2">订单管理</a>
-            <a th:href="@{/admin}" class="btn btn-outline-secondary me-2">返回后台</a>
-            <a th:href="@{/}" class="btn btn-outline-secondary">返回首页</a>
-          </div>
         </div>
-  
+
         <div class="card mb-4">
           <div class="card-body">
             <form th:action="@{/admin/merchants}" method="get" class="row g-3">
               <div class="col-md-10">
-                <input type="text" class="form-control" name="keyword"
-                       th:value="${keyword}" placeholder="搜索商户用户名或邮箱...">
+                <input type="text" class="form-control" name="keyword" th:value="${keyword}"
+                  placeholder="搜索商户用户名或邮箱...">
               </div>
               <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">
@@ -35,49 +58,84 @@
               </div>
             </form>
           </div>
-        </div>
-  
-        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
-          <span th:text="${success}">操作成功</span>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-          <span th:text="${error}">错误信息</span>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-  
-        <div class="card">
-          <div class="card-body table-responsive">
-            <table class="table table-hover align-middle">
-              <thead>
-                <tr>
-                  <th>ID</th><th>用户名</th><th>邮箱</th><th>角色</th><th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr th:each="m : ${merchants}">
-                  <td th:text="${m.id}">1</td>
-                  <td th:text="${m.username}">name</td>
-                  <td th:text="${m.email}">email</td>
-                  <td><span class="badge bg-success" th:text="${m.role.name()}">MERCHANT</span></td>
-                  <td>
-                    <a th:href="@{/admin/merchants/{id}(id=${m.id})}" class="btn btn-sm btn-outline-primary">详情</a>
-                    <form th:action="@{/admin/merchants/{id}/toggle-role(id=${m.id})}" method="post" class="d-inline">
-                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                      <button type="submit" class="btn btn-sm btn-outline-warning"
-                              th:text="${m.role.name() == 'MERCHANT' ? '禁用' : '启用'}">禁用</button>
-                    </form>
-                  </td>
-                </tr>
-                <tr th:if="${merchants == null or #lists.isEmpty(merchants)}">
-                  <td colspan="5" class="text-center text-muted">暂无商户</td>
-                </tr>
-              </tbody>
-            </table>
+
+          <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}">操作成功</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}">错误信息</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+
+          <div class="card">
+            <div class="card-body table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>邮箱</th>
+                    <th>角色</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="m : ${merchants}">
+                    <td th:text="${m.id}">1</td>
+                    <td th:text="${m.username}">name</td>
+                    <td th:text="${m.email}">email</td>
+                    <td><span class="badge bg-success" th:text="${m.role.name()}">MERCHANT</span></td>
+                    <td>
+                      <a th:href="@{/admin/merchants/{id}(id=${m.id})}" class="btn btn-sm btn-outline-primary">详情</a>
+                      <form th:action="@{/admin/merchants/{id}/toggle-role(id=${m.id})}" method="post" class="d-inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-sm btn-outline-warning"
+                          th:text="${m.role.name() == 'MERCHANT' ? '禁用' : '启用'}">禁用</button>
+                      </form>
+                    </td>
+                  </tr>
+                  <tr th:if="${merchants == null or #lists.isEmpty(merchants)}">
+                    <td colspan="5" class="text-center text-muted">暂无商户</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
-  </body>
+  </div>
+  <div th:replace="index/fragments :: footer"></div>
+  <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+
+</body>
+
+<style>
+  .sidebar .nav-link {
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin: 5px 10px;
+  }
+
+  .sidebar .nav-link:hover {
+    background-color: #e9ecef;
+  }
+
+  .sidebar .nav-link.active {
+    background-color: #A5B699;
+    color: white;
+  }
+
+  .sidebar .nav-link:focus,
+  .sidebar .nav-link:active,
+  .sidebar .nav-link:focus-visible {
+    outline: none;
+    box-shadow: none;
+    background-color: inherit;
+    color: #333;
+  }
+</style>
 
 </html>

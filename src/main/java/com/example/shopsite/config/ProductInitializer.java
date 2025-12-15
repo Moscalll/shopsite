@@ -5,6 +5,7 @@ import com.example.shopsite.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import java.util.List;
  * 在应用启动时自动创建测试商品数据
  */
 @Component
+@Profile("init-data") // 仅在 init-data profile 下执行，默认不插入商品
 @Order(3) // 在 AdminInitializer 和 CategoryInitializer 之后执行
 public class ProductInitializer implements CommandLineRunner {
     
@@ -191,6 +193,10 @@ public class ProductInitializer implements CommandLineRunner {
             .build();
     }
 }
+
+
+
+
 
 
 

@@ -1,40 +1,86 @@
 <!-- admin/layout.html -->
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <meta charset="UTF-8">
-  <title th:text="${pageTitle} ?: '管理后台'">管理后台</title>
-  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-  <link rel="stylesheet" th:href="@{/css/custom.css}">
-  <style>
-    .sidebar { min-height: calc(100vh - 56px); background-color: #f8f9fa; padding: 20px 0; }
-    .sidebar .nav-link { color: #333; padding: 12px 20px; border-radius: 5px; margin: 5px 10px; }
-    .sidebar .nav-link:hover { background-color: #e9ecef; }
-    .sidebar .nav-link.active { background-color: #A5B699; color: white; }
-    .sidebar .nav-link:focus,
-    .sidebar .nav-link:active,
-    .sidebar .nav-link:focus-visible { outline: none; box-shadow: none; background-color: inherit; color: #333; }
-    .main-content { padding: 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <title th:text="${pageTitle} ?: '管理后台'">管理后台</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+    <style>
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background-color: #f8f9fa;
+            padding: 20px 0;
+        }
+
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin: 5px 10px;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #e9ecef;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #A5B699;
+            color: white;
+        }
+
+        .sidebar .nav-link:focus,
+        .sidebar .nav-link:active,
+        .sidebar .nav-link:focus-visible {
+            outline: none;
+            box-shadow: none;
+            background-color: inherit;
+            color: #333;
+        }
+
+        .main-content {
+            padding: 20px;
+        }
+    </style>
 </head>
+
 <body th:fragment="layout(content)">
-  <div th:replace="index/fragments :: navbar"></div>
-  <div class="container-fluid">
-    <div class="row">
-      <nav class="col-md-3 col-lg-2 sidebar">
-        <ul class="nav flex-column">
-          <li class="nav-item"><a class="nav-link" th:href="@{/admin/merchants}"><i class="bi bi-shop"></i> 商户管理</a></li>
-          <li class="nav-item"><a class="nav-link" th:href="@{/admin/orders}"><i class="bi bi-receipt"></i> 订单管理</a></li>
-          <li class="nav-item"><a class="nav-link" th:href="@{/admin/products}"><i class="bi bi-box-seam"></i> 商品管理</a></li>
-          <li class="nav-item mt-3"><a class="nav-link" th:href="@{/}"><i class="bi bi-house"></i> 返回首页</a></li>
-        </ul>
-      </nav>
-      <main class="col-md-9 col-lg-10 main-content">
-        <div th:replace="${content}"></div>
-      </main>
+    <div th:replace="index/fragments :: navbar"></div>
+    <div class="container-fluid">
+        <div class="row">
+
+            <nav class="col-md-3 col-lg-2 sidebar">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/merchants}">
+                            <i class="bi bi-shop"></i> 商户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/orders}">
+                            <i class="bi bi-receipt"></i> 订单管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/products}">
+                            <i class="bi bi-box-seam"></i> 商品管理
+                        </a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <a class="nav-link" th:href="@{/}">
+                            <i class="bi bi-house"></i> 返回首页
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <main class="col-md-9 col-lg-10 main-content">
+                <div th:replace="${content}"></div>
+            </main>
+        </div>
     </div>
-  </div>
-  <div th:replace="index/fragments :: footer"></div>
-  <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <div th:replace="index/fragments :: footer"></div>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
+
 </html>

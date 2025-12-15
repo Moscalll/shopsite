@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,113 +8,167 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/custom.css}">
 </head>
+
 <body>
+
     <div th:replace="index/fragments :: navbar"></div>
+    <div class="container-fluid">
+        <div class="row">
 
-    <main class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>商品管理</h1>
-            <div>
-                <a th:href="@{/admin}" class="btn btn-outline-secondary me-2">返回后台</a>
-                <a th:href="@{/}" class="btn btn-outline-secondary">返回首页</a>
-            </div>
-        </div>
+            <nav class="col-md-3 col-lg-2 sidebar">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/merchants}">
+                            <i class="bi bi-shop"></i> 商户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/orders}">
+                            <i class="bi bi-receipt"></i> 订单管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/admin/products}">
+                            <i class="bi bi-box-seam"></i> 商品管理
+                        </a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <a class="nav-link" th:href="@{/}">
+                            <i class="bi bi-house"></i> 返回首页
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <main class="col-md-9 col-lg-10 main-content">
+                <h1 class="mb-4">商品管理</h1>
 
-        <!-- 搜索栏和分类筛选 -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form th:action="@{/admin/products}" method="get" class="row g-3">
-                    <div class="col-md-4">
-                        <input type="text" class="form-control" name="keyword" 
-                               th:value="${keyword}" placeholder="搜索商品名称...">
-                    </div>
-                    <div class="col-md-4">
-                        <select class="form-select" name="categoryId">
-                            <option value="">所有分类</option>
-                            <option th:each="cat : ${categories}" 
-                                    th:value="${cat.id}" 
-                                    th:text="${cat.name}"
-                                    th:selected="${categoryId != null and categoryId == cat.id}">分类</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-search me-2"></i>搜索
-                        </button>
-                    </div>
-                    <div class="col-md-2">
-                        <a th:href="@{/admin/products}" class="btn btn-outline-secondary w-100">重置</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- 按分类分组显示 -->
-        <div th:each="category : ${categories}">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0" th:text="${category.name}">分类名称</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>图片</th>
-                                    <th>商品名称</th>
-                                    <th>价格</th>
-                                    <th>库存</th>
-                                    <th>商户</th>
-                                    <th>状态</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="product : ${products}" th:if="${product.category.id == category.id}">
-                                    <td th:text="${product.id}">1</td>
-                                    <td>
-                                        <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}" 
-                                             style="width: 50px; height: 50px; object-fit: cover;">
-                                    </td>
-                                    <td th:text="${product.name}">商品名称</td>
-                                    <td>
-                                        ¥<span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 2, 'POINT')}">99.00</span>
-                                    </td>
-                                    <td th:text="${product.stock}">10</td>
-                                    <td th:text="${product.merchant.username}">商户名</td>
-                                    <td>
-                                        <span class="badge" th:classappend="${product.isAvailable} ? 'bg-success' : 'bg-secondary'">
-                                            <span th:text="${product.isAvailable ? '上架' : '下架'}">上架</span>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <a th:href="@{/merchant/product/edit/{id}(id=${product.id})}" 
-                                               class="btn btn-sm btn-outline-primary">编辑</a>
-                                            <form th:action="@{/merchant/product/toggle/{id}(id=${product.id})}" method="post" class="d-inline">
-                                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                                <button type="submit" class="btn btn-sm" 
-                                                        th:classappend="${product.isAvailable} ? 'btn-warning' : 'btn-success'"
-                                                        th:text="${product.isAvailable ? '下架' : '上架'}">操作</button>
-                                            </form>
-                                            <form th:action="@{/merchant/product/delete/{id}(id=${product.id})}" method="post" class="d-inline">
-                                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                        onclick="return confirm('确定要删除该商品吗？')">删除</button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- 搜索栏和分类筛选 -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form th:action="@{/admin/products}" method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" name="keyword" th:value="${keyword}"
+                                    placeholder="搜索商品名称...">
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" name="categoryId">
+                                    <option value="">所有分类</option>
+                                    <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"
+                                        th:selected="${categoryId != null and categoryId == cat.id}">分类</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-search me-2"></i>搜索
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <a th:href="@{/admin/products}" class="btn btn-outline-secondary w-100">重置</a>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </div>
-        </div>
-    </main>
 
-    <div th:replace="index/fragments :: footer"></div>
-    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+                <!-- 按分类分组显示 -->
+                <div th:each="category : ${categories}">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0" th:text="${category.name}">分类名称</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>图片</th>
+                                            <th>商品名称</th>
+                                            <th>价格</th>
+                                            <th>库存</th>
+                                            <th>商户</th>
+                                            <th>状态</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="product : ${products}"
+                                            th:if="${product.category.id == category.id}">
+                                            <td th:text="${product.id}">1</td>
+                                            <td>
+                                                <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}"
+                                                    style="width: 50px; height: 50px; object-fit: cover;">
+                                            </td>
+                                            <td th:text="${product.name}">商品名称</td>
+                                            <td>
+                                                ¥<span
+                                                    th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 2, 'POINT')}">99.00</span>
+                                            </td>
+                                            <td th:text="${product.stock}">10</td>
+                                            <td th:text="${product.merchant.username}">商户名</td>
+                                            <td>
+                                                <span class="badge"
+                                                    th:classappend="${product.isAvailable} ? 'bg-success' : 'bg-secondary'">
+                                                    <span th:text="${product.isAvailable ? '上架' : '下架'}">上架</span>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-2">
+                                                    <a th:href="@{/merchant/product/edit/{id}(id=${product.id})}"
+                                                        class="btn btn-sm btn-outline-primary">编辑</a>
+                                                    <form th:action="@{/merchant/product/toggle/{id}(id=${product.id})}"
+                                                        method="post" class="d-inline">
+                                                        <input type="hidden" th:name="${_csrf.parameterName}"
+                                                            th:value="${_csrf.token}" />
+                                                        <button type="submit" class="btn btn-sm"
+                                                            th:classappend="${product.isAvailable} ? 'btn-warning' : 'btn-success'"
+                                                            th:text="${product.isAvailable ? '下架' : '上架'}">操作</button>
+                                                    </form>
+                                                    <form th:action="@{/merchant/product/delete/{id}(id=${product.id})}"
+                                                        method="post" class="d-inline">
+                                                        <input type="hidden" th:name="${_csrf.parameterName}"
+                                                            th:value="${_csrf.token}" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                            onclick="return confirm('确定要删除该商品吗？')">删除</button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
 </body>
+
+<style>
+    .sidebar .nav-link {
+        color: #333;
+        padding: 12px 20px;
+        border-radius: 5px;
+        margin: 5px 10px;
+    }
+
+    .sidebar .nav-link:hover {
+        background-color: #e9ecef;
+    }
+
+    .sidebar .nav-link.active {
+        background-color: #A5B699;
+        color: white;
+    }
+
+    .sidebar .nav-link:focus,
+    .sidebar .nav-link:active,
+    .sidebar .nav-link:focus-visible {
+        outline: none;
+        box-shadow: none;
+        background-color: inherit;
+        color: #333;
+    }
+</style>
+
 </html>

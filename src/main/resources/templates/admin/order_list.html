@@ -10,181 +10,236 @@
 </head>
 
 <body>
+
     <div th:replace="index/fragments :: navbar"></div>
+    <div class="container-fluid">
+        <div class="row">
 
-    <main class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>全站订单管理</h1>
-            <div>
-                <a th:href="@{/admin/merchants}" class="btn btn-outline-primary me-2">商户管理</a>
-                <a th:href="@{/}" class="btn btn-outline-secondary">返回首页</a>
-            </div>
-        </div>
-
-        <!-- 搜索栏 -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form th:action="@{/admin/orders}" method="get" class="row g-3">
-                    <div class="col-md-10">
-                        <input type="text" class="form-control" name="keyword" th:value="${keyword}"
-                            placeholder="搜索订单号、客户名或商品名...">
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-search me-2"></i>搜索
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- 统计卡片 -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-3">
-                <div class="card text-center border-0 shadow-sm">
+            <nav class="col-md-3 col-lg-2 sidebar">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/merchants}">
+                            <i class="bi bi-shop"></i> 商户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/admin/orders}">
+                            <i class="bi bi-receipt"></i> 订单管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/products}">
+                            <i class="bi bi-box-seam"></i> 商品管理
+                        </a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <a class="nav-link" th:href="@{/}">
+                            <i class="bi bi-house"></i> 返回首页
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <main class="col-md-9 col-lg-10 main-content">
+                <h1 class="mb-4">全站订单管理</h1>
+                <!-- 搜索栏 -->
+                <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="text-muted">总订单数</h5>
-                        <h2 class="text-primary" th:text="${totalOrders}">0</h2>
+                        <form th:action="@{/admin/orders}" method="get" class="row g-3">
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" name="keyword" th:value="${keyword}"
+                                    placeholder="搜索订单号、客户名或商品名...">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-search me-2"></i>搜索
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-center border-0 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="text-muted">总金额</h5>
-                        <h2 class="text-success">
-                            ¥<span th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
-                        </h2>
+
+                <!-- 统计卡片 -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="text-muted">总订单数</h5>
+                                <h2 class="text-primary" th:text="${totalOrders}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="text-muted">总金额</h5>
+                                <h2 class="text-success">
+                                    ¥<span
+                                        th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="text-muted">已完成</h5>
+                                <h2 class="text-success" th:text="${completed}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="text-muted">处理中</h5>
+                                <h2 class="text-info" th:text="${processing}">0</h2>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-center border-0 shadow-sm">
+
+                <!-- 统计图表 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">订单状态统计</h5>
+                    </div>
                     <div class="card-body">
-                        <h5 class="text-muted">已完成</h5>
-                        <h2 class="text-success" th:text="${completed}">0</h2>
+                        <canvas id="orderStatusChart" style="max-height: 300px;"></canvas>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-center border-0 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="text-muted">处理中</h5>
-                        <h2 class="text-info" th:text="${processing}">0</h2>
+
+
+                <div th:if="${#lists.isEmpty(orders)}" class="text-center py-5">
+                    <p class="text-muted">暂无订单</p>
+                </div>
+
+
+
+                <div th:if="${!#lists.isEmpty(orders)}">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>订单号</th>
+                                    <th>客户</th>
+                                    <th>商品</th>
+                                    <th>订单总额</th>
+                                    <th>下单时间</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="order : ${orders}">
+                                    <td th:text="${order.id}">12345</td>
+                                    <td th:text="${order.user.username}">用户名</td>
+                                    <td>
+                                        <div th:each="item : ${order.items}">
+                                            <span th:text="${item.product.name}">商品名称</span>
+                                            <span class="text-muted">×<span th:text="${item.quantity}">1</span></span>
+                                            <br th:if="${!itemStat.last}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        ¥<span
+                                            th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                    </td>
+                                    <td th:text="${#temporals.format(order.orderDate, 'yyyy-MM-dd HH:mm')}">
+                                        2025-01-01 12:00
+                                    </td>
+                                    <td>
+                                        <span class="badge"
+                                            th:classappend="${order.status.name() == 'PENDING_PAYMENT'} ? 'bg-warning' : 
+                                                              (${order.status.name() == 'PROCESSING'} ? 'bg-info' : 
+                                                              (${order.status.name() == 'SHIPPED'} ? 'bg-primary' : 
+                                                              (${order.status.name() == 'DELIVERED'} ? 'bg-success' : 
+                                                              (${order.status.name() == 'COMPLETED'} ? 'bg-success' : 'bg-secondary'))))">
+                                            <span th:switch="${order.status.name()}">
+                                                <span th:case="'PENDING_PAYMENT'">待付款</span>
+                                                <span th:case="'PROCESSING'">处理中</span>
+                                                <span th:case="'SHIPPED'">已发货</span>
+                                                <span th:case="'DELIVERED'">已送达</span>
+                                                <span th:case="'COMPLETED'">已完成</span>
+                                                <span th:case="'CANCELLED'">已取消</span>
+                                            </span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/admin/orders/{id}(id=${order.id})}"
+                                            class="btn btn-sm btn-outline-primary">查看详情</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
+
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script th:inline="javascript">
+                    const ctx = document.getElementById('orderStatusChart');
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['待付款', '处理中', '已发货', '已完成', '已取消'],
+                            datasets: [{
+                                data: [
+                            /*[[${pendingPayment}]]*/ 0,
+                            /*[[${processing}]]*/ 0,
+                            /*[[${shipped}]]*/ 0,
+                            /*[[${completed}]]*/ 0,
+                            /*[[${cancelled}]]*/ 0
+                                ],
+                                backgroundColor: [
+                                    '#ffc107',
+                                    '#17a2b8',
+                                    '#007bff',
+                                    '#28a745',
+                                    '#6c757d'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true
+                        }
+                    });
+                </script>
+            </main>
+
+
+
         </div>
-
-        <!-- 统计图表 -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">订单状态统计</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="orderStatusChart" style="max-height: 300px;"></canvas>
-            </div>
-        </div>
-
-
-        <div th:if="${#lists.isEmpty(orders)}" class="text-center py-5">
-            <p class="text-muted">暂无订单</p>
-        </div>
+    </div>
 
 
 
-        <div th:if="${!#lists.isEmpty(orders)}">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>订单号</th>
-                            <th>客户</th>
-                            <th>商品</th>
-                            <th>订单总额</th>
-                            <th>下单时间</th>
-                            <th>状态</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="order : ${orders}">
-                            <td th:text="${order.id}">12345</td>
-                            <td th:text="${order.user.username}">用户名</td>
-                            <td>
-                                <div th:each="item : ${order.items}">
-                                    <span th:text="${item.product.name}">商品名称</span>
-                                    <span class="text-muted">×<span th:text="${item.quantity}">1</span></span>
-                                    <br th:if="${!itemStat.last}">
-                                </div>
-                            </td>
-                            <td>
-                                ¥<span
-                                    th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
-                            </td>
-                            <td th:text="${#temporals.format(order.orderDate, 'yyyy-MM-dd HH:mm')}">2025-01-01 12:00
-                            </td>
-                            <td>
-                                <span class="badge"
-                                    th:classappend="${order.status.name() == 'PENDING_PAYMENT'} ? 'bg-warning' : 
-                                                      (${order.status.name() == 'PROCESSING'} ? 'bg-info' : 
-                                                      (${order.status.name() == 'SHIPPED'} ? 'bg-primary' : 
-                                                      (${order.status.name() == 'DELIVERED'} ? 'bg-success' : 
-                                                      (${order.status.name() == 'COMPLETED'} ? 'bg-success' : 'bg-secondary'))))">
-                                    <span th:switch="${order.status.name()}">
-                                        <span th:case="'PENDING_PAYMENT'">待付款</span>
-                                        <span th:case="'PROCESSING'">处理中</span>
-                                        <span th:case="'SHIPPED'">已发货</span>
-                                        <span th:case="'DELIVERED'">已送达</span>
-                                        <span th:case="'COMPLETED'">已完成</span>
-                                        <span th:case="'CANCELLED'">已取消</span>
-                                    </span>
-                                </span>
-                            </td>
-                            <td>
-                                <a th:href="@{/admin/orders/{id}(id=${order.id})}"
-                                    class="btn btn-sm btn-outline-primary">查看详情</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script th:inline="javascript">
-            const ctx = document.getElementById('orderStatusChart');
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['待付款', '处理中', '已发货', '已完成', '已取消'],
-                    datasets: [{
-                        data: [
-                    /*[[${pendingPayment}]]*/ 0,
-                    /*[[${processing}]]*/ 0,
-                    /*[[${shipped}]]*/ 0,
-                    /*[[${completed}]]*/ 0,
-                    /*[[${cancelled}]]*/ 0
-                        ],
-                        backgroundColor: [
-                            '#ffc107',
-                            '#17a2b8',
-                            '#007bff',
-                            '#28a745',
-                            '#6c757d'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true
-                }
-            });
-        </script>
-    </main>
-
-    <div th:replace="index/fragments :: footer"></div>
-    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
+
+
+<style>
+    .sidebar .nav-link {
+        color: #333;
+        padding: 12px 20px;
+        border-radius: 5px;
+        margin: 5px 10px;
+    }
+
+    .sidebar .nav-link:hover {
+        background-color: #e9ecef;
+    }
+
+    .sidebar .nav-link.active {
+        background-color: #A5B699;
+        color: white;
+    }
+
+    .sidebar .nav-link:focus,
+    .sidebar .nav-link:active,
+    .sidebar .nav-link:focus-visible {
+        outline: none;
+        box-shadow: none;
+        background-color: inherit;
+        color: #333;
+    }
+</style>
 
 </html>

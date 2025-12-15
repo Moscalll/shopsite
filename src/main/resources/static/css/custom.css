@@ -9,16 +9,20 @@
     /* 柔和的淡绿色，类似 MUJI */
     background-color: #A5B699 !important;
 }
+
 .text-muji-dark {
-     /* 确保链接文字颜色对比度足够 */
+    /* 确保链接文字颜色对比度足够 */
     color: #333333 !important;
 }
+
 .nav-link.active {
     /* 激活状态下的下划线 */
     border-bottom: 2px solid #333333;
 }
+
 .footer-muji-grey {
-    background-color: #EFEFEF !important; /* 浅灰色 */
+    background-color: #EFEFEF !important;
+    /* 浅灰色 */
     color: #333333 !important;
 }
 
@@ -43,14 +47,16 @@
 
 /* MUJI 风格按钮样式 - 与浅绿色主题搭配 */
 .btn-muji-primary {
-    background-color: #8FA882; /* 稍深的绿色，比主色调深一点 */
+    background-color: #8FA882;
+    /* 稍深的绿色，比主色调深一点 */
     border-color: #8FA882;
     color: #ffffff;
     transition: all 0.3s ease;
 }
 
 .btn-muji-primary:hover {
-    background-color: #7A9570; /* 悬停时稍深 */
+    background-color: #7A9570;
+    /* 悬停时稍深 */
     border-color: #7A9570;
     color: #ffffff;
     transform: translateY(-1px);
@@ -75,7 +81,8 @@
 
 .btn-outline-muji-secondary {
     color: #6C757D;
-    border-color: #B8C4B0; /* 柔和的灰绿色边框 */
+    border-color: #B8C4B0;
+    /* 柔和的灰绿色边框 */
     background-color: transparent;
 }
 
@@ -86,7 +93,8 @@
 }
 
 .btn-muji-warning {
-    background-color: #D4A574; /* 柔和的橙黄色 */
+    background-color: #D4A574;
+    /* 柔和的橙黄色 */
     border-color: #D4A574;
     color: #ffffff;
 }
@@ -110,7 +118,8 @@
 }
 
 .btn-muji-danger {
-    background-color: #C99A8F; /* 柔和的粉棕色，不刺眼 */
+    background-color: #C99A8F;
+    /* 柔和的粉棕色，不刺眼 */
     border-color: #C99A8F;
     color: #ffffff;
 }
@@ -134,7 +143,8 @@
 }
 
 .btn-muji-success {
-    background-color: #8FA882; /* 与主按钮相同的绿色 */
+    background-color: #8FA882;
+    /* 与主按钮相同的绿色 */
     border-color: #8FA882;
     color: #ffffff;
 }
@@ -241,5 +251,41 @@
 
 /* 未读消息红点调整为柔和的橙红色 */
 .badge.bg-danger {
-    background-color: #D4A574 !important; /* 使用柔和的橙黄色替代刺眼的红色 */
+    background-color: #D4A574 !important;
+    /* 使用柔和的橙黄色替代刺眼的红色 */
+}
+
+.sidebar {
+    min-height: calc(100vh - 56px);
+    background-color: #f8f9fa;
+    padding: 20px 0;
+}
+
+.sidebar .nav-link {
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin: 5px 10px;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #e9ecef;
+}
+
+.sidebar .nav-link.active {
+    background-color: #A5B699;
+    color: #fff;
+}
+
+.sidebar .nav-link:focus,
+.sidebar .nav-link:active,
+.sidebar .nav-link:focus-visible {
+    outline: none;
+    box-shadow: none;
+    background-color: inherit;
+    color: #333;
+}
+
+.main-content {
+    padding: 20px;
 }

@@ -3,12 +3,14 @@ package com.example.shopsite.config;
 import com.example.shopsite.model.Category;
 import com.example.shopsite.repository.CategoryRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Component
+@Profile("init-data") // 仅在 init-data profile 下执行，避免默认启动自动插入
 public class CategoryInitializer implements CommandLineRunner {
 
     private final CategoryRepository categoryRepository;
@@ -73,6 +75,10 @@ public class CategoryInitializer implements CommandLineRunner {
         System.out.println("已初始化 " + categories.size() + " 个商品分类");
     }
 }
+
+
+
+
 
 
 
