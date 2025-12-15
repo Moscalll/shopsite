@@ -17,4 +17,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "JOIN o.items oi " +
            "WHERE oi.product.merchant = :merchant")
     List<Order> findOrdersByMerchant(@Param("merchant") User merchant);
+
+     // 搜索订单：按订单ID、客户用户名或商品名称搜索
+     @Query("SELECT DISTINCT o FROM Order o " +
+     "LEFT JOIN o.user u " +
+     "LEFT JOIN o.items oi " +
+     "LEFT JOIN oi.product p " +
+     "WHERE CAST(o.id AS string) LIKE %:keyword% " +
+     "OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+     "OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+List<Order> findOrdersByKeyword(@Param("keyword") String keyword);
 }

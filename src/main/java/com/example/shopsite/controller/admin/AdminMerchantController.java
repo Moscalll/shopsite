@@ -9,6 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RequestParam;
+import com.example.shopsite.service.OrderService;
 
 import java.util.List;
 
@@ -19,19 +21,27 @@ public class AdminMerchantController {
 
     private final UserService userService;
     private final ProductService productService;
+    private final OrderService orderService; 
 
-    public AdminMerchantController(UserService userService, ProductService productService) {
+    public AdminMerchantController(UserService userService, ProductService productService, OrderService orderService) {
         this.userService = userService;
         this.productService = productService;
+        this.orderService = orderService;
     }
 
     /**
      * GET /admin/merchants - 商户列表
      */
     @GetMapping
-    public String merchantList(Model model) {
-        List<User> merchants = userService.findAllMerchants();
+    public String merchantList(@RequestParam(required = false) String keyword, Model model) {
+        List<User> merchants;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            merchants = userService.findMerchantsByKeyword(keyword);
+        } else {
+            merchants = userService.findAllMerchants();
+        }
         model.addAttribute("merchants", merchants);
+        model.addAttribute("keyword", keyword);
         model.addAttribute("pageTitle", "商户管理");
         return "admin/merchant_list";
     }
@@ -51,8 +61,12 @@ public class AdminMerchantController {
             // 查询该商户的商品
             var products = productService.findProductsByMerchant(merchant);
 
+            // 查询该商户的订单
+            var orders = orderService.findOrdersByMerchant(merchant);
+
             model.addAttribute("merchant", merchant);
             model.addAttribute("products", products);
+            model.addAttribute("orders", orders);
             model.addAttribute("pageTitle", "商户详情: " + merchant.getUsername());
             return "admin/merchant_detail";
         } catch (Exception e) {
@@ -66,7 +80,7 @@ public class AdminMerchantController {
      */
     @PostMapping("/{id}/toggle-role")
     public String toggleMerchantRole(@PathVariable Long id,
-                                    RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) {
         try {
             User merchant = userService.findUserById(id);
             if (merchant.getRole() == Role.MERCHANT) {
@@ -84,9 +98,3 @@ public class AdminMerchantController {
         return "redirect:/admin/merchants";
     }
 }
-
-
-
-
-
-

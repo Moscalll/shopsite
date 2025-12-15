@@ -22,7 +22,7 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/merchant")
 // 🚨 限制：只有拥有 ROLE_MERCHANT 或 ROLE_ADMIN 角色的用户才能访问此 Controller 内的方法
-@PreAuthorize("hasRole('MERCHANT') or hasRole('ADMIN')") 
+@PreAuthorize("hasRole('MERCHANT') or hasRole('ADMIN')")
 public class MerchantController {
 
     private final ProductService productService;
@@ -32,9 +32,9 @@ public class MerchantController {
     private final UserRepository userRepository; // 添加这个字段
 
     @Autowired
-    public MerchantController(ProductService productService, CategoryService categoryService, 
-                            ProductRepository productRepository, FileUploadService fileUploadService,
-                            UserRepository userRepository) { // 添加这个参数
+    public MerchantController(ProductService productService, CategoryService categoryService,
+            ProductRepository productRepository, FileUploadService fileUploadService,
+            UserRepository userRepository) { // 添加这个参数
         this.productService = productService;
         this.categoryService = categoryService;
         this.productRepository = productRepository;
@@ -62,20 +62,20 @@ public class MerchantController {
 
         model.addAttribute("pageTitle", "商户商品管理");
         model.addAttribute("products", products);
-        
+
         // 假设模板路径为 templates/merchant/dashboard.html
-        return "merchant/dashboard"; 
+        return "merchant/dashboard";
     }
 
     /**
      * GET /merchant/product/new 或 /merchant/product/edit/{id}
      * 显示创建或编辑商品的表单
      */
-    @GetMapping({"/product/new", "/product/edit/{id}"})
+    @GetMapping({ "/product/new", "/product/edit/{id}" })
     public String showProductForm(
             @PathVariable(required = false) Long id,
             Model model) {
-        
+
         // 从 SecurityContext 获取当前登录用户的用户名
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
@@ -84,7 +84,7 @@ public class MerchantController {
             return "merchant/dashboard";
         }
         User merchant = userOpt.get();
-                
+
         List<Category> categories = categoryService.findAllCategories();
         model.addAttribute("categories", categories);
         model.addAttribute("product", new Product());
@@ -111,30 +111,30 @@ public class MerchantController {
         }
 
         // 假设模板路径为 templates/merchant/product_form.html
-        return "merchant/product_form"; 
+        return "merchant/product_form";
     }
-    
+
     /**
      * POST /merchant/save
      * 处理商品创建和编辑的表单提交（支持图片上传）
      */
     @PostMapping("/save")
     public String saveProduct(
-            @ModelAttribute Product product, 
+            @ModelAttribute Product product,
             @RequestParam Long categoryId,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             RedirectAttributes redirectAttributes) {
 
         // 从 SecurityContext 获取当前登录用户的用户名
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        
+
         // 从数据库加载 User 实体
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "用户未找到");
             return "redirect:/merchant/dashboard";
         }
-        
+
         User merchant = userOpt.get();
 
         try {
@@ -148,7 +148,7 @@ public class MerchantController {
                     return "redirect:/merchant/dashboard";
                 }
             }
-            
+
             if (product.getId() == null) {
                 // 创建新商品
                 if (product.getImageUrl() == null || product.getImageUrl().isEmpty()) {
@@ -164,9 +164,9 @@ public class MerchantController {
                 if (existingProductOpt.isPresent()) {
                     Product existingProduct = existingProductOpt.get();
                     // 如果上传了新图片，删除旧图片
-                    if (imageFile != null && !imageFile.isEmpty() && 
-                        existingProduct.getImageUrl() != null && 
-                        existingProduct.getImageUrl().startsWith("/uploads/")) {
+                    if (imageFile != null && !imageFile.isEmpty() &&
+                            existingProduct.getImageUrl() != null &&
+                            existingProduct.getImageUrl().startsWith("/uploads/")) {
                         try {
                             fileUploadService.deleteImage(existingProduct.getImageUrl());
                         } catch (Exception e) {
@@ -186,10 +186,10 @@ public class MerchantController {
 
         return "redirect:/merchant/dashboard";
     }
-    
+
     /**
      * POST /merchant/product/toggle/{id}
-     * 切换商品上架/下架状态
+     * 切换商品上架/下架状态（商户和管理员都可以操作）
      */
     @PostMapping("/product/toggle/{id}")
     public String toggleProductStatus(
@@ -201,12 +201,12 @@ public class MerchantController {
                 // 尝试查找下架的商品
                 productOpt = productRepository.findById(id);
             }
-            
+
             if (productOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "商品不存在");
                 return "redirect:/merchant/dashboard";
             }
-            
+
             Product product = productOpt.get();
             // 从 SecurityContext 获取当前登录用户的用户名
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -215,13 +215,17 @@ public class MerchantController {
                 redirectAttributes.addFlashAttribute("error", "用户未找到");
                 return "redirect:/merchant/dashboard";
             }
-            User merchant = userOpt.get();
+            User currentUser = userOpt.get();
 
-            if (!product.getMerchant().getId().equals(merchant.getId())) {
+            // 检查权限：管理员可以操作所有商品，商户只能操作自己的商品
+            boolean isAdmin = currentUser.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+            if (!isAdmin && !product.getMerchant().getId().equals(currentUser.getId())) {
                 redirectAttributes.addFlashAttribute("error", "无权操作该商品");
                 return "redirect:/merchant/dashboard";
             }
-            
+
             product.setIsAvailable(!product.getIsAvailable());
             productRepository.save(product);
             redirectAttributes.addFlashAttribute("success", product.getIsAvailable() ? "商品已上架" : "商品已下架");
@@ -230,10 +234,10 @@ public class MerchantController {
         }
         return "redirect:/merchant/dashboard";
     }
-    
+
     /**
      * POST /merchant/product/delete/{id}
-     * 删除商品
+     * 删除商品（商户和管理员都可以操作）
      */
     @PostMapping("/product/delete/{id}")
     public String deleteProduct(
@@ -245,7 +249,7 @@ public class MerchantController {
                 redirectAttributes.addFlashAttribute("error", "商品不存在");
                 return "redirect:/merchant/dashboard";
             }
-            
+
             Product product = productOpt.get();
             // 从 SecurityContext 获取当前登录用户的用户名
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -254,23 +258,17 @@ public class MerchantController {
                 redirectAttributes.addFlashAttribute("error", "用户未找到");
                 return "redirect:/merchant/dashboard";
             }
-            User merchant = userOpt.get();
+            User currentUser = userOpt.get();
 
-            if (!product.getMerchant().getId().equals(merchant.getId())) {
+            // 检查权限：管理员可以删除所有商品，商户只能删除自己的商品
+            boolean isAdmin = currentUser.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+            if (!isAdmin && !product.getMerchant().getId().equals(currentUser.getId())) {
                 redirectAttributes.addFlashAttribute("error", "无权删除该商品");
                 return "redirect:/merchant/dashboard";
             }
-            
-            // 删除商品时，同时删除关联的图片文件
-            if (product.getImageUrl() != null && product.getImageUrl().startsWith("/uploads/")) {
-                try {
-                    fileUploadService.deleteImage(product.getImageUrl());
-                } catch (Exception e) {
-                    // 记录日志但不影响删除
-                    System.err.println("删除商品图片失败: " + e.getMessage());
-                }
-            }
-            
+
             productRepository.delete(product);
             redirectAttributes.addFlashAttribute("success", "商品已删除");
         } catch (Exception e) {

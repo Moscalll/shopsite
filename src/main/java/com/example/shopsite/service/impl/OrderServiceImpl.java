@@ -243,6 +243,15 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Order> findOrdersByKeyword(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return findAllOrders();
+        }
+        return orderRepository.findOrdersByKeyword(keyword.trim());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Order findOrderDetailsForAdmin(Long orderId) {
         // 1. 查找订单
         Order order = orderRepository.findById(orderId)

@@ -35,4 +35,6 @@ public interface OrderService {
 
     // 客户取消订单
     Order cancelOrderByCustomer(Long orderId, String username);
+
+    List<Order> findOrdersByKeyword(String keyword);
 }

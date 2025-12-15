@@ -34,4 +34,6 @@ public interface UserService {
     
     // 管理员功能：更新用户角色或状态
     User updateUserRole(Long userId, Role newRole);
+
+    List<User> findMerchantsByKeyword(String keyword);
 }

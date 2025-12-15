@@ -4,6 +4,8 @@ import com.example.shopsite.model.Role;
 import com.example.shopsite.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,4 +29,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * 根据角色查询用户列表（用于管理员查询商户）
      */
     List<User> findByRole(Role role);
+
+    // 搜索商户：按用户名或邮箱搜索，且角色为MERCHANT
+    @Query("SELECT u FROM User u WHERE u.role = :role " +
+           "AND (LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<User> findMerchantsByKeyword(@Param("role") Role role, @Param("keyword") String keyword);
 }

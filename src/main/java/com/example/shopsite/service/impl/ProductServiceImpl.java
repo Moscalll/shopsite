@@ -26,13 +26,14 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryService categoryService;
     private final OrderItemRepository orderItemRepository;
 
-    public ProductServiceImpl(ProductRepository productRepository, UserRepository userRepository, 
-                             CategoryService categoryService, OrderItemRepository orderItemRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, UserRepository userRepository,
+            CategoryService categoryService, OrderItemRepository orderItemRepository) {
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.categoryService = categoryService;
         this.orderItemRepository = orderItemRepository;
     }
+
     @Override
     @Transactional
     public Product createProduct(ProductCreationRequest request, String username) {
@@ -41,7 +42,7 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new RuntimeException("商家用户不存在"));
 
         Category category = categoryService.findCategoryById(request.getCategoryId())
-             .orElseThrow(() -> new IllegalArgumentException("Category not found."));
+                .orElseThrow(() -> new IllegalArgumentException("Category not found."));
 
         // 2. 构建商品实体
         Product product = Product.builder()
@@ -64,17 +65,17 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public Product createProduct(Product product, Long categoryId, User merchant) {
         Category category = categoryService.findCategoryById(categoryId)
-            .orElseThrow(() -> new IllegalArgumentException("Category not found."));
-        
+                .orElseThrow(() -> new IllegalArgumentException("Category not found."));
+
         product.setCategory(category);
-        product.setMerchant(merchant); 
-        product.setIsAvailable(true); 
-        
+        product.setMerchant(merchant);
+        product.setIsAvailable(true);
+
         return productRepository.save(product);
     }
 
     // 3. 查询所有可售商品 (用于前台列表)
-    @Override 
+    @Override
     public List<Product> findAllAvailableProducts() {
         return productRepository.findByIsAvailableTrueAndStockGreaterThan(0);
     }
@@ -84,24 +85,24 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public Product updateProduct(Long productId, Product updatedDetails, User merchant) {
         // ... (省略了上一步提供的更新逻辑)
-         return productRepository.findById(productId)
-            .map(product -> {
-                if (!product.getMerchant().getId().equals(merchant.getId())) {
-                    throw new SecurityException("Access denied: You can only update your own products.");
-                }
-                if (updatedDetails.getCategory() != null && updatedDetails.getCategory().getId() != null) {
-                      Category newCategory = categoryService.findCategoryById(updatedDetails.getCategory().getId())
-                            .orElseThrow(() -> new IllegalArgumentException("New Category not found."));
-                      product.setCategory(newCategory);
-                 }
-                product.setName(updatedDetails.getName());
-                product.setDescription(updatedDetails.getDescription());
-                product.setPrice(updatedDetails.getPrice());
-                product.setStock(updatedDetails.getStock());
-                product.setIsAvailable(updatedDetails.getIsAvailable());
-                 product.setImageUrl(updatedDetails.getImageUrl());
-                return productRepository.save(product);
-            }).orElseThrow(() -> new IllegalArgumentException("Product not found."));
+        return productRepository.findById(productId)
+                .map(product -> {
+                    if (!product.getMerchant().getId().equals(merchant.getId())) {
+                        throw new SecurityException("Access denied: You can only update your own products.");
+                    }
+                    if (updatedDetails.getCategory() != null && updatedDetails.getCategory().getId() != null) {
+                        Category newCategory = categoryService.findCategoryById(updatedDetails.getCategory().getId())
+                                .orElseThrow(() -> new IllegalArgumentException("New Category not found."));
+                        product.setCategory(newCategory);
+                    }
+                    product.setName(updatedDetails.getName());
+                    product.setDescription(updatedDetails.getDescription());
+                    product.setPrice(updatedDetails.getPrice());
+                    product.setStock(updatedDetails.getStock());
+                    product.setIsAvailable(updatedDetails.getIsAvailable());
+                    product.setImageUrl(updatedDetails.getImageUrl());
+                    return productRepository.save(product);
+                }).orElseThrow(() -> new IllegalArgumentException("Product not found."));
     }
 
     // 接口方法实现 5: 查找商户自己的所有商品
@@ -136,25 +137,27 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> findTopSellingProducts(int limit) {
         // 从OrderItem统计销量
         List<Object[]> topSelling = orderItemRepository.findTopSellingProducts();
-        
-        // 转换为Product列表，只保留已上架且有库存的商品
+
+        // 转换为Product列表，只保留已上架且有库存的商品（双重过滤确保安全）
         List<Product> products = topSelling.stream()
                 .map(result -> (Product) result[0])
-                .filter(p -> p.getIsAvailable() && p.getStock() > 0)
+                .filter(p -> p != null && p.getIsAvailable() != null && p.getIsAvailable() && p.getStock() != null
+                        && p.getStock() > 0)
                 .limit(limit)
                 .collect(Collectors.toList());
-        
+
         // 如果销量数据不足，补充其他可售商品
         if (products.size() < limit) {
             List<Product> availableProducts = productRepository.findByIsAvailableTrueAndStockGreaterThan(0);
             for (Product p : availableProducts) {
-                if (products.size() >= limit) break;
-                if (!products.contains(p)) {
+                if (products.size() >= limit)
+                    break;
+                if (!products.contains(p) && p.getIsAvailable() && p.getStock() > 0) {
                     products.add(p);
                 }
             }
         }
-        
+
         return products;
     }
 
@@ -170,7 +173,8 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public List<Product> findProductsByCategory(Long categoryId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        Page<Product> page = productRepository.findByCategory_IdAndIsAvailableTrueAndStockGreaterThan(categoryId, 0, pageable);
+        Page<Product> page = productRepository.findByCategory_IdAndIsAvailableTrueAndStockGreaterThan(categoryId, 0,
+                pageable);
         return page.getContent();
     }
 
@@ -182,5 +186,12 @@ public class ProductServiceImpl implements ProductService {
             return findAllAvailableProducts();
         }
         return productRepository.searchAvailableProducts(keyword.trim());
+    }
+
+    // 12. 查询所有商品（管理员使用，包括已上架和未上架）
+    @Override
+    @Transactional(readOnly = true)
+    public List<Product> findAllProducts() {
+        return productRepository.findAll();
     }
 }

@@ -14,8 +14,25 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>商户管理</h1>
             <div>
-                <a th:href="@{/admin/orders}" class="btn btn-outline-primary me-2">订单管理</a>
+                <a th:href="@{/admin}" class="btn btn-outline-secondary me-2">返回后台</a>
                 <a th:href="@{/}" class="btn btn-outline-secondary">返回首页</a>
+            </div>
+        </div>
+    
+        <!-- 搜索栏 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form th:action="@{/admin/merchants}" method="get" class="row g-3">
+                    <div class="col-md-10">
+                        <input type="text" class="form-control" name="keyword" 
+                               th:value="${keyword}" placeholder="搜索商户用户名或邮箱...">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search me-2"></i>搜索
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 

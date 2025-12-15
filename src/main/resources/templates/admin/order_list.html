@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/custom.css}">
 </head>
+
 <body>
     <div th:replace="index/fragments :: navbar"></div>
 
@@ -19,9 +21,77 @@
             </div>
         </div>
 
+        <!-- 搜索栏 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form th:action="@{/admin/orders}" method="get" class="row g-3">
+                    <div class="col-md-10">
+                        <input type="text" class="form-control" name="keyword" th:value="${keyword}"
+                            placeholder="搜索订单号、客户名或商品名...">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search me-2"></i>搜索
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card text-center border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="text-muted">总订单数</h5>
+                        <h2 class="text-primary" th:text="${totalOrders}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="text-muted">总金额</h5>
+                        <h2 class="text-success">
+                            ¥<span th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                        </h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="text-muted">已完成</h5>
+                        <h2 class="text-success" th:text="${completed}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="text-muted">处理中</h5>
+                        <h2 class="text-info" th:text="${processing}">0</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计图表 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">订单状态统计</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="orderStatusChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+
+
         <div th:if="${#lists.isEmpty(orders)}" class="text-center py-5">
             <p class="text-muted">暂无订单</p>
         </div>
+
+
 
         <div th:if="${!#lists.isEmpty(orders)}">
             <div class="table-responsive">
@@ -49,12 +119,14 @@
                                 </div>
                             </td>
                             <td>
-                                ¥<span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                ¥<span
+                                    th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
                             </td>
-                            <td th:text="${#temporals.format(order.orderDate, 'yyyy-MM-dd HH:mm')}">2025-01-01 12:00</td>
+                            <td th:text="${#temporals.format(order.orderDate, 'yyyy-MM-dd HH:mm')}">2025-01-01 12:00
+                            </td>
                             <td>
-                                <span class="badge" 
-                                      th:classappend="${order.status.name() == 'PENDING_PAYMENT'} ? 'bg-warning' : 
+                                <span class="badge"
+                                    th:classappend="${order.status.name() == 'PENDING_PAYMENT'} ? 'bg-warning' : 
                                                       (${order.status.name() == 'PROCESSING'} ? 'bg-info' : 
                                                       (${order.status.name() == 'SHIPPED'} ? 'bg-primary' : 
                                                       (${order.status.name() == 'DELIVERED'} ? 'bg-success' : 
@@ -70,22 +142,49 @@
                                 </span>
                             </td>
                             <td>
-                                <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                                <a th:href="@{/admin/orders/{id}(id=${order.id})}"
+                                    class="btn btn-sm btn-outline-primary">查看详情</a>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script th:inline="javascript">
+            const ctx = document.getElementById('orderStatusChart');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['待付款', '处理中', '已发货', '已完成', '已取消'],
+                    datasets: [{
+                        data: [
+                    /*[[${pendingPayment}]]*/ 0,
+                    /*[[${processing}]]*/ 0,
+                    /*[[${shipped}]]*/ 0,
+                    /*[[${completed}]]*/ 0,
+                    /*[[${cancelled}]]*/ 0
+                        ],
+                        backgroundColor: [
+                            '#ffc107',
+                            '#17a2b8',
+                            '#007bff',
+                            '#28a745',
+                            '#6c757d'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+        </script>
     </main>
 
     <div th:replace="index/fragments :: footer"></div>
     <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
+
 </html>
-
-
-
-
-
-

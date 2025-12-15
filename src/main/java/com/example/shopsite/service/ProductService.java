@@ -44,4 +44,7 @@ public interface ProductService {
     
     // 11. 搜索商品（按关键词搜索名称和描述）
     List<Product> searchProducts(String keyword);
+
+    List<Product> findAllProducts();
+
 }
