@@ -108,28 +108,24 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <a th:href="@{/merchant/product/edit/{id}(id=${product.id})}"
-                                            class="btn btn-outline-primary">编辑</a>
 
+                                    <div class="d-flex gap-2">
+                                        <a th:href="@{/merchant/product/edit/{id}(id=${product.id})}"
+                                            class="btn btn-sm btn-outline-primary">编辑</a>
                                         <form th:action="@{/merchant/product/toggle/{id}(id=${product.id})}"
                                             method="post" class="d-inline">
                                             <input type="hidden" th:name="${_csrf.parameterName}"
                                                 th:value="${_csrf.token}" />
-                                            <button type="submit"
-                                                th:classappend="${product.isAvailable} ? 'btn-outline-warning' : 'btn-outline-success'"
-                                                th:text="${product.isAvailable ? '下架' : '上架'}"
-                                                onclick="return product.isAvailable ? confirm('确定要下架该商品吗？') : true">
-                                                切换
-                                            </button>
+                                            <button type="submit" class="btn btn-sm"
+                                                th:classappend="${product.isAvailable} ? 'btn-warning' : 'btn-success'"
+                                                th:text="${product.isAvailable ? '下架' : '上架'}">操作</button>
                                         </form>
-
                                         <form th:action="@{/merchant/product/delete/{id}(id=${product.id})}"
                                             method="post" class="d-inline">
                                             <input type="hidden" th:name="${_csrf.parameterName}"
                                                 th:value="${_csrf.token}" />
-                                            <button type="submit" class="btn btn-outline-danger"
-                                                onclick="return confirm('确定要删除该商品吗？此操作不可恢复！')">删除</button>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('确定要删除该商品吗？')">删除</button>
                                         </form>
                                     </div>
                                 </td>

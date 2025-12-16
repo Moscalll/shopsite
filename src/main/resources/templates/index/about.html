@@ -1,22 +1,20 @@
 <section th:fragment="body">
-    <div class="container py-5">
+    <div class="container py-6 py-lg-7"> 
 
-        <!-- 标题与简介 -->
-        <div class="row mb-4">
+        <div class="row mb-5"> 
             <div class="col-12 text-center">
                 <h1 class="text-muji-dark mb-3">关于我们 · KIKA ShopSite</h1>
-                <p class="text-muted">
+                <p class="text-muted lead px-lg-5">
                     KIKA ShopSite 是一个专注于「简约生活方式」的线上商城，
                     受 MUJI 无印良品美学启发，我们希望用合适的价格，为你带来耐用、好用、看着也舒服的日常用品。
                 </p>
             </div>
         </div>
 
-        <hr class="w-25 mx-auto mb-5" style="border-top: 2px solid #A5B699;">
+        <hr class="w-25 mx-auto mb-6" style="border-top: 2px solid #A5B699;"> 
 
-        <!-- 品牌故事 -->
-        <div class="row mb-5">
-            <div class="col-md-6">
+        <div class="row mb-6 align-items-center">
+            <div class="col-md-6 order-md-1 mb-4 mb-md-0">
                 <h3 class="text-muji-dark mb-3">我们的故事</h3>
                 <p class="text-muted">
                     我们诞生于一个简单的想法：<strong>让更多人用得起设计感良好、质量可靠的生活用品</strong>。
@@ -29,31 +27,33 @@
                     我们都尽量做到：<strong>不喧哗，但舒服、顺手</strong>。
                 </p>
             </div>
-            <div class="col-md-6">
-                <div class="p-3 border rounded-3 bg-light">
+            <div class="col-md-6 order-md-2">
+                <div class="p-4 border rounded-3 card-muji-light"> 
                     <h5 class="text-muji-dark mb-3">「少即是多」的生活方式</h5>
                     <p class="text-muted mb-2">
-                        - 不追逐复杂的功能，而是回到使用本身。<br>
-                        - 不盲目堆叠风格，而是让物品自然融入日常。<br>
-                        - 不刻意制造「爆款」，而是精选耐看耐用的好物。
+                        <i class="bi bi-circle-fill icon-muji-sm me-2"></i>不追逐复杂的功能，而是回到使用本身。<br>
+                        <i class="bi bi-circle-fill icon-muji-sm me-2"></i>不盲目堆叠风格，而是让物品自然融入日常。<br>
+                        <i class="bi bi-circle-fill icon-muji-sm me-2"></i>不刻意制造「爆款」，而是精选耐看耐用的好物。
                     </p>
-                    <p class="text-muted">
+                    <p class="text-muted mt-3">
                         希望每一位来到 KIKA ShopSite 的用户，都能慢慢找到适合自己的生活节奏。
                     </p>
                 </div>
             </div>
         </div>
 
-        <!-- 我们的坚持 / 价值观 -->
-        <div class="row mb-5">
-            <div class="col-12 mb-3">
+        <div class="row mb-6">
+            <div class="col-12 mb-5 text-center">
                 <h3 class="text-muji-dark">我们的坚持</h3>
+                <p class="text-muted">我们对美好生活的基本承诺</p>
             </div>
 
-            <div class="col-md-4 mb-3">
-                <div class="card h-100 border-0 shadow-sm">
+            <div class="col-md-4 mb-4"> 
+                <div class="card h-100 border-muji-green-light shadow-sm hover-shadow">
                     <div class="card-body">
-                        <h5 class="card-title text-muji-dark mb-2">简约而不简单</h5>
+                        <h5 class="card-title text-muji-dark mb-2">
+                             <i class="bi bi-box-seam me-2 icon-muji-green"></i>简约而不简单
+                        </h5>
                         <p class="card-text text-muted">
                             外观上不过度装饰，功能上不过度复杂。
                             每一件商品，都只保留真正有用的部分，把「好用」放在第一位。
@@ -62,10 +62,12 @@
                 </div>
             </div>
 
-            <div class="col-md-4 mb-3">
-                <div class="card h-100 border-0 shadow-sm">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-muji-green-light shadow-sm hover-shadow">
                     <div class="card-body">
-                        <h5 class="card-title text-muji-dark mb-2">品质与耐用</h5>
+                        <h5 class="card-title text-muji-dark mb-2">
+                            <i class="bi bi-heart me-2 icon-muji-green"></i>品质与耐用
+                        </h5>
                         <p class="card-text text-muted">
                             与供应商保持长期合作关系，从原料、做工到品控标准层层把关，
                             希望你买到的东西可以「用得久一点」。
@@ -74,10 +76,12 @@
                 </div>
             </div>
 
-            <div class="col-md-4 mb-3">
-                <div class="card h-100 border-0 shadow-sm">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-muji-green-light shadow-sm hover-shadow">
                     <div class="card-body">
-                        <h5 class="card-title text-muji-dark mb-2">透明与真诚</h5>
+                        <h5 class="card-title text-muji-dark mb-2">
+                            <i class="bi bi-patch-check me-2 icon-muji-green"></i>透明与真诚
+                        </h5>
                         <p class="card-text text-muted">
                             不夸大宣传，不虚假折扣，尽可能用清晰的图片、文字和评价，
                             告诉你一件商品真正的样子。
@@ -87,47 +91,46 @@
             </div>
         </div>
 
-        <!-- 我们提供什么 -->
-        <div class="row mb-5">
-            <div class="col-md-6 mb-3">
-                <h3 class="text-muji-dark mb-3">我们在做什么</h3>
-                <ul class="list-unstyled text-muted">
-                    <li class="mb-2">· 精选日常生活用品：家居、收纳、文具、服饰、小家电等。</li>
-                    <li class="mb-2">· 不定期推出主题「生活企划」，围绕某一种场景做整套搭配推荐。</li>
-                    <li class="mb-2">· 与优质小商家合作，为他们提供一个展示好物的平台。</li>
-                    <li class="mb-2">· 持续优化线上购物体验，从搜索、下单到售后尽量「少一步是一步」。</li>
+        <div class="row mb-6">
+            <div class="col-md-6 mb-4 mb-md-0">
+                <h3 class="text-muji-dark mb-4">我们在做什么</h3>
+                <ul class="list-unstyled text-muted list-muji-styled">
+                    <li class="mb-2"><i class="bi bi-check-circle icon-muji-green me-2"></i>精选日常生活用品：家居、收纳、文具、服饰、小家电等。</li>
+                    <li class="mb-2"><i class="bi bi-check-circle icon-muji-green me-2"></i>不定期推出主题「生活企划」，围绕某一种场景做整套搭配推荐。</li>
+                    <li class="mb-2"><i class="bi bi-check-circle icon-muji-green me-2"></i>与优质小商家合作，为他们提供一个展示好物的平台。</li>
+                    <li class="mb-2"><i class="bi bi-check-circle icon-muji-green me-2"></i>持续优化线上购物体验，从搜索、下单到售后尽量「少一步是一步」。</li>
                 </ul>
             </div>
-            <div class="col-md-6 mb-3">
-                <h3 class="text-muji-dark mb-3">你在这里可以得到</h3>
-                <ul class="list-unstyled text-muted">
-                    <li class="mb-2">· 一目了然的商品信息与清晰的价格。</li>
-                    <li class="mb-2">· 不追求浮夸包装，而是更适合日常使用的设计。</li>
-                    <li class="mb-2">· 相对稳定、可以预期的购物体验与售后支持。</li>
-                    <li class="mb-2">· 一些关于「如何整理、如何生活」的小灵感。</li>
+            <div class="col-md-6 mb-4 mb-md-0">
+                <h3 class="text-muji-dark mb-4">你在这里可以得到</h3>
+                <ul class="list-unstyled text-muted list-muji-styled">
+                    <li class="mb-2"><i class="bi bi-gift icon-muji-green me-2"></i>一目了然的商品信息与清晰的价格。</li>
+                    <li class="mb-2"><i class="bi bi-brush icon-muji-green me-2"></i>不追求浮夸包装，而是更适合日常使用的设计。</li>
+                    <li class="mb-2"><i class="bi bi-safe icon-muji-green me-2"></i>相对稳定、可以预期的购物体验与售后支持。</li>
+                    <li class="mb-2"><i class="bi bi-lightbulb icon-muji-green me-2"></i>一些关于「如何整理、如何生活」的小灵感。</li>
                 </ul>
             </div>
         </div>
 
-        <!-- 团队 / 联系方式 -->
-        <div class="row mb-4">
-            <div class="col-md-6 mb-3">
+        <div class="row mb-5"> 
+            <div class="col-md-6 mb-4 mb-md-0">
                 <h3 class="text-muji-dark mb-3">团队与联系</h3>
                 <p class="text-muted">
                     KIKA ShopSite 目前是一个正在成长中的小团队，我们非常重视用户的反馈。
                     如果你在使用过程中有任何建议、问题或者合作想法，都非常欢迎告诉我们。
                 </p>
-                <p class="text-muted mb-1">
-                    · 客服邮箱：<a href="mailto:support@kikashopsite.com">support@kikashopsite.com</a>
-                </p>
-                <p class="text-muted mb-1">
-                    · 商务合作：<a href="mailto:bd@kikashopsite.com">bd@kikashopsite.com</a>
-                </p>
-                <p class="text-muted">
-                    · 服务时间：工作日 10:00 - 18:00（节假日时间以公告为准）
-                </p>
+                <div class="p-3 rounded-3 bg-light-muji"> <p class="text-muji-dark mb-1">
+                        <i class="bi bi-envelope icon-muji-green me-2"></i> 客服邮箱：<a href="mailto:support@kikashopsite.com" class="text-muji-dark">support@kikashopsite.com</a>
+                    </p>
+                    <p class="text-muji-dark mb-1">
+                        <i class="bi bi-briefcase icon-muji-green me-2"></i> 商务合作：<a href="mailto:bd@kikashopsite.com" class="text-muji-dark">bd@kikashopsite.com</a>
+                    </p>
+                    <p class="text-muji-dark m-0">
+                        <i class="bi bi-clock icon-muji-green me-2"></i> 服务时间：工作日 10:00 - 18:00
+                    </p>
+                </div>
             </div>
-            <div class="col-md-6 mb-3">
+            <div class="col-md-6 mb-4 mb-md-0">
                 <h3 class="text-muji-dark mb-3">未来我们想做的事</h3>
                 <p class="text-muted">
                     接下来，我们会继续丰富商品品类，优化网站体验，并尝试更多与生活方式相关的内容，
@@ -136,6 +139,7 @@
                 <p class="text-muted">
                     也许 KIKA ShopSite 无法改变世界，但希望能让你的一天，变得稍微轻松一点。
                 </p>
+                <a th:href="@{/products}" class="btn btn-muji-primary mt-3">去逛逛我们的商品 <i class="bi bi-arrow-right"></i></a>
             </div>
         </div>
 

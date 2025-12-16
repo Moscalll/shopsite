@@ -299,3 +299,172 @@
     margin-bottom: 1.5rem;
     width: 25%;
   }
+
+  /* 统一分页样式 */
+.pagination .page-link {
+    color: #4b5740;
+    border: 1px solid #dfe5d8;
+    border-radius: 6px;
+    padding: 0.35rem 0.7rem;
+  }
+  .pagination .page-link:hover {
+    background-color: #eef2ec;
+    color: #34402c;
+  }
+  .pagination .page-item.active .page-link {
+    background-color: #A5B699;
+    border-color: #A5B699;
+    color: #fff;
+  }
+  .pagination .page-item.disabled .page-link {
+    color: #adb5bd;
+    background-color: #f8f9fa;
+    border-color: #e5e7eb;
+  }
+  .pagination {
+    margin-bottom: 0;
+  }
+
+
+  /* 增加更大的留白空间 */
+.py-6 {
+    padding-top: 5rem !important; 
+    padding-bottom: 5rem !important;
+}
+.py-7 {
+    padding-top: 7rem !important; 
+    padding-bottom: 7rem !important;
+}
+.mb-6 {
+    margin-bottom: 4rem !important; 
+}
+
+/* MUJI 风格卡片/背景色 */
+.bg-light-muji {
+    background-color: #F7F7F7 !important; /* 更浅的背景色 */
+}
+.border-muji-green-light {
+    border: 1px solid #D1D8CB !important; /* 柔和的淡绿色边框 */
+}
+.card-muji-light {
+    background-color: #F7F7F7;
+    border: 1px solid #D1D8CB; 
+}
+
+
+.icon-muji-green {
+    color: #8FA882; /* 使用主按钮的深绿色，视觉更清晰 */
+}
+
+.icon-muji-sm {
+    font-size: 0.5rem; /* 小圆点图标 */
+    vertical-align: middle;
+}
+
+/* 覆盖 Bootstrap Icons 默认颜色（用于列表） */
+.list-muji-styled li {
+    line-height: 1.8; /* 增加行高，增强疏朗感 */
+}
+.list-muji-styled li i {
+    font-size: 1rem;
+    vertical-align: text-top; /* 保持图标对齐 */
+}
+
+
+.btn-muji-primary {
+    background-color: #8FA882;
+    border-color: #8FA882;
+    color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.btn-muji-primary:hover {
+    background-color: #7A9570;
+    border-color: #7A9570;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+
+/* -------------------------------------------
+   MUJI 颜色定义 (假设)
+   ------------------------------------------- */
+/* 柔和的淡绿色 */
+.text-muji-green-dark {
+    color: #8FA882 !important; 
+}
+/* 辅助淡绿色，可用于背景或链接 */
+.text-muji-green-light {
+    color: #A5B699 !important;
+}
+/* 柔和浅色边框 */
+.border-muji-light {
+    border: 1px solid #D1D8CB !important; /* 非常浅的绿灰色 */
+}
+/* 用于深色文本，保持简约风格 */
+.text-muji-dark {
+    color: #383838 !important; 
+}
+
+
+/* 标题样式 */
+.section-title-muji {
+    font-weight: 300; /* 细字体 */
+}
+
+/* 分割线样式 */
+.section-divider-muji {
+    border-top: 2px solid #D1D8CB; /* 柔和线条 */
+    opacity: 0.7;
+}
+
+/* 卡片悬停效果 - 柔和阴影和微小提升 */
+.hover-muji-shadow {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.hover-muji-shadow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(143, 168, 130, 0.1) !important; /* 使用主题色做柔和阴影 */
+}
+
+
+.accordion-muji .accordion-item {
+    border-color: #F0F0F0 !important; /* 使用浅边框 */
+}
+
+.accordion-muji .accordion-button {
+    font-weight: 500;
+    color: #383838 !important; /* 默认关闭时使用深色文字 */
+    background-color: transparent !important;
+}
+
+/* Accordion 展开状态 */
+.accordion-muji .accordion-button:not(.collapsed) {
+    color: #8FA882 !important; /* 展开时使用主题绿 */
+    background-color: #F7F7F7 !important; /* 展开时使用浅背景 */
+    box-shadow: none; 
+}
+
+/* 联系支持列表中的图标颜色 */
+.list-muji-contact i {
+    color: #8FA882 !important; 
+}
+
+.btn-outline-muji-success {
+    color: #8FA882;
+    border-color: #8FA882;
+}
+.btn-outline-muji-success:hover {
+    color: #FFFFFF;
+    background-color: #8FA882;
+    border-color: #8FA882;
+}
+.btn-outline-muji-primary {
+    color: #8FA882;
+    border-color: #8FA882;
+}
+.btn-outline-muji-primary:hover {
+    color: #FFFFFF;
+    background-color: #8FA882;
+    border-color: #8FA882;
+}
