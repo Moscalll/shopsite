@@ -1,5 +1,24 @@
 version: '3.8'
 services:
+
+  shopsite_app:
+    # 告诉 Docker Compose 在当前目录寻找 Dockerfile 来构建镜像
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # 传递 JAR 文件名作为构建参数 (保持与 Dockerfile 中的 ARG 一致)
+      args:
+        JAR_FILE: shopsite-0.0.1-SNAPSHOT.jar 
+    container_name: shopsite-app
+    restart: always
+    # 开放 8080 端口，映射到宿主机的 8080 端口
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql_db # 确保应用依赖于数据库服务
+    networks:
+      - default # 确保应用和数据库在同一个网络
+
   mysql_db:
     image: mysql:8.0
     container_name: shopsite-mysql
