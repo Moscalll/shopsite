@@ -113,13 +113,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // 6. 按ID查找商品 (前台详情页)
-    @Override // 🚨 缺失的方法已补齐
+    @Override
     @Transactional(readOnly = true)
     public Optional<Product> findAvailableProductById(Long id) {
-        // 使用 Repository 中定义的优化查询方法（如果存在）
-        // 否则使用 filter：
-        return productRepository.findById(id)
-                .filter(Product::getIsAvailable);
+        return productRepository.findByIdAndIsAvailableTrueAndStockGreaterThan(id, 0);
     }
 
     // 7. 查询新品（首页展示）
@@ -194,4 +191,5 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> findAllProducts() {
         return productRepository.findAll();
     }
+
 }

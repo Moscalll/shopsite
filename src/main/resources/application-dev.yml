@@ -34,3 +34,4 @@ logging:
   level:
     com.example.shopsite: DEBUG # 提高你自己应用包的日志级别，方便调试
     org.springframework.web: INFO
+

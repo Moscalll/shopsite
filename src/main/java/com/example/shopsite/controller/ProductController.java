@@ -47,9 +47,7 @@ public class ProductController {
      */
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
-        // 🚨 实际业务中应只返回 isAvailable = true 的商品
-        List<Product> products = productRepository.findAll();
-        return ResponseEntity.ok(products);
+        return ResponseEntity.ok(productService.findAllAvailableProducts());
     }
 
    /**

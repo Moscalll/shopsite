@@ -91,10 +91,9 @@ public class MerchantController {
 
         if (id != null) {
             // 编辑现有商品逻辑
-            Optional<Product> productOpt = productService.findAvailableProductById(id);
+            Optional<Product> productOpt = productRepository.findById(id);
             if (productOpt.isPresent()) {
                 Product product = productOpt.get();
-                // 🚨 权限校验：确保商户只能编辑自己的商品
                 if (!product.getMerchant().getId().equals(merchant.getId())) {
                     model.addAttribute("error", "权限不足，无法编辑该商品。");
                     return "merchant/dashboard"; // 重定向回列表页

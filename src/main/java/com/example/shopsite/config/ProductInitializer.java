@@ -17,9 +17,11 @@ import java.util.List;
  * 商品数据初始化器
  * 在应用启动时自动创建测试商品数据
  */
+
+// 禁用旧的 ProductInitializer，仅保留 TestDataInitializer
 @Component
-@Profile("init-data") // 仅在 init-data profile 下执行，默认不插入商品
-@Order(3) // 在 AdminInitializer 和 CategoryInitializer 之后执行
+//@Profile("init-data") // 禁用 Profile 限制
+//@Order(3) // 禁用 Order 限制
 public class ProductInitializer implements CommandLineRunner {
     
     private static final Logger logger = LoggerFactory.getLogger(ProductInitializer.class);

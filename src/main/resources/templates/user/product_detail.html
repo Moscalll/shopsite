@@ -19,9 +19,13 @@
 
         <div th:if="${product}" class="row">
             <!-- 商品图片 -->
+            <!-- product_detail.html 商品图片区域替换 -->
             <div class="col-md-6 mb-4">
-                <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}" class="img-fluid rounded shadow"
-                    th:alt="${product.name}" style="max-height: 500px; object-fit: cover;">
+                <div
+                    style="width:100%; max-width:520px; aspect-ratio:3/4; overflow:hidden; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); background:#f8f9fa; margin:0 auto;">
+                    <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}" th:alt="${product.name}"
+                        style="width:100%; height:100%; object-fit:contain;">
+                </div>
             </div>
 
             <!-- 商品信息 -->

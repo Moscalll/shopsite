@@ -14,7 +14,7 @@
 
     <main class="container-fluid px-0">
         <!-- 横幅滚动大图 -->
-        <section class="mb-5">
+        <section class="mb-5 mt-3">
             <div id="homeCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-indicators">
                     <button type="button" data-bs-target="#homeCarousel" th:each="banner, iterStat : ${banners}"
@@ -59,7 +59,8 @@
                             class="text-decoration-none text-center d-block">
                             <div class="card border-0 shadow-sm h-100 hover-shadow">
                                 <div class="card-body p-3">
-                                    <img th:src="${category.imageUrl ?: '/images/category-placeholder.jpg'}"
+                                    <!-- home.html 分类卡片处替换 img -->
+                                    <img th:src="${categoryImageMap[category.name] ?: '/images/category-placeholder.jpg'}"
                                         class="img-fluid rounded mb-2" th:alt="${category.name}"
                                         style="width: 100%; height: 120px; object-fit: cover; background-color: #f5f5f5;">
                                     <h6 class="card-title mb-0 text-muji-dark" th:text="${category.name}">分类名称</h6>
@@ -88,8 +89,9 @@
                 </div>
                 <div class="row g-4">
                     <div class="row g-4">
-                        <div class="col-lg-3 col-md-4 col-sm-6" th:each="product : ${newArrivals}"
-                            th:if="${product.isAvailable}">
+                        <div class="col-lg-3 col-md-4 col-sm-6"
+                             th:each="product : ${newArrivals}"
+                             th:if="${product.isAvailable} and ${product.stock} > 0">
                             <div class="card h-100 shadow-sm border-0">
                                 <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}" class="card-img-top"
                                     th:alt="${product.name}" style="height: 200px; object-fit: cover;">
@@ -126,8 +128,9 @@
                     </div>
                 </div>
                 <div class="row g-4">
-                    <div class="col-lg-3 col-md-4 col-sm-6" th:each="product, iterStat : ${topSelling}"
-                        th:if="${product.isAvailable}">
+                    <div class="col-lg-3 col-md-4 col-sm-6"
+                         th:each="product, iterStat : ${topSelling}"
+                         th:if="${product.isAvailable} and ${product.stock} > 0">
                         <div class="card h-100 shadow-sm border-0">
                             <div class="position-relative">
                                 <span class="badge bg-danger position-absolute top-0 start-0 m-2"
@@ -165,8 +168,9 @@
                     </div>
                 </div>
                 <div class="row g-4">
-                    <div class="col-lg-3 col-md-4 col-sm-6" th:each="product : ${categoryProductsMap[category.id]}"
-                        th:if="${product.isAvailable}">
+                    <div class="col-lg-3 col-md-4 col-sm-6"
+                         th:each="product : ${categoryProductsMap[category.id]}"
+                         th:if="${product.isAvailable} and ${product.stock} > 0">
                         <div class="card h-100 shadow-sm border-0">
                             <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}" class="card-img-top"
                                 th:alt="${product.name}" style="height: 200px; object-fit: cover;">
