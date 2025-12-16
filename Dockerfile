@@ -1,6 +1,5 @@
 
-# 使用 OpenJDK 21 作为基础镜像
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jdk-jammy
 
 # 设置工作目录
 WORKDIR /app
@@ -13,4 +12,4 @@ COPY target/${JAR_FILE} /app/app.jar
 EXPOSE 8080
 
 # 容器启动命令：激活 prod profile，连接到 Docker 网络内的 shopsite-mysql
-ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=prod"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

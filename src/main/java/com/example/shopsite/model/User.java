@@ -3,9 +3,9 @@ package com.example.shopsite.model;
 import java.util.List;
 import jakarta.persistence.*;
 import lombok.Data; 
-import lombok.NoArgsConstructor; // 🚨 新增：JPA 需要无参构造函数
-import lombok.AllArgsConstructor; // 🚨 新增：方便全参构造
-import lombok.Builder; // 🚨 新增：方便 Service 层构建对象
+import lombok.NoArgsConstructor; 
+import lombok.AllArgsConstructor; 
+import lombok.Builder; 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority; 
 import org.springframework.security.core.authority.SimpleGrantedAuthority; 
@@ -24,7 +24,7 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🚨 唯一约束：确保用户名不重复（注册时查重）
+    // 唯一约束：确保用户名不重复（注册时查重）
     @Column(unique = true, nullable = false)
     private String username;
     
@@ -32,7 +32,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
     
-    // 🚨 唯一约束：确保邮箱不重复（注册时查重）
+    // 唯一约束：确保邮箱不重复（注册时查重）
     @Column(unique = true, nullable = false)
     private String email;
 
@@ -43,7 +43,7 @@ public class User implements UserDetails {
     
     // 用户拥有的订单列表
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore // 🚨 关键：阻止序列化时递归加载订单，打破无限循环
+    @JsonIgnore 
     private List<Order> orders;
     
     @Override
@@ -72,8 +72,5 @@ public class User implements UserDetails {
     // 额外的 getter：返回加密后的密码（UserDetails 接口要求）
     @Override
     public String getPassword() { return password; }
-
-    // 💡 Lombok @Data 会自动生成所有 Getter/Setter (包括 getRole())，
-    //    满足 CustomUserDetailsService 的需求。
 }
 

@@ -2,7 +2,7 @@
 spring:
   datasource:
     # 线上阿里云 RDS 的内网地址或外部 IP
-    url: jdbc:mysql://shopsite-mysql:3306/shopsite_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: ${PROD_DB_URL}
     username: ${PROD_DB_USERNAME}
     password: ${PROD_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver

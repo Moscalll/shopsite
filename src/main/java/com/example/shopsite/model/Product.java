@@ -32,10 +32,10 @@ public class Product {
     @Column(nullable = false)
     private Boolean isAvailable = true; // 是否上架
 
-    // 🚨 新增：商品主图URL
+    // 商品主图URL
     private String imageUrl; 
 
-    // 🚨 新增：商品类别 (多对一关系)
+    // 商品类别 (多对一关系)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category; 

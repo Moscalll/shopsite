@@ -15,14 +15,20 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - mysql_db # 确保应用依赖于数据库服务
+      mysql_db:
+        condition: service_healthy
     networks:
       - default # 确保应用和数据库在同一个网络
+    environment:
+      PROD_DB_URL: ${PROD_DB_URL}
+      PROD_DB_USERNAME: ${PROD_DB_USERNAME}
+      PROD_DB_PASSWORD: ${PROD_DB_PASSWORD}
+      SPRING_PROFILES_ACTIVE: prod,init-data
 
   mysql_db:
     image: mysql:8.0
     container_name: shopsite-mysql
-    restart: always
+    restart: unless-stopped
     environment:
       # 直接引用 .env 文件中的变量
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} 
@@ -36,6 +42,12 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./src/main/resources/db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$MYSQL_USER", "-p$$MYSQL_PASSWORD"]
+      interval: 10s # 每 10 秒检查一次
+      timeout: 5s   # 每次检查超时时间
+      retries: 5    # 重试 5 次
+      start_period: 20s # 初始等待 20 秒，让初始化脚本有时间运行
 
 volumes:
   db_data:
