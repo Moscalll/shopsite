@@ -289,3 +289,13 @@
 .main-content {
     padding: 20px;
 }
+
+.section-title {
+    text-align: left;
+    margin-bottom: 1rem;
+  }
+  .section-divider {
+    border-top: 2px solid #A5B699;
+    margin-bottom: 1.5rem;
+    width: 25%;
+  }

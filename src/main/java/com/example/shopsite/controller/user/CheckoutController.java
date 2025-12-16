@@ -32,26 +32,34 @@ public class CheckoutController {
      * GET /checkout - 确认订单页面（从购物车）
      */
     @GetMapping
-    public String checkoutPage(Model model, Authentication authentication) {
+    public String checkoutPage(
+            @RequestParam(value = "cartItemIds", required = false) List<Long> cartItemIds,
+            Model model,
+            Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
 
         String username = authentication.getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
 
         User user = userOpt.get();
-        List<CartItem> cartItems = cartService.getCartItems(user);
-        
+        List<CartItem> cartItems;
+        if (cartItemIds != null && !cartItemIds.isEmpty()) {
+            cartItems = cartService.getCartItems(user).stream()
+                    .filter(item -> cartItemIds.contains(item.getId()))
+                    .collect(java.util.stream.Collectors.toList());
+        } else {
+            cartItems = cartService.getCartItems(user);
+        }
+
         if (cartItems.isEmpty()) {
             return "redirect:/cart";
         }
 
-        // 计算总金额
         BigDecimal totalAmount = cartItems.stream()
                 .map(item -> item.getProduct().getPrice()
                         .multiply(BigDecimal.valueOf(item.getQuantity())))
@@ -70,20 +78,20 @@ public class CheckoutController {
      */
     @PostMapping
     public String checkoutSelected(@RequestParam(value = "cartItemIds", required = false) List<Long> cartItemIds,
-                                   Model model, Authentication authentication) {
+            Model model, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
 
         String username = authentication.getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
+
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
 
         User user = userOpt.get();
-        
+
         // 如果传入了选中的购物车项ID，只显示选中的商品
         List<CartItem> cartItems;
         if (cartItemIds != null && !cartItemIds.isEmpty()) {
@@ -94,7 +102,7 @@ public class CheckoutController {
             // 如果没有选择，显示所有商品
             cartItems = cartService.getCartItems(user);
         }
-        
+
         if (cartItems.isEmpty()) {
             return "redirect:/cart";
         }
@@ -118,31 +126,27 @@ public class CheckoutController {
      */
     @GetMapping("/direct")
     public String directCheckout(@RequestParam Long productId,
-                                 @RequestParam(defaultValue = "1") Integer quantity,
-                                 Model model, Authentication authentication) {
+            @RequestParam(defaultValue = "1") Integer quantity,
+            Model model, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
 
         String username = authentication.getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
 
         User user = userOpt.get();
-        
-        // 将商品添加到购物车（临时），用于显示在确认订单页面
+
         try {
-            cartService.addToCart(productId, quantity, user);
+            CartItem cartItem = cartService.addToCart(productId, quantity, user);
+            // 只带上当前加购/合并的购物车项 ID
+            return "redirect:/checkout?cartItemIds=" + cartItem.getId();
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             return "redirect:/product/" + productId;
         }
-
-        // 重定向到确认订单页面
-        return "redirect:/checkout";
     }
 }
-

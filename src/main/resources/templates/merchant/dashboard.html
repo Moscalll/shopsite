@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,13 +8,15 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/custom.css}">
 </head>
+
 <body>
     <div th:replace="index/fragments :: navbar"></div>
 
     <div class="container-fluid">
         <div class="row">
             <!-- 侧边栏 -->
-            <nav class="col-md-3 col-lg-2 sidebar" style="min-height: calc(100vh - 56px); background-color: #f8f9fa; padding: 20px 0;">
+            <nav class="col-md-3 col-lg-2 sidebar"
+                style="min-height: calc(100vh - 56px); background-color: #f8f9fa; padding: 20px 0;">
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <a class="nav-link active" th:href="@{/merchant/dashboard}">
@@ -85,48 +88,48 @@
                             <tr th:each="product : ${products}">
                                 <td th:text="${product.id}">1</td>
                                 <td>
-                                    <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}" 
-                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+                                    <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}"
+                                        style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
                                 </td>
                                 <td>
-                                    <a th:href="@{/product/{id}(id=${product.id})}" 
-                                       class="text-decoration-none"
-                                       th:text="${product.name}">商品名称</a>
+                                    <a th:href="@{/product/{id}(id=${product.id})}" class="text-decoration-none"
+                                        th:text="${product.name}">商品名称</a>
                                 </td>
                                 <td>
-                                    ¥<span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 2, 'POINT')}">99.00</span>
+                                    ¥<span
+                                        th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 2, 'POINT')}">99.00</span>
                                 </td>
                                 <td th:text="${product.stock}">100</td>
                                 <td th:text="${product.category.name}">分类</td>
                                 <td>
-                                    <span class="badge" 
-                                          th:classappend="${product.isAvailable} ? 'bg-success' : 'bg-secondary'">
+                                    <span class="badge"
+                                        th:classappend="${product.isAvailable} ? 'bg-success' : 'bg-secondary'">
                                         <span th:text="${product.isAvailable ? '上架' : '下架'}">上架</span>
                                     </span>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a th:href="@{/merchant/product/edit/{id}(id=${product.id})}" 
-                                           class="btn btn-outline-primary">编辑</a>
-                                        <form th:action="@{/merchant/product/toggle/{id}(id=${product.id})}" 
-                                              method="post" 
-                                              class="d-inline"
-                                              th:if="${product.isAvailable}">
-                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                            <button type="submit" class="btn btn-outline-warning" onclick="return confirm('确定要下架该商品吗？')">下架</button>
+                                        <a th:href="@{/merchant/product/edit/{id}(id=${product.id})}"
+                                            class="btn btn-outline-primary">编辑</a>
+
+                                        <form th:action="@{/merchant/product/toggle/{id}(id=${product.id})}"
+                                            method="post" class="d-inline">
+                                            <input type="hidden" th:name="${_csrf.parameterName}"
+                                                th:value="${_csrf.token}" />
+                                            <button type="submit"
+                                                th:classappend="${product.isAvailable} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                                th:text="${product.isAvailable ? '下架' : '上架'}"
+                                                onclick="return product.isAvailable ? confirm('确定要下架该商品吗？') : true">
+                                                切换
+                                            </button>
                                         </form>
-                                        <form th:action="@{/merchant/product/toggle/{id}(id=${product.id})}" 
-                                              method="post" 
-                                              class="d-inline"
-                                              th:if="${!product.isAvailable}">
-                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                            <button type="submit" class="btn btn-outline-success">上架</button>
-                                        </form>
-                                        <form th:action="@{/merchant/product/delete/{id}(id=${product.id})}" 
-                                              method="post" 
-                                              class="d-inline">
-                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('确定要删除该商品吗？此操作不可恢复！')">删除</button>
+
+                                        <form th:action="@{/merchant/product/delete/{id}(id=${product.id})}"
+                                            method="post" class="d-inline">
+                                            <input type="hidden" th:name="${_csrf.parameterName}"
+                                                th:value="${_csrf.token}" />
+                                            <button type="submit" class="btn btn-outline-danger"
+                                                onclick="return confirm('确定要删除该商品吗？此操作不可恢复！')">删除</button>
                                         </form>
                                     </div>
                                 </td>
@@ -147,13 +150,16 @@
             border-radius: 5px;
             margin: 5px 10px;
         }
+
         .sidebar .nav-link:hover {
             background-color: #e9ecef;
         }
+
         .sidebar .nav-link.active {
             background-color: #A5B699;
             color: white;
         }
+
         .sidebar .nav-link:focus,
         .sidebar .nav-link:active,
         .sidebar .nav-link:focus-visible {
@@ -164,4 +170,5 @@
         }
     </style>
 </body>
+
 </html>

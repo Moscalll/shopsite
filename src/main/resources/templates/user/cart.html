@@ -100,12 +100,11 @@
                                     </strong>
                                 </td>
                                 <td>
-                                    <form th:action="@{/cart/remove/{id}(id=${item.id})}" method="post"
-                                        class="d-inline">
-                                        <input type="hidden" th:name="${_csrf.parameterName}"
-                                            th:value="${_csrf.token}" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
-                                    </form>
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" formmethod="post"
+                                        th:formaction="@{/cart/remove/{id}(id=${item.id})}">
+                                        删除
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>

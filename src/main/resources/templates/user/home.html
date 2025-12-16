@@ -49,8 +49,8 @@
             <section class="mb-5">
                 <div class="row mb-4">
                     <div class="col-12">
-                        <h2 class="text-muji-dark text-center">| 商品分类 |</h2>
-                        <hr class="w-25 mx-auto" style="border-top: 2px solid #A5B699;">
+                        <h2 class="text-muji-dark section-title">| 商品分类 |</h2>
+                        <hr class="section-divider">
                     </div>
                 </div>
                 <div class="row g-4">
@@ -78,13 +78,13 @@
             <section class="mb-5">
                 <div class="row mb-4">
                     <div class="col-12 d-flex justify-content-between align-items-center">
-                        <h2 class="text-muji-dark mb-0">| 新品上市 |</h2>
+                        <h2 class="text-muji-dark section-title">| 新品上市 |</h2>
                         <a th:href="@{/new-arrivals}" class="btn btn-light" style="border: 1px solid #A5B699;">
                             查看全部 <i class="bi bi-arrow-right"></i>
                         </a>
                     </div>
                     <div class="col-12">
-                        <hr class="w-25" style="border-top: 2px solid #A5B699;">
+                        <hr class="section-divider">
                     </div>
                 </div>
                 <div class="row g-4">
@@ -118,13 +118,13 @@
             <section class="mb-5">
                 <div class="row mb-4">
                     <div class="col-12 d-flex justify-content-between align-items-center">
-                        <h2 class="text-muji-dark mb-0">| 热销排行榜 |</h2>
+                        <h2 class="text-muji-dark section-title">| 热销排行榜 |</h2>
                         <a th:href="@{/top-selling}" class="btn btn-light" style="border: 1px solid #A5B699;">
                             查看全部 <i class="bi bi-arrow-right"></i>
                         </a>
                     </div>
                     <div class="col-12">
-                        <hr class="w-25" style="border-top: 2px solid #A5B699;">
+                        <hr class="section-divider">
                     </div>
                 </div>
                 <div class="row g-4">
@@ -163,8 +163,8 @@
             <section class="mb-5" th:each="category : ${categories}">
                 <div class="row mb-4">
                     <div class="col-12">
-                        <h2 class="text-muji-dark" th:text="'| ' + ${category.name} + ' |'">| 分类名称 |</h2>
-                        <hr class="w-25" style="border-top: 2px solid #A5B699;">
+                        <h2 class="text-muji-dark section-title" th:text="'| ' + ${category.name} + ' |'">| 分类名称 |</h2>
+                        <hr class="section-divider">
                     </div>
                 </div>
                 <div class="row g-4">
