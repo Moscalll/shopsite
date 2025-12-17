@@ -468,3 +468,8 @@
     background-color: #8FA882;
     border-color: #8FA882;
 }
+
+.modal {
+    /* 强制 Modal 默认是不可见的，直到 Bootstrap JS 初始化 */
+    display: none !important;
+}
