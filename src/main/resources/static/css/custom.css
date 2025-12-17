@@ -469,7 +469,24 @@
     border-color: #8FA882;
 }
 
-.modal {
-    /* 强制 Modal 默认是不可见的，直到 Bootstrap JS 初始化 */
-    display: none !important;
+/* 确保 html 和 body 占据 100% 高度 */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+/* 将 body 设置为 Flex 容器 */
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 让中间的内容区域自动撑开，把 footer 挤到底部 */
+main, .main-container {
+    flex: 1 0 auto;
+}
+
+/* 确保页脚不会被压缩 */
+footer {
+    flex-shrink: 0;
 }
