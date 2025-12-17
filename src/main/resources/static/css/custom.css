@@ -6,23 +6,19 @@
 
 /* 自定义样式 */
 .bg-muji-green {
-    /* 柔和的淡绿色，类似 MUJI */
     background-color: #A5B699 !important;
 }
 
 .text-muji-dark {
-    /* 确保链接文字颜色对比度足够 */
     color: #333333 !important;
 }
 
 .nav-link.active {
-    /* 激活状态下的下划线 */
     border-bottom: 2px solid #333333;
 }
 
 .footer-muji-grey {
     background-color: #EFEFEF !important;
-    /* 浅灰色 */
     color: #333333 !important;
 }
 
@@ -45,10 +41,8 @@
     transform: translateY(-3px);
 }
 
-/* MUJI 风格按钮样式 - 与浅绿色主题搭配 */
 .btn-muji-primary {
     background-color: #8FA882;
-    /* 稍深的绿色，比主色调深一点 */
     border-color: #8FA882;
     color: #ffffff;
     transition: all 0.3s ease;
@@ -155,7 +149,7 @@
     color: #ffffff;
 }
 
-/* 覆盖 Bootstrap 默认按钮颜色，使用 MUJI 风格 */
+/* 覆盖 Bootstrap 默认按钮颜色 */
 .btn-primary {
     background-color: #8FA882 !important;
     border-color: #8FA882 !important;
@@ -252,7 +246,6 @@
 /* 未读消息红点调整为柔和的橙红色 */
 .badge.bg-danger {
     background-color: #D4A574 !important;
-    /* 使用柔和的橙黄色替代刺眼的红色 */
 }
 
 .sidebar {
@@ -468,6 +461,18 @@
     background-color: #8FA882;
     border-color: #8FA882;
 }
+
+/* 允许表格内的下拉菜单溢出显示 */
+.table-responsive {
+    overflow: visible !important;
+}
+
+/* 针对 Bootstrap 5 的特殊处理 */
+.dropdown-menu {
+    /* 确保下拉菜单在所有层级之上 */
+    z-index: 1060 !important;
+}
+
 
 /* 确保 html 和 body 占据 100% 高度 */
 html, body {
