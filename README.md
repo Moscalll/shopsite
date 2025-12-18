@@ -194,7 +194,7 @@ PROD_DB_PASSWORD=shoppass123
 
 #### 1. 启动 MySQL 数据库
 
-#### 使用 Docker 启动 MySQL
+**使用 Docker 启动 MySQL**
 
 ```
 docker run -d --name shopsite-mysql \
