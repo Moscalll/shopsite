@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class MerchantLogController {
 
     /**
-     * GET /merchant/logs - 重定向到客户管理（因为日志现在在客户详情中查看）
+     * GET /merchant/logs - 重定向到客户管理（日志现在在客户详情中查看）
      */
     @GetMapping
     public String logs() {

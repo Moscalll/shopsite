@@ -25,24 +25,3 @@ public interface CartService {
     Integer getCartItemCount(User user);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

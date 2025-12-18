@@ -152,7 +152,7 @@ public class MerchantCustomerController {
 
         model.addAttribute("customer", customer);
         model.addAttribute("orders", customerOrders);
-        model.addAttribute("totalSpent", totalSpent); // 添加这一行
+        model.addAttribute("totalSpent", totalSpent); 
         model.addAttribute("logs", logs);
         model.addAttribute("actionType", actionType);
         model.addAttribute("pageTitle", "客户详情: " + customer.getUsername());

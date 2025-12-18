@@ -32,7 +32,7 @@
 //                 .orElseThrow(() -> 
 //                         new UsernameNotFoundException("找不到用户: " + username));
 
-//         // 🚨 检查点：确保你使用的是 user.getRole().name()
+//         // 检查点：确保你使用的是 user.getRole().name()
 //         Set<GrantedAuthority> authorities = Collections.singleton(
 //             new SimpleGrantedAuthority("ROLE_" + user.getRole().name()) 
 //         );

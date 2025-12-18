@@ -19,24 +19,3 @@ public interface FavoriteService {
     boolean isFavorite(Long productId, User user);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

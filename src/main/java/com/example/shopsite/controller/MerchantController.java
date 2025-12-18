@@ -21,7 +21,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/merchant")
-// 🚨 限制：只有拥有 ROLE_MERCHANT 或 ROLE_ADMIN 角色的用户才能访问此 Controller 内的方法
+// 限制：只有拥有 ROLE_MERCHANT 或 ROLE_ADMIN 角色的用户才能访问此 Controller 内的方法
 @PreAuthorize("hasRole('MERCHANT') or hasRole('ADMIN')")
 public class MerchantController {
 
@@ -29,17 +29,17 @@ public class MerchantController {
     private final CategoryService categoryService;
     private final ProductRepository productRepository;
     private final FileUploadService fileUploadService;
-    private final UserRepository userRepository; // 添加这个字段
+    private final UserRepository userRepository;
 
     @Autowired
     public MerchantController(ProductService productService, CategoryService categoryService,
             ProductRepository productRepository, FileUploadService fileUploadService,
-            UserRepository userRepository) { // 添加这个参数
+            UserRepository userRepository) {
         this.productService = productService;
         this.categoryService = categoryService;
         this.productRepository = productRepository;
         this.fileUploadService = fileUploadService;
-        this.userRepository = userRepository; // 添加这个赋值
+        this.userRepository = userRepository; 
     }
 
     /**
@@ -109,7 +109,7 @@ public class MerchantController {
             model.addAttribute("pageTitle", "创建新商品");
         }
 
-        // 假设模板路径为 templates/merchant/product_form.html
+        // 模板路径为 templates/merchant/product_form.html
         return "merchant/product_form";
     }
 

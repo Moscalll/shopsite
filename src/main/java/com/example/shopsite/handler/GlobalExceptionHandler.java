@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-@ControllerAdvice // 🚨 标记为全局异常处理器
+@ControllerAdvice // 标记为全局异常处理器
 public class GlobalExceptionHandler {
 
     // 捕获所有业务相关的异常，并返回 400 Bad Request
@@ -16,10 +16,10 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    // 💡 可选：捕获通用的 RuntimeException (如果它们是业务相关的)
+    // 捕获通用的 RuntimeException (如果是业务相关的)
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleGenericRuntimeException(RuntimeException ex) {
-        // 如果异常信息是资源不存在 (我们通常用 404)
+        // 如果异常信息是资源不存在 (通常用 404)
         if (ex.getMessage() != null && ex.getMessage().contains("不存在")) {
             return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
         }

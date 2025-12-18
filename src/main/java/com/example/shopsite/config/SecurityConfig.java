@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-//import org.springframework.security.config.http.SessionCreationPolicy;  引入 SessionCreationPolicy
 
 @Configuration
 @EnableWebSecurity
@@ -31,13 +30,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 🚨 移除：不再禁用 CSRF，因为 Session 认证需要 CSRF 保护
-                // 🚨 移除：不再配置 SessionCreationPolicy.STATELESS，恢复到默认的基于 Session 的认证
 
                 // 配置请求授权
                 .authorizeHttpRequests(auth -> auth
 
-                        // 1. 🚨 允许匿名访问的页面路由和静态资源（前端）
+                        // 1. 允许匿名访问的页面路由和静态资源（前端）
                         .requestMatchers(
                                 "/", // 首页
                                 "/products", // 商品列表
@@ -68,7 +65,7 @@ public class SecurityConfig {
                         // 5. 管理员端路由（需要ADMIN角色）
                         .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
 
-                        // 6. 🚨 关键修正：分离商家/管理员路由
+                        // 6. 分离商家/管理员路由
                         // 只有 MERCHANT 或 ADMIN 才能创建商品 (POST)
                         .requestMatchers(HttpMethod.POST, "/api/products")
                         .hasAnyAuthority("ROLE_MERCHANT", "ROLE_ADMIN")
@@ -88,7 +85,7 @@ public class SecurityConfig {
                         // 8. 其他所有未明确指定的请求（包括未在上面的 /api/** 中列出的）
                         .anyRequest().authenticated())
 
-                // 🚨 关键：启用并配置基于 Session 的表单登录
+                // 启用并配置基于 Session 的表单登录
                 .formLogin(form -> form
                         .loginPage("/login") // 指定自定义登录页面 GET 请求
                         .loginProcessingUrl("/login") // 指定处理登录表单的 POST 请求路径
@@ -97,17 +94,11 @@ public class SecurityConfig {
                         .permitAll() // 允许所有人访问登录路径
                 )
 
-                // 🚨 关键：启用并配置登出
+                // 启用并配置登出
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login") // 登出后跳转到登录页
                         .permitAll())
-
-                // 🚨 关键：禁用 JWT 过滤器
-                // 移除了 http.addFilterBefore(jwtAuthenticationFilter,
-                // UsernamePasswordAuthenticationFilter.class);
-                // 移除了 httpBasic(httpBasic -> httpBasic.disable()) 和 formLogin(formLogin ->
-                // formLogin.disable())
 
                 // 允许 /api/auth/register POST 请求不携带 CSRF Token（如果你不希望为 API 客户端提供 token）
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/auth/register"));

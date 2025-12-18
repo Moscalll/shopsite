@@ -24,22 +24,12 @@ public class ProductController {
     
 
     private final ProductRepository productRepository;
-    private final ProductService productService; // 🚨 注入 Service
+    private final ProductService productService; // 注入 Service
 
     public ProductController(ProductRepository productRepository, ProductService productService) {
         this.productRepository = productRepository;
         this.productService = productService;
     }
-
-
-    // @GetMapping("/") // 首页路由
-    // public String listProducts(Model model) { // 🚨 返回 String，接受 Model
-    //     List<Product> products = productService.findAllAvailableProducts();
-        
-    //     model.addAttribute("pageTitle", "所有商品");
-    //     model.addAttribute("products", products); // 将数据模型添加到 Model 中
-    //     return "product/list"; // 对应 templates/product/list.html
-    // }
 
     /**
      * GET /api/products
@@ -76,7 +66,7 @@ public class ProductController {
         }
     }
 
-    // TODO: PUT /api/products/{id} (修改商品)
+    
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(
         @PathVariable Long id, 
@@ -98,10 +88,9 @@ public class ProductController {
         }
     }
     
-    // TODO: DELETE /api/products/{id} (删除/下架商品)
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id, @AuthenticationPrincipal User merchant) {
-        // 实际业务中，应实现 Service 方法来根据 ID 和 Merchant ID 进行逻辑删除（下架），此处省略 Service 调用
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

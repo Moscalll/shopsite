@@ -49,23 +49,3 @@ public class CategoryListController {
         return "user/products_list";
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

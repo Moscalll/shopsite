@@ -7,7 +7,6 @@ import com.example.shopsite.service.ProductService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import java.util.stream.Collectors;
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class HomeController {
          */
         @GetMapping("/")
         public String home(Model model) {
-                // 横幅数据（可以后续从数据库或配置文件读取）
+                // 横幅数据
                 java.util.List<java.util.Map<String, String>> banners = new java.util.ArrayList<>();
                 java.util.Map<String, String> banner1 = new java.util.HashMap<>();
                 banner1.put("imageUrl",

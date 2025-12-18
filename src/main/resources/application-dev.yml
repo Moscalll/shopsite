@@ -1,5 +1,10 @@
 
 spring:
+
+  sql:
+      init:
+        mode: always
+        schema-locations: classpath:db/init.sql
   # 2. 数据源配置：指向本地 Docker MySQL 容器
   datasource:
     url: jdbc:mysql://localhost:3306/shopsite_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true

@@ -43,19 +43,16 @@ public class AuthController {
      * 接收 UserLoginDto，调用 Service 层处理认证
      */
     @PostMapping("/login")
-    // 💡 登录时不需要 @Valid，因为密码校验通常在 Service/Security 层处理
+    // 登录时不需要 @Valid，因为密码校验通常在 Service/Security 层处理
     public ResponseEntity<?> authenticateUser(@RequestBody UserLoginDto loginRequest) {
         try {
-            // 🚨 核心：调用 UserService 中的登录方法。我们稍后实现这个方法。
             String jwtToken = userService.authenticateUser(loginRequest);
             
             // 登录成功，返回 200 OK，并在响应体中返回 JWT/Token
-            // 实际项目中，你需要返回一个包含 token 的 JSON 对象
             return new ResponseEntity<>("登录成功，Token: " + jwtToken, HttpStatus.OK);
 
         } catch (RuntimeException e) {
             // 登录失败（用户名不存在或密码错误），返回 401 Unauthorized
-            // 注意：登录失败时，为了安全，应返回 401 或 400，但信息应模糊。
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
     }

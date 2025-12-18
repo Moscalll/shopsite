@@ -55,7 +55,6 @@ public class CategoryService {
         if (!categoryRepository.existsById(id)) {
             throw new IllegalArgumentException("Category not found with id: " + id);
         }
-        // 🚨 实际应用中：在删除分类前，需要处理关联的商品（例如设置为“未分类”）
         categoryRepository.deleteById(id);
     }
 }

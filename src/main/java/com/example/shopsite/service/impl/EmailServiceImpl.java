@@ -19,14 +19,6 @@ public class EmailServiceImpl implements EmailService {
             logger.info("发送订单确认邮件到: {}", order.getUser().getEmail());
             logger.info("邮件内容:\n{}", emailContent);
             
-            // TODO: 实际应用中，这里应该调用邮件服务（如 JavaMailSender）发送邮件
-            // 示例：
-            // SimpleMailMessage message = new SimpleMailMessage();
-            // message.setTo(order.getUser().getEmail());
-            // message.setSubject("订单确认 - 订单号: " + order.getId());
-            // message.setText(emailContent);
-            // mailSender.send(message);
-            
         } catch (Exception e) {
             logger.error("发送邮件失败", e);
             throw new RuntimeException("邮件发送失败: " + e.getMessage(), e);
@@ -57,23 +49,3 @@ public class EmailServiceImpl implements EmailService {
         return content.toString();
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-@Profile("init-data") // 仅在 init-data profile 下执行，避免默认启动自动插入
+@Profile("init-data") 
 @Order(1) 
 public class CategoryInitializer implements CommandLineRunner {
 

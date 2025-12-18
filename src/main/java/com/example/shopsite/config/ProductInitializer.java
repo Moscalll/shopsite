@@ -5,10 +5,9 @@ import com.example.shopsite.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.annotation.Profile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,10 +17,8 @@ import java.util.List;
  * 在应用启动时自动创建测试商品数据
  */
 
-// 禁用旧的 ProductInitializer，仅保留 TestDataInitializer
+@Profile("legacy")
 @Component
-//@Profile("init-data") // 禁用 Profile 限制
-//@Order(3) // 禁用 Order 限制
 public class ProductInitializer implements CommandLineRunner {
     
     private static final Logger logger = LoggerFactory.getLogger(ProductInitializer.class);

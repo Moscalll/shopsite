@@ -9,7 +9,6 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
-// 🚨 将 class 改为 interface
 public interface ProductService { 
 
     // 1. 创建/上架新商品 (商户权限)

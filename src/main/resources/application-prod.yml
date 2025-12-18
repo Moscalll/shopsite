@@ -9,7 +9,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate # 生产环境通常使用 'validate' 而不是 'update'
+      ddl-auto: validate 
     show-sql: false
   
   server:

@@ -235,7 +235,6 @@
             if (passwordInput.value !== confirmPasswordInput.value) {
                 e.preventDefault();
                 confirmPasswordInput.classList.add('is-invalid');
-                // 注意：因为使用了 is-invalid，Bootstrap 会自动显示 .invalid-feedback
                 isValid = false;
             }
 

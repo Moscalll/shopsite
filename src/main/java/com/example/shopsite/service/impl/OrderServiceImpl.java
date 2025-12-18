@@ -23,7 +23,7 @@ import com.example.shopsite.service.MessageService;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository; // 🚨 需要创建这个 Repository
+    private final OrderItemRepository orderItemRepository; 
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CartService cartService; // 添加 CartService
@@ -74,10 +74,10 @@ public class OrderServiceImpl implements OrderService {
             BigDecimal quantityBd = new BigDecimal(itemRequest.getQuantity());
 
             // 计算单项总价
-            BigDecimal itemPrice = product.getPrice().multiply(quantityBd); // 🚨 使用 multiply 方法
+            BigDecimal itemPrice = product.getPrice().multiply(quantityBd); // 使用 multiply 方法
 
             // 3. 累加到订单总价: totalAmount = totalAmount.add(itemPrice)
-            totalAmount = totalAmount.add(itemPrice); // 🚨 使用 add 方法
+            totalAmount = totalAmount.add(itemPrice); // 使用 add 方法
 
             // 扣减库存（关键的业务操作）
             product.setStock(product.getStock() - itemRequest.getQuantity());

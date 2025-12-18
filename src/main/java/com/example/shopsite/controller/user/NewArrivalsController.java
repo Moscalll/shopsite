@@ -29,22 +29,3 @@ public class NewArrivalsController {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

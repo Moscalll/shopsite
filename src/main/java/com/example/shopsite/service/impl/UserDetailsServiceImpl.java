@@ -29,15 +29,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("用户未找到: " + username));
 
         // 2. 将用户角色转换为 Spring Security 要求的 GrantedAuthority 集合
-        // 假设你的 User 实体有一个 getRole() 方法返回角色字符串（例如 "ADMIN", "CUSTOMER"）
-        // 我们需要加上 "ROLE_" 前缀，并将其转换为 SimpleGrantedAuthority
-        
-        // ⚠️ 确保你的 User 实体中定义了 getRole() 方法，或者其他获取角色的机制
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword()) // 数据库中应是 BCrypt 加密后的密码
-                .roles(user.getRole().name()) // 假设你的 Role 是枚举，name() 返回角色名
-                // 如果你的 Role 只是 String，使用 .roles(user.getRole())
+                .roles(user.getRole().name()) 
                 .build();
     }
 }

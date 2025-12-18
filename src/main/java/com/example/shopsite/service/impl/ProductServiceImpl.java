@@ -60,7 +60,7 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.save(product);
     }
 
-    // 接口方法实现 2: 使用 Product 实体和 @AuthenticationPrincipal (新逻辑)
+    // 2: 使用 Product 实体和 @AuthenticationPrincipal (新逻辑)
     @Override
     @Transactional
     public Product createProduct(Product product, Long categoryId, User merchant) {
@@ -80,11 +80,10 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByIsAvailableTrueAndStockGreaterThan(0);
     }
 
-    // 接口方法实现 4: 更新商品 (您需要将上一步的 updateProduct 逻辑放在这里)
+    // 4: 更新商品 
     @Override
     @Transactional
     public Product updateProduct(Long productId, Product updatedDetails, User merchant) {
-        // ... (省略了上一步提供的更新逻辑)
         return productRepository.findById(productId)
                 .map(product -> {
                     if (!product.getMerchant().getId().equals(merchant.getId())) {
@@ -105,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
                 }).orElseThrow(() -> new IllegalArgumentException("Product not found."));
     }
 
-    // 接口方法实现 5: 查找商户自己的所有商品
+    // 5: 查找商户自己的所有商品
     @Override
     @Transactional(readOnly = true)
     public List<Product> findProductsByMerchant(User merchant) {
@@ -124,7 +123,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public List<Product> findNewArrivals(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        // 按ID降序查询（假设ID越大越新），只查询已上架且有库存的商品
+        // 按ID降序查询（ID越大越新），只查询已上架且有库存的商品
         return productRepository.findByIsAvailableTrueAndStockGreaterThanOrderByIdDesc(0, pageable);
     }
 

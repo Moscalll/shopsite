@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-// @Order(2) 保持不变，在 CategoryInitializer 之后执行
+
 @Component
 @Profile("init-data")
 @Order(2)
@@ -109,7 +109,7 @@ public class TestDataInitializer implements CommandLineRunner {
             return;
         }
 
-        // 使用 Category ID (假设它对应 SQL 结果中的 category_id) 进行查找
+        // 使用 Category ID 
         Map<Long, Category> categoryMap = categories.stream()
                 .collect(Collectors.toMap(Category::getId, category -> category));
 

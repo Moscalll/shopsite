@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-    // 🚨 新增：登录方法的实现骨架
+    // 登录方法的实现骨架
     @Override
     public String authenticateUser(UserLoginDto loginRequest) {
         // 1. 根据用户名查找用户
@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
         // 2. 检查用户是否存在
         if (userOptional.isEmpty()) {
             throw new RuntimeException("用户名或密码错误");
-            // 💡 安全最佳实践：不透露是用户名还是密码错误
+            // 安全最佳实践：不透露是用户名还是密码错误
         }
 
         User user = userOptional.get();
@@ -84,14 +84,14 @@ public class UserServiceImpl implements UserService {
         String encodedPassword = user.getPassword();
 
         // 3. 使用 PasswordEncoder 验证密码
-        // 🚨 检查用户输入的密码 (rawPassword) 是否匹配数据库中存储的加密密码 (encodedPassword)
+        // 检查用户输入的密码 (rawPassword) 是否匹配数据库中存储的加密密码 (encodedPassword)
         if (passwordEncoder.matches(rawPassword, encodedPassword)) {
 
             String jwtToken = tokenProvider.generateToken(user.getUsername());
             return jwtToken;
 
         } else {
-            // 5. 密码不匹配
+            // 4. 密码不匹配
             throw new RuntimeException("用户名或密码错误");
         }
     }

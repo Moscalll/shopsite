@@ -16,7 +16,7 @@ public class UserController {
      * 假设这是一个需要基础用户权限的接口。
      */
     @GetMapping("/me")
-    // 🚨 注意：Controller 级别我们不限制权限，让 SecurityConfig 统一处理
+    // Controller 级别不限制权限，让 SecurityConfig 统一处理
     public ResponseEntity<String> getCurrentUser() {
         // 成功访问，意味着JWT过滤器和授权检查通过。
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

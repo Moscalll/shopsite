@@ -8,8 +8,6 @@ public class ShopsiteApplication {
 
     static {
         // 在类加载时设置系统属性（在 Spring 容器和 Tomcat 启动前）
-        // 这是解决 FileCountLimitExceededException 的关键
-        
         // 禁用参数数量限制（-1 表示无限制）
         System.setProperty("server.tomcat.max-parameter-count", "-1");
         
