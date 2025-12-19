@@ -20,6 +20,9 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     
     // 删除用户的特定购物车项
     void deleteByUserAndProduct(User user, Product product);
+
+     // 根据商品查询所有购物车项
+     List<CartItem> findByProduct(Product product);
 }
 
 

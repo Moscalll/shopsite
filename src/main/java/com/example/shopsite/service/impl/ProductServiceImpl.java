@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.shopsite.model.Role;
 import com.example.shopsite.model.Category;
 import java.util.Optional;
 import java.util.List;
@@ -86,7 +87,9 @@ public class ProductServiceImpl implements ProductService {
     public Product updateProduct(Long productId, Product updatedDetails, User merchant) {
         return productRepository.findById(productId)
                 .map(product -> {
-                    if (!product.getMerchant().getId().equals(merchant.getId())) {
+                    // 检查权限：管理员可以编辑所有商品，商户只能编辑自己的商品
+                    boolean isAdmin = merchant.getRole() == Role.ADMIN;
+                    if (!isAdmin && !product.getMerchant().getId().equals(merchant.getId())) {
                         throw new SecurityException("Access denied: You can only update your own products.");
                     }
                     if (updatedDetails.getCategory() != null && updatedDetails.getCategory().getId() != null) {

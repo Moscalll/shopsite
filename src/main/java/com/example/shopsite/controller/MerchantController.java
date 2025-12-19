@@ -4,18 +4,26 @@ import com.example.shopsite.model.Product;
 import com.example.shopsite.model.User;
 import com.example.shopsite.model.Category;
 import com.example.shopsite.repository.ProductRepository;
-import com.example.shopsite.repository.UserRepository; // 添加这个导入
+import com.example.shopsite.repository.UserRepository; 
+import com.example.shopsite.repository.OrderItemRepository;
+import com.example.shopsite.repository.CartItemRepository;
+import com.example.shopsite.repository.FavoriteRepository;
 import com.example.shopsite.service.ProductService;
 import com.example.shopsite.service.CategoryService;
 import com.example.shopsite.service.FileUploadService;
+import com.example.shopsite.model.OrderItem;
+import com.example.shopsite.model.CartItem;
+import com.example.shopsite.model.Favorite;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder; // 添加这个导入
+import org.springframework.security.core.context.SecurityContextHolder; 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.example.shopsite.model.Role;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,16 +38,23 @@ public class MerchantController {
     private final ProductRepository productRepository;
     private final FileUploadService fileUploadService;
     private final UserRepository userRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final CartItemRepository cartItemRepository;
+    private final FavoriteRepository favoriteRepository;
 
     @Autowired
     public MerchantController(ProductService productService, CategoryService categoryService,
             ProductRepository productRepository, FileUploadService fileUploadService,
-            UserRepository userRepository) {
+            UserRepository userRepository, OrderItemRepository orderItemRepository,
+            CartItemRepository cartItemRepository, FavoriteRepository favoriteRepository) {
         this.productService = productService;
         this.categoryService = categoryService;
         this.productRepository = productRepository;
         this.fileUploadService = fileUploadService;
         this.userRepository = userRepository; 
+        this.orderItemRepository = orderItemRepository;
+        this.cartItemRepository = cartItemRepository;
+        this.favoriteRepository = favoriteRepository;
     }
 
     /**
@@ -57,8 +72,13 @@ public class MerchantController {
         }
         User merchant = userOpt.get();
 
-        // 1. 获取当前商户的所有商品
-        List<Product> products = productService.findProductsByMerchant(merchant);
+        // 1. 获取商品列表：管理员查看所有商品，商户查看自己的商品
+        List<Product> products;
+        if (merchant.getRole() == Role.ADMIN) {
+            products = productService.findAllProducts();
+        } else {
+            products = productService.findProductsByMerchant(merchant);
+        }
 
         model.addAttribute("pageTitle", "商户商品管理");
         model.addAttribute("products", products);
@@ -94,7 +114,9 @@ public class MerchantController {
             Optional<Product> productOpt = productRepository.findById(id);
             if (productOpt.isPresent()) {
                 Product product = productOpt.get();
-                if (!product.getMerchant().getId().equals(merchant.getId())) {
+                // 检查权限：管理员可以编辑所有商品，商户只能编辑自己的商品
+                boolean isAdmin = merchant.getRole() == Role.ADMIN;
+                if (!isAdmin && !product.getMerchant().getId().equals(merchant.getId())) {
                     model.addAttribute("error", "权限不足，无法编辑该商品。");
                     return "merchant/dashboard"; // 重定向回列表页
                 }
@@ -112,6 +134,19 @@ public class MerchantController {
         // 模板路径为 templates/merchant/product_form.html
         return "merchant/product_form";
     }
+
+
+    /**
+     * 根据用户角色返回正确的重定向路径
+     */
+    private String getRedirectPath(User user) {
+        if (user.getRole() == Role.ADMIN) {
+            return "redirect:/admin/products";
+        } else {
+            return "redirect:/merchant/dashboard";
+        }
+    }
+
 
     /**
      * POST /merchant/save
@@ -135,6 +170,7 @@ public class MerchantController {
         }
 
         User merchant = userOpt.get();
+        boolean isAdmin = merchant.getRole() == Role.ADMIN;
 
         try {
             // 处理图片上传
@@ -153,8 +189,15 @@ public class MerchantController {
                 if (product.getImageUrl() == null || product.getImageUrl().isEmpty()) {
                     product.setImageUrl("/images/placeholder.jpg"); // 默认图片
                 }
-                // 确保 merchant 被设置（双重保险）
-                product.setMerchant(merchant);
+                // 管理员创建商品时，需要指定商户（从商品对象中获取）
+                // 如果是管理员且商品没有指定商户，使用当前登录用户作为商户
+                if (isAdmin && product.getMerchant() == null) {
+                    product.setMerchant(merchant);
+                    redirectAttributes.addFlashAttribute("success", "商品创建成功");
+                } else if (!isAdmin) {
+                    // 商户创建商品时，确保商户是自己
+                    product.setMerchant(merchant);
+                }
                 productService.createProduct(product, categoryId, merchant);
                 redirectAttributes.addFlashAttribute("success", "商品创建成功");
             } else {
@@ -162,6 +205,13 @@ public class MerchantController {
                 Optional<Product> existingProductOpt = productRepository.findById(product.getId());
                 if (existingProductOpt.isPresent()) {
                     Product existingProduct = existingProductOpt.get();
+
+                    // 检查权限：管理员可以编辑所有商品，商户只能编辑自己的商品
+                    if (!isAdmin && !existingProduct.getMerchant().getId().equals(merchant.getId())) {
+                        redirectAttributes.addFlashAttribute("error", "无权编辑该商品");
+                        return "redirect:/merchant/dashboard";
+                    }
+
                     // 如果上传了新图片，删除旧图片
                     if (imageFile != null && !imageFile.isEmpty() &&
                             existingProduct.getImageUrl() != null &&
@@ -174,16 +224,23 @@ public class MerchantController {
                     } else if (product.getImageUrl() == null || product.getImageUrl().isEmpty()) {
                         product.setImageUrl(existingProduct.getImageUrl());
                     }
+
+                    // 管理员编辑时，保持原商户不变
+                    if (isAdmin) {
+                        product.setMerchant(existingProduct.getMerchant());
+                    } else {
+                        product.setMerchant(merchant);
+                    }
                 }
                 productService.updateProduct(product.getId(), product, merchant);
                 redirectAttributes.addFlashAttribute("success", "商品更新成功");
             }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/merchant/dashboard";
+            return getRedirectPath(merchant);
         }
 
-        return "redirect:/merchant/dashboard";
+        return getRedirectPath(merchant);
     }
 
     /**
@@ -194,6 +251,7 @@ public class MerchantController {
     public String toggleProductStatus(
             @PathVariable Long id,
             RedirectAttributes redirectAttributes) {
+        User currentUser = null;
         try {
             Optional<Product> productOpt = productService.findAvailableProductById(id);
             if (productOpt.isEmpty()) {
@@ -214,7 +272,7 @@ public class MerchantController {
                 redirectAttributes.addFlashAttribute("error", "用户未找到");
                 return "redirect:/merchant/dashboard";
             }
-            User currentUser = userOpt.get();
+            currentUser = userOpt.get();
 
             // 检查权限：管理员可以操作所有商品，商户只能操作自己的商品
             boolean isAdmin = currentUser.getAuthorities().stream()
@@ -222,7 +280,7 @@ public class MerchantController {
 
             if (!isAdmin && !product.getMerchant().getId().equals(currentUser.getId())) {
                 redirectAttributes.addFlashAttribute("error", "无权操作该商品");
-                return "redirect:/merchant/dashboard";
+                return getRedirectPath(currentUser);
             }
 
             product.setIsAvailable(!product.getIsAvailable());
@@ -230,8 +288,24 @@ public class MerchantController {
             redirectAttributes.addFlashAttribute("success", product.getIsAvailable() ? "商品已上架" : "商品已下架");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+             // 在 catch 块中重新获取用户，确保可以正确重定向
+             try {
+                String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                Optional<User> userOpt = userRepository.findByUsername(username);
+                if (userOpt.isPresent()) {
+                    currentUser = userOpt.get();
+                }
+            } catch (Exception ex) {
+                // 如果获取用户失败，使用默认重定向
+                return "redirect:/merchant/dashboard";
+            }
         }
-        return "redirect:/merchant/dashboard";
+         // 如果 currentUser 仍为 null，使用默认重定向
+         if (currentUser == null) {
+            return "redirect:/merchant/dashboard";
+        }
+        
+        return getRedirectPath(currentUser);
     }
 
     /**
@@ -239,9 +313,11 @@ public class MerchantController {
      * 删除商品（商户和管理员都可以操作）
      */
     @PostMapping("/product/delete/{id}")
+    @Transactional
     public String deleteProduct(
             @PathVariable Long id,
             RedirectAttributes redirectAttributes) {
+        User currentUser = null; 
         try {
             Optional<Product> productOpt = productRepository.findById(id);
             if (productOpt.isEmpty()) {
@@ -257,7 +333,7 @@ public class MerchantController {
                 redirectAttributes.addFlashAttribute("error", "用户未找到");
                 return "redirect:/merchant/dashboard";
             }
-            User currentUser = userOpt.get();
+            currentUser = userOpt.get();
 
             // 检查权限：管理员可以删除所有商品，商户只能删除自己的商品
             boolean isAdmin = currentUser.getAuthorities().stream()
@@ -268,11 +344,61 @@ public class MerchantController {
                 return "redirect:/merchant/dashboard";
             }
 
+             // 检查商品是否被订单引用
+             List<OrderItem> orderItems = orderItemRepository.findByProduct(product);
+             boolean hasOrderItems = !orderItems.isEmpty();
+            
+             if (hasOrderItems) {
+                // 如果有订单引用，不允许删除，使用软删除
+                product.setIsAvailable(false);
+                product.setStock(0);
+                productRepository.save(product);
+                redirectAttributes.addFlashAttribute("success", 
+                    "商品已下架（该商品有 " + orderItems.size() + " 条订单记录，无法完全删除）");
+                return "redirect:/merchant/dashboard";
+            }
+             
+           // 删除所有相关的数据（按顺序删除以避免外键约束）
+            // 1. 删除订单项（警告：这会破坏订单历史）
+            if (!orderItems.isEmpty()) {
+                orderItemRepository.deleteAll(orderItems);
+            }
+            
+            // 2. 删除购物车项
+            List<CartItem> cartItems = cartItemRepository.findByProduct(product);
+            if (!cartItems.isEmpty()) {
+                cartItemRepository.deleteAll(cartItems);
+            }
+            
+            // 3. 删除收藏
+            List<Favorite> favorites = favoriteRepository.findByProduct(product);
+            if (!favorites.isEmpty()) {
+                favoriteRepository.deleteAll(favorites);
+            }
+             
+             // 删除商品本身
             productRepository.delete(product);
             redirectAttributes.addFlashAttribute("success", "商品已删除");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+            // 在 catch 块中重新获取用户，确保可以正确重定向
+            if (currentUser == null) {
+                try {
+                    String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                    Optional<User> userOpt = userRepository.findByUsername(username);
+                    if (userOpt.isPresent()) {
+                        currentUser = userOpt.get();
+                    }
+                } catch (Exception ex) {
+                    // 如果获取用户失败，使用默认重定向
+                    return "redirect:/merchant/dashboard";
+                }
+            }
         }
-        return "redirect:/merchant/dashboard";
+        // 如果 currentUser 仍为 null，使用默认重定向
+        if (currentUser == null) {
+            return "redirect:/merchant/dashboard";
+        }
+        return getRedirectPath(currentUser);
     }
 }

@@ -20,6 +20,9 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     
     // 删除用户的特定收藏
     void deleteByUserAndProduct(User user, Product product);
+
+    // 根据商品查询所有收藏
+    List<Favorite> findByProduct(Product product);
 }
 
 

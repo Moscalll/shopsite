@@ -10,7 +10,6 @@ import java.util.List;
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
        // 统计商品的销量（按商品ID分组，计算总数量）
-       // 统计商品的销量（按商品ID分组，计算总数量）
        @Query("SELECT oi.product, SUM(oi.quantity) as totalSales " +
                      "FROM OrderItem oi " +
                      "WHERE oi.order.status IN (com.example.shopsite.model.OrderStatus.PROCESSING, " +
@@ -32,4 +31,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
                      "com.example.shopsite.model.OrderStatus.DELIVERED, " +
                      "com.example.shopsite.model.OrderStatus.COMPLETED)")
        Long getTotalSalesByProduct(@Param("product") Product product);
+
+       // 根据商品查询所有订单项
+       List<OrderItem> findByProduct(Product product);
 }
