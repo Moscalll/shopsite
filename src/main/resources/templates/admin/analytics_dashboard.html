@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: '管理分析中心'">管理分析中心</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body th:replace="admin/layout :: layout(~{::content})">
+
+<div th:fragment="content">
+            <h1 class="mb-2">管理分析中心</h1>
+            <p class="text-muted mb-4">销售状态、趋势图（日/周/月）、排行榜、趋势预测与评估、监控快照、异常判别、用户画像（地域/购买力/偏好类目）、浏览行为、同购与推荐系统概况。</p>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4"><div class="card"><div class="card-body"><div class="text-muted">订单总量</div><div class="h3" th:text="${totalOrders}">0</div></div></div></div>
+                <div class="col-md-4"><div class="card"><div class="card-body"><div class="text-muted">总销售额</div><div class="h3 text-success">¥<span th:text="${#numbers.formatDecimal(totalSales, 0, 'COMMA', 2, 'POINT')}">0.00</span></div></div></div></div>
+                <div class="col-md-4"><div class="card"><div class="card-body"><div class="text-muted">浏览转化率</div><div class="h3"><span th:text="${conversionRate}">0.00</span>%</div></div></div></div>
+            </div>
+
+            <div class="card mb-4"><div class="card-header">销售状态</div><div class="card-body row g-3"><div class="col-md-2" th:each="entry : ${salesStatus}"><div class="border rounded p-3 text-center"><div class="text-muted" th:text="${entry.key}">状态</div><div class="h4 mb-0" th:text="${entry.value}">0</div></div></div></div></div>
+            <div class="card mb-4">
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <span>销售趋势</span>
+                    <form class="row g-2 align-items-center" method="get" th:action="@{/admin/analytics/dashboard}">
+                        <div class="col-auto">
+                            <select class="form-select form-select-sm" name="trendMetric" title="指标">
+                                <option value="gmv" th:selected="${trendMetric == 'gmv'}">销售额(GMV)</option>
+                                <option value="orders" th:selected="${trendMetric == 'orders'}">订单数</option>
+                                <option value="units" th:selected="${trendMetric == 'units'}">销量(件)</option>
+                                <option value="conversion" th:selected="${trendMetric == 'conversion'}">转化率(%)</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <select class="form-select form-select-sm" name="trendDays" title="时间范围">
+                                <option value="7" th:selected="${trendDays == 7}">近7天</option>
+                                <option value="30" th:selected="${trendDays == 30}">近30天</option>
+                                <option value="90" th:selected="${trendDays == 90}">近90天</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <select class="form-select form-select-sm" name="trendGranularity" title="粒度">
+                                <option value="DAY" th:selected="${trendGranularity == 'DAY'}">按日</option>
+                                <option value="WEEK" th:selected="${trendGranularity == 'WEEK'}">按周</option>
+                                <option value="MONTH" th:selected="${trendGranularity == 'MONTH'}">按月</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <select class="form-select form-select-sm" name="trendCategoryId" title="类目">
+                                <option value="" th:selected="${trendCategoryId == null}">全部分类</option>
+                                <option th:each="c : ${trendCategories}" th:value="${c.id}" th:text="${c.name}"
+                                        th:selected="${trendCategoryId != null and trendCategoryId == c.id}">类目</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-primary">应用</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-2">默认口径：销售额 · 近30天 · 按日 · 仅统计已付款及之后订单（处理中/已发货/已送达/已完成）。转化率按 SalesLog 的浏览/购买在同日、同筛选类目下估算。</p>
+                    <div style="max-height: 360px;">
+                        <canvas id="salesTrendLineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script th:inline="javascript">
+                (function () {
+                    var labels = /*[[${trendChartLabels}]]*/ [];
+                    var values = /*[[${trendChartValues}]]*/ [];
+                    var metric = /*[[${trendMetric}]]*/ 'gmv';
+                    var yLabel = /*[[${trendYAxisLabel}]]*/ '';
+                    if (!labels || !labels.length) {
+                        labels = ['-'];
+                        values = [0];
+                    }
+                    var ctx = document.getElementById('salesTrendLineChart');
+                    if (!ctx || typeof Chart === 'undefined') return;
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: yLabel,
+                                data: values,
+                                borderColor: '#2d6a4f',
+                                backgroundColor: 'rgba(45,106,79,0.12)',
+                                tension: 0.2,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    title: { display: true, text: yLabel }
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (ctx) {
+                                            var v = ctx.parsed.y;
+                                            if (metric === 'gmv') {
+                                                return ' ¥' + (v == null ? '0' : Number(v).toFixed(2));
+                                            }
+                                            if (metric === 'conversion') {
+                                                return ' ' + (v == null ? '0' : Number(v).toFixed(2)) + '%';
+                                            }
+                                            return ' ' + (v == null ? '0' : v);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                })();
+            </script>
+            <div class="card mb-4">
+                <div class="card-header">销售趋势预测与评估</div>
+                <div class="card-body">
+                    <p class="text-muted small mb-2" th:text="${salesForecast != null ? salesForecast['summary'] : '暂无预测数据'}">预测说明</p>
+                    <p class="mb-0 small" th:if="${salesForecast != null and salesForecast['usable'] == true}"
+                       th:text="${salesForecast['assessment']}">评估</p>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header">销售监控快照（当前请求切片）</div>
+                <div class="card-body">
+                    <ul class="mb-0 small"><li th:each="m : ${monitorSnapshots}" th:text="${m}">监控项</li></ul>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header">商品销售排行榜</div>
+                <div class="card-body p-0">
+                    <div class="admin-analytics-rank-scroll">
+                        <table class="table table-hover mb-0 admin-analytics-rank-table">
+                            <thead class="table-light"><tr><th>排名</th><th>商品</th><th>销量</th></tr></thead>
+                            <tbody>
+                            <tr th:each="p,iter : ${topProducts}"><td th:text="${iter.index + 1}">1</td><td th:text="${p.productName}">商品</td><td th:text="${p.count}">0</td></tr>
+                            <tr th:if="${topProducts == null or #lists.isEmpty(topProducts)}"><td colspan="3" class="text-center text-muted py-3">暂无销量排行数据</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header">用户浏览和购买行为</div>
+                <div class="card-body p-0">
+                    <div class="admin-analytics-behavior-scroll">
+                        <table class="table table-hover mb-0 admin-analytics-behavior-table">
+                            <thead class="table-light">
+                            <tr>
+                                <th>时间</th>
+                                <th>行为</th>
+                                <th>商品ID</th>
+                                <th>会话/停留</th>
+                                <th>来源</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="r : ${behaviorRows}">
+                                <td th:text="${r.time != null ? #temporals.format(r.time, 'yyyy-MM-dd HH:mm:ss') : '-'}">2026-01-01 00:00:00</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${r.type == 'VIEW'} ? 'bg-info' :
+                                          (${r.type == 'PURCHASE'} ? 'bg-success' :
+                                          (${r.type == 'ADD_TO_CART'} ? 'bg-warning' :
+                                          (${r.type == 'CATEGORY_DWELL'} ? 'bg-primary' : 'bg-secondary')))">
+                                        <span th:switch="${r.type}">
+                                            <span th:case="'VIEW'">浏览</span>
+                                            <span th:case="'PURCHASE'">购买</span>
+                                            <span th:case="'ADD_TO_CART'">加购</span>
+                                            <span th:case="'CATEGORY_DWELL'">类目停留</span>
+                                            <span th:case="*">其他</span>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td th:text="${r.productId != null ? r.productId : '-'}">1</td>
+                                <td>
+                                    <span th:if="${r.durationSeconds != null}" th:text="${r.durationSeconds + ' 秒'}">10 秒</span>
+                                    <span th:if="${r.durationSeconds == null}" th:text="${r.sessionId}">-</span>
+                                </td>
+                                <td th:text="${r.source}">sales_log</td>
+                            </tr>
+                            <tr th:if="${behaviorRows == null or #lists.isEmpty(behaviorRows)}">
+                                <td colspan="5" class="text-center text-muted py-3">暂无行为记录（请确认普通用户已登录并浏览商品；类目停留需离开页面后上报）</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <style>
+                .admin-analytics-behavior-scroll {
+                    max-height: 520px;
+                    overflow-y: auto;
+                }
+                .admin-analytics-behavior-table thead th {
+                    position: sticky;
+                    top: 0;
+                    z-index: 2;
+                    background: #f8f9fa;
+                }
+                .admin-analytics-rank-scroll {
+                    max-height: 420px;
+                    overflow-y: auto;
+                }
+                .admin-analytics-rank-table thead th {
+                    position: sticky;
+                    top: 0;
+                    z-index: 2;
+                    background: #f8f9fa;
+                }
+            </style>
+            <div class="card mb-4"><div class="card-header">异常告警</div><div class="card-body"><ul><li th:each="a : ${alerts}" th:text="${a}">告警</li></ul></div></div>
+            <div class="card mb-4"><div class="card-header">同购组合（简单推荐 / 同单共现）</div><div class="card-body"><p class="small text-muted mb-2">与商品详情「浏览过此商品的人也买了」同属基于订单共现的简单推荐思路。</p><table class="table table-hover"><thead><tr><th>排名</th><th>组合</th><th>同购次数</th></tr></thead><tbody><tr th:each="r,iter : ${coPurchaseRecs}"><td th:text="${iter.index + 1}">1</td><td><span th:text="${r.aName}">A</span> + <span th:text="${r.bName}">B</span></td><td th:text="${r.count}">0</td></tr><tr th:if="${coPurchaseRecs == null or #lists.isEmpty(coPurchaseRecs)}"><td colspan="3" class="text-center text-muted py-3">暂无同购数据</td></tr></tbody></table></div></div>
+            <div class="card mb-4">
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <span>推荐系统概况</span>
+                    <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/recommendations}">进入推荐管理</a>
+                </div>
+                <div class="card-body">
+                    <dl class="row small mb-2">
+                        <dt class="col-sm-4">最近重算时间</dt>
+                        <dd class="col-sm-8" th:text="${recommendationOverview['lastRecompute']}">-</dd>
+                        <dt class="col-sm-4">同购算法结果条数</dt>
+                        <dd class="col-sm-8" th:text="${recommendationOverview['rowsCoPurchase']}">0</dd>
+                        <dt class="col-sm-4">ItemCF 结果条数</dt>
+                        <dd class="col-sm-8" th:text="${recommendationOverview['rowsItemCf']}">0</dd>
+                        <dt class="col-sm-4">热门兜底条数</dt>
+                        <dd class="col-sm-8" th:text="${recommendationOverview['rowsPopular']}">0</dd>
+                    </dl>
+                    <p class="small text-muted mb-1" th:text="${recommendationOverview['noteSimple']}">简单推荐说明</p>
+                    <p class="small text-muted mb-0" th:text="${recommendationOverview['noteCf']}">协同过滤说明</p>
+                </div>
+            </div>
+            <div class="card"><div class="card-header">用户画像</div><div class="card-body"><table class="table table-hover"><thead><tr><th>用户</th><th>地域标签</th><th>购买力标签</th><th>偏好类目标签</th><th>登录</th><th>浏览</th><th>收藏</th><th>加购</th><th>购买</th></tr></thead><tbody><tr th:each="u : ${userPortraits}"><td th:text="${u.username}">user</td><td th:text="${u.regionTag}">未知</td><td th:text="${u.spendingTag}">潜力用户</td><td th:text="${u.categoryTag}">偏好多样</td><td th:text="${u.loginCount}">0</td><td th:text="${u.browseCount}">0</td><td th:text="${u.favoriteCount}">0</td><td th:text="${u.cartCount}">0</td><td th:text="${u.buyCount}">0</td></tr></tbody></table></div></div>
+</div>
+
+</body>
+</html>

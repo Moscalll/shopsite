@@ -1,9 +1,13 @@
 package com.example.shopsite.controller.user;
 
-import com.example.shopsite.model.SalesLog;
+import com.example.shopsite.model.Role;
 import com.example.shopsite.model.User;
-import com.example.shopsite.repository.SalesLogRepository;
+import com.example.shopsite.model.UserBehaviorLog;
+import com.example.shopsite.repository.AdminOperationLogRepository;
+import com.example.shopsite.repository.AuthLoginLogRepository;
+import com.example.shopsite.repository.UserBehaviorLogRepository;
 import com.example.shopsite.repository.UserRepository;
+import com.example.shopsite.support.CategoryLabelService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +22,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -25,19 +30,28 @@ import java.util.Optional;
 public class ProfileController {
 
     private final UserRepository userRepository;
-    private final SalesLogRepository salesLogRepository;
+    private final UserBehaviorLogRepository userBehaviorLogRepository;
+    private final CategoryLabelService categoryLabelService;
+    private final AuthLoginLogRepository authLoginLogRepository;
+    private final AdminOperationLogRepository adminOperationLogRepository;
 
-    public ProfileController(UserRepository userRepository, SalesLogRepository salesLogRepository) {
+    public ProfileController(UserRepository userRepository,
+                             UserBehaviorLogRepository userBehaviorLogRepository,
+                             CategoryLabelService categoryLabelService,
+                             AuthLoginLogRepository authLoginLogRepository,
+                             AdminOperationLogRepository adminOperationLogRepository) {
         this.userRepository = userRepository;
-        this.salesLogRepository = salesLogRepository;
+        this.userBehaviorLogRepository = userBehaviorLogRepository;
+        this.categoryLabelService = categoryLabelService;
+        this.authLoginLogRepository = authLoginLogRepository;
+        this.adminOperationLogRepository = adminOperationLogRepository;
     }
 
     /**
      * GET /profile - 个人中心（根据角色显示不同内容）
      */
     @GetMapping
-    public String profile(@RequestParam(required = false) String actionType,
-            Authentication authentication,
+    public String profile(Authentication authentication,
             Model model) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
@@ -54,24 +68,22 @@ public class ProfileController {
         model.addAttribute("user", user);
         model.addAttribute("pageTitle", "个人中心");
 
-        // 如果是客户，查询其浏览/购买日志
-        if (user.getRole().name().equals("CUSTOMER")) {
-            List<SalesLog> logs;
-            if (actionType != null && !actionType.isEmpty()) {
-                logs = salesLogRepository.findByUserAndActionType(user, actionType);
-            } else {
-                logs = salesLogRepository.findByUser(user);
-            }
+        Role role = user.getRole();
+        if (role == Role.CUSTOMER && user.getId() != null) {
+            List<UserBehaviorLog> behaviorLogs = userBehaviorLogRepository.findByUser_IdOrderByEventTimeDesc(user.getId());
+            Map<Long, String> categoryNames = categoryLabelService.labelsForBehaviorLogs(behaviorLogs);
+            model.addAttribute("behaviorLogs", behaviorLogs);
+            model.addAttribute("categoryNames", categoryNames);
+        }
 
-            // 按时间倒序排列
-            logs.sort((a, b) -> b.getLogTime().compareTo(a.getLogTime()));
-
-            model.addAttribute("logs", logs);
-            model.addAttribute("actionType", actionType);
+        if ((role == Role.MERCHANT || role == Role.ADMIN) && user.getId() != null) {
+            model.addAttribute("loginLogs", authLoginLogRepository.findByUser_IdOrderByLoginTimeDesc(user.getId()));
+            model.addAttribute("operationLogs",
+                    adminOperationLogRepository.findByOperator_IdOrderByOperationTimeDesc(user.getId()));
         }
 
         // 根据角色返回不同的模板
-        switch (user.getRole()) {
+        switch (role) {
             case ADMIN:
                 return "admin/profile";
             case MERCHANT:

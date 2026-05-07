@@ -61,6 +61,7 @@ public class UserServiceImpl implements UserService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 // 5. 设置角色
                 .role(role)
+                .enabled(true)
                 .build();
 
         // 6. 保存到数据库

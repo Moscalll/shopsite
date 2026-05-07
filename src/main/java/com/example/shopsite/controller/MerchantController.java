@@ -24,6 +24,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.shopsite.model.Role;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,7 +45,6 @@ public class MerchantController {
     private final CartItemRepository cartItemRepository;
     private final FavoriteRepository favoriteRepository;
 
-    @Autowired
     public MerchantController(ProductService productService, CategoryService categoryService,
             ProductRepository productRepository, FileUploadService fileUploadService,
             UserRepository userRepository, OrderItemRepository orderItemRepository,
@@ -62,7 +64,9 @@ public class MerchantController {
      * 商户后台主页/商品列表
      */
     @GetMapping("/dashboard")
-    public String dashboard(Model model) {
+    public String dashboard(@RequestParam(required = false) String keyword,
+                            @RequestParam(required = false) Long categoryId,
+                            Model model) {
         // 从 SecurityContext 获取当前登录用户的用户名
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<User> userOpt = userRepository.findByUsername(username);
@@ -80,8 +84,54 @@ public class MerchantController {
             products = productService.findProductsByMerchant(merchant);
         }
 
+        // 分类下拉
+        List<Category> categories = categoryService.findAllCategories();
+
+        // 过滤：关键词（商品名/描述） + 分类
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String kw = keyword.trim().toLowerCase();
+            products = products.stream()
+                    .filter(p -> (p.getName() != null && p.getName().toLowerCase().contains(kw))
+                            || (p.getDescription() != null && p.getDescription().toLowerCase().contains(kw)))
+                    .toList();
+        }
+        if (categoryId != null) {
+            products = products.stream()
+                    .filter(p -> p.getCategory() != null && p.getCategory().getId() != null
+                            && p.getCategory().getId().equals(categoryId))
+                    .toList();
+        }
+
         model.addAttribute("pageTitle", "商户商品管理");
         model.addAttribute("products", products);
+        model.addAttribute("categories", categories);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("categoryId", categoryId);
+
+        // 与管理员后台一致：按分类分组展示
+        Map<Long, List<Product>> productsByCategory = products.stream()
+                .filter(p -> p.getCategory() != null && p.getCategory().getId() != null)
+                .collect(Collectors.groupingBy(p -> p.getCategory().getId()));
+
+        List<Category> categoriesToShow = new ArrayList<>();
+        if (categoryId != null) {
+            for (Category c : categories) {
+                if (c.getId() != null && c.getId().equals(categoryId)) {
+                    categoriesToShow.add(c);
+                    break;
+                }
+            }
+        } else if (keyword != null && !keyword.trim().isEmpty()) {
+            for (Category c : categories) {
+                if (c.getId() != null && productsByCategory.containsKey(c.getId())) {
+                    categoriesToShow.add(c);
+                }
+            }
+        } else {
+            categoriesToShow = categories;
+        }
+        model.addAttribute("categoriesToShow", categoriesToShow);
+        model.addAttribute("productsByCategory", productsByCategory);
 
         // 假设模板路径为 templates/merchant/dashboard.html
         return "merchant/dashboard";

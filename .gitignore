@@ -40,12 +40,57 @@ logs/
 # Operating System
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+### Node.js (根目录性能脚本、后续前端等) ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+coverage/
+*.tsbuildinfo
+
+### Playwright ###
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+### 性能采集脚本输出（见 scripts/perf 默认 OUT_DIR） ###
+perf-results/
+
+### Python（仓库内脚本 / tools 子目录外也可能有） ###
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+
+### 工具链生成物（与 tools/.gitignore 的 out/ 一致，根目录显式列出便于识别） ###
+tools/out/
+
+### 临时与编辑器备份 ###
+*.tmp
+*.swp
+*~
+*.bak
+
+### 根目录构建产物（Maven 主产物已在 target/） ###
+shopsite-*.jar
 
 # Environment Secrets
 .env
 src/main/resources/application.properties
 src/main/resources/application-dev.yml
-src/main/resources/application-prod.yml 
+src/main/resources/application-prod.yml
 src/main/resources/application.yml
 
 shopsite_final_images.tar
+
+# Bulk-imported product images (Spring default file.upload.dir); keep folder with .gitkeep
+/uploads/*
+!/uploads/.gitkeep

@@ -4,8 +4,18 @@ import com.example.shopsite.model.Category;
 import com.example.shopsite.model.Product;
 import com.example.shopsite.model.Role;
 import com.example.shopsite.model.User;
+import com.example.shopsite.repository.AdminOperationLogRepository;
+import com.example.shopsite.repository.AuthLoginLogRepository;
+import com.example.shopsite.repository.CartItemRepository;
 import com.example.shopsite.repository.CategoryRepository;
+import com.example.shopsite.repository.FavoriteRepository;
+import com.example.shopsite.repository.MessageRepository;
+import com.example.shopsite.repository.OrderItemRepository;
+import com.example.shopsite.repository.OrderRepository;
 import com.example.shopsite.repository.ProductRepository;
+import com.example.shopsite.repository.RecommendationResultRepository;
+import com.example.shopsite.repository.SalesLogRepository;
+import com.example.shopsite.repository.UserBehaviorLogRepository;
 import com.example.shopsite.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +27,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -35,25 +49,123 @@ public class TestDataInitializer implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CartItemRepository cartItemRepository;
+    private final FavoriteRepository favoriteRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final OrderRepository orderRepository;
+    private final SalesLogRepository salesLogRepository;
+    private final MessageRepository messageRepository;
+    private final AuthLoginLogRepository authLoginLogRepository;
+    private final AdminOperationLogRepository adminOperationLogRepository;
+    private final UserBehaviorLogRepository userBehaviorLogRepository;
+    private final RecommendationResultRepository recommendationResultRepository;
 
     public TestDataInitializer(UserRepository userRepository,
                                CategoryRepository categoryRepository,
                                ProductRepository productRepository,
-                               PasswordEncoder passwordEncoder) {
+                               PasswordEncoder passwordEncoder,
+                               CartItemRepository cartItemRepository,
+                               FavoriteRepository favoriteRepository,
+                               OrderItemRepository orderItemRepository,
+                               OrderRepository orderRepository,
+                               SalesLogRepository salesLogRepository,
+                               MessageRepository messageRepository,
+                               AuthLoginLogRepository authLoginLogRepository,
+                               AdminOperationLogRepository adminOperationLogRepository,
+                               UserBehaviorLogRepository userBehaviorLogRepository,
+                               RecommendationResultRepository recommendationResultRepository) {
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
         this.passwordEncoder = passwordEncoder;
+        this.cartItemRepository = cartItemRepository;
+        this.favoriteRepository = favoriteRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.orderRepository = orderRepository;
+        this.salesLogRepository = salesLogRepository;
+        this.messageRepository = messageRepository;
+        this.authLoginLogRepository = authLoginLogRepository;
+        this.adminOperationLogRepository = adminOperationLogRepository;
+        this.userBehaviorLogRepository = userBehaviorLogRepository;
+        this.recommendationResultRepository = recommendationResultRepository;
+    }
+
+    private void debugLog(String runId, String hypothesisId, String location, String message, Map<String, Object> data) {
+        try {
+            long ts = System.currentTimeMillis();
+            String safeMessage = message == null ? "" : message.replace("\"", "'");
+            String json = "{\"sessionId\":\"fcad12\",\"runId\":\"" + runId + "\",\"hypothesisId\":\"" + hypothesisId + "\",\"timestamp\":" + ts
+                    + ",\"location\":\"" + location + "\",\"message\":\"" + safeMessage + "\",\"data\":" + toJsonObject(data) + "}\n";
+            Files.writeString(Path.of("debug-fcad12.log"), json, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (Exception ignored) {
+        }
+    }
+
+    private String toJsonObject(Map<String, Object> data) {
+        if (data == null || data.isEmpty()) return "{}";
+        return "{" + data.entrySet().stream()
+                .map(e -> "\"" + String.valueOf(e.getKey()).replace("\"", "'") + "\":" + toJsonValue(e.getValue()))
+                .collect(Collectors.joining(",")) + "}";
+    }
+
+    private String toJsonValue(Object v) {
+        if (v == null) return "null";
+        if (v instanceof Number || v instanceof Boolean) return String.valueOf(v);
+        String s = String.valueOf(v).replace("\"", "'").replace("\n", " ");
+        return "\"" + s + "\"";
     }
 
     @Override
     @Transactional
     public void run(String... args) {
         log.info("--- 正在清空数据库并重新初始化数据 (Profile: init-data) ---");
+
+        final String runId = "pre-fix";
+        Map<String, Object> preCounts = new HashMap<>();
+        preCounts.put("cartItem", cartItemRepository.count());
+        preCounts.put("favorite", favoriteRepository.count());
+        preCounts.put("orderItem", orderItemRepository.count());
+        preCounts.put("order", orderRepository.count());
+        preCounts.put("salesLog", salesLogRepository.count());
+        preCounts.put("message", messageRepository.count());
+        preCounts.put("authLoginLog", authLoginLogRepository.count());
+        preCounts.put("adminOpLog", adminOperationLogRepository.count());
+        preCounts.put("userBehaviorLog", userBehaviorLogRepository.count());
+        preCounts.put("recommendationResult", recommendationResultRepository.count());
+        preCounts.put("product", productRepository.count());
+        preCounts.put("user", userRepository.count());
+        debugLog(runId, "H1", "TestDataInitializer.java:run", "pre-delete counts", preCounts);
         
         // 步骤 0: 清空数据库
+        // 先删“子表”，再删“父表”，避免外键约束失败
+        recommendationResultRepository.deleteAllInBatch();
+        cartItemRepository.deleteAllInBatch();
+        favoriteRepository.deleteAllInBatch();
+        orderItemRepository.deleteAllInBatch();
+        orderRepository.deleteAllInBatch();
+        messageRepository.deleteAllInBatch();
+        salesLogRepository.deleteAllInBatch();
+        authLoginLogRepository.deleteAllInBatch();
+        adminOperationLogRepository.deleteAllInBatch();
+        userBehaviorLogRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch(); // 批量删除商品
         userRepository.deleteAllInBatch();    // 批量删除用户
+
+        Map<String, Object> postCounts = new HashMap<>();
+        postCounts.put("cartItem", cartItemRepository.count());
+        postCounts.put("favorite", favoriteRepository.count());
+        postCounts.put("orderItem", orderItemRepository.count());
+        postCounts.put("order", orderRepository.count());
+        postCounts.put("salesLog", salesLogRepository.count());
+        postCounts.put("message", messageRepository.count());
+        postCounts.put("authLoginLog", authLoginLogRepository.count());
+        postCounts.put("adminOpLog", adminOperationLogRepository.count());
+        postCounts.put("userBehaviorLog", userBehaviorLogRepository.count());
+        postCounts.put("recommendationResult", recommendationResultRepository.count());
+        postCounts.put("product", productRepository.count());
+        postCounts.put("user", userRepository.count());
+        debugLog(runId, "H1", "TestDataInitializer.java:run", "post-delete counts", postCounts);
         log.info("已清空 Product 和 User 表，准备重新创建基础数据。");
 
 

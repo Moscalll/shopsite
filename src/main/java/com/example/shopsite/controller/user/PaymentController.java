@@ -1,6 +1,7 @@
 package com.example.shopsite.controller.user;
 
 import com.example.shopsite.model.Order;
+import com.example.shopsite.model.OrderItem;
 import com.example.shopsite.model.OrderStatus;
 import com.example.shopsite.model.User;
 import com.example.shopsite.repository.OrderRepository;
@@ -8,6 +9,7 @@ import com.example.shopsite.repository.UserRepository;
 import com.example.shopsite.service.CartService;
 import com.example.shopsite.service.EmailService;
 import com.example.shopsite.service.OrderService;
+import com.example.shopsite.service.SalesLogService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,15 +27,18 @@ public class PaymentController {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final EmailService emailService;
+    private final SalesLogService salesLogService;
 
     public PaymentController(OrderService orderService, CartService cartService,
                            UserRepository userRepository, OrderRepository orderRepository,
-                           EmailService emailService) {
+                           EmailService emailService,
+                           SalesLogService salesLogService) {
         this.orderService = orderService;
         this.cartService = cartService;
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.emailService = emailService;
+        this.salesLogService = salesLogService;
     }
 
     /**
@@ -41,6 +46,7 @@ public class PaymentController {
      */
     @PostMapping("/create-order")
     public String createOrder(Authentication authentication,
+                             @RequestParam(value = "cartItemIds", required = false) java.util.List<Long> cartItemIds,
                              RedirectAttributes redirectAttributes) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
@@ -55,9 +61,11 @@ public class PaymentController {
 
         User user = userOpt.get();
         
-        // 从购物车创建订单
+        // 从购物车创建订单（支持选中结算/立即购买，只创建所选 cartItemIds 的订单）
         try {
-            Order order = orderService.createOrderFromCart(user);
+            Order order = (cartItemIds != null && !cartItemIds.isEmpty())
+                    ? orderService.createOrderFromCartItems(user, cartItemIds)
+                    : orderService.createOrderFromCart(user);
             return "redirect:/payment/" + order.getId();
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "创建订单失败: " + e.getMessage());
@@ -123,11 +131,22 @@ public class PaymentController {
         Order order = orderOpt.get();
         
         // 前端模拟支付，直接标记为已付款
+        boolean shouldLogPurchase = order.getStatus() == OrderStatus.PENDING_PAYMENT;
         order.setStatus(OrderStatus.PROCESSING);
         orderRepository.save(order);
 
-        // 清空购物车
-        cartService.clearCart(userOpt.get());
+        if (shouldLogPurchase && order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                if (item == null || item.getProduct() == null || item.getProduct().getId() == null) {
+                    continue;
+                }
+                salesLogService.logPurchase(item.getProduct().getId(), userOpt.get());
+            }
+        }
+
+        // 不在支付时清空购物车：
+        // - 选中结算/立即购买会在“创建订单”时移除对应购物车项
+        // - 避免误删用户未结算的购物车商品
 
         // 发送确认邮件
         try {

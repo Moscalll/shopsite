@@ -12,6 +12,9 @@ public interface OrderService {
     // 从购物车创建订单
     Order createOrderFromCart(User user);
 
+    // 从指定的购物车项创建订单（用于“立即购买/选中结算”，避免把整个购物车都打包）
+    Order createOrderFromCartItems(User user, java.util.List<Long> cartItemIds);
+
     List<Order> findMyOrders(String username);
 
     Order findOrderDetails(Long orderId, String username);

@@ -64,8 +64,27 @@
         </div>
 
         <div th:if="${!#lists.isEmpty(orders)}">
-            <div class="table-responsive">
-                <table class="table table-hover">
+            <style>
+                /* 列表最多显示约 10 行，内部滚动 */
+                .scroll-table-10 { max-height: 600px; overflow: auto; }
+                .scroll-table-10 table { margin-bottom: 0; }
+                /* 下拉菜单打开时避免被裁剪 */
+                .scroll-table-10.dropdown-open { overflow: visible; }
+            </style>
+
+            <script>
+                document.addEventListener('show.bs.dropdown', function (e) {
+                    var scroller = e.target && e.target.closest ? e.target.closest('.scroll-table-10') : null;
+                    if (scroller) scroller.classList.add('dropdown-open');
+                });
+                document.addEventListener('hide.bs.dropdown', function (e) {
+                    var scroller = e.target && e.target.closest ? e.target.closest('.scroll-table-10') : null;
+                    if (scroller) scroller.classList.remove('dropdown-open');
+                });
+            </script>
+
+            <div class="table-responsive scroll-table-10">
+                <table class="table table-hover mb-0">
                     <thead>
                         <tr>
                             <th>订单号</th>

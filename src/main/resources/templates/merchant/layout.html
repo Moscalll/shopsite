@@ -3,92 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${pageTitle} ?: '商户后台'">商户后台</title>
+    <title th:text="${pageTitle} ?: '客户管理'">客户管理</title>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/custom.css}">
     <style>
-        .sidebar {
-            min-height: calc(100vh - 56px);
-            background-color: #f8f9fa;
-            padding: 20px 0;
-        }
         .sidebar .nav-link {
             color: #333;
             padding: 12px 20px;
             border-radius: 5px;
             margin: 5px 10px;
         }
-        .sidebar .nav-link:hover {
-            background-color: #e9ecef;
-        }
+        .sidebar .nav-link:hover,
         .sidebar .nav-link.active {
             background-color: #A5B699;
-            color: white;
+            color: #fff;
         }
-        .main-content {
-            padding: 20px;
-        }
-        .sidebar .nav-link:focus,
-        .sidebar .nav-link:active,
-        .sidebar .nav-link:focus-visible {
-            outline: none;
-            box-shadow: none;
-            background-color: inherit;
-            color: #333;
+        .metric-card {
+            border: 0;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075);
         }
     </style>
 </head>
 <body>
-    <div th:replace="index/fragments :: navbar"></div>
+<div th:replace="index/fragments :: navbar"></div>
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-3 col-lg-2 sidebar" style="min-height: calc(100vh - 56px); background-color: #f8f9fa; padding: 20px 0;">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" th:href="@{/merchant/dashboard}">商品管理</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/merchant/orders}">订单管理</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/merchant/statistics}">销售统计</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/merchant/customers}">客户管理</a></li>
+                <!-- 日志入口已并入「客户管理 → 客户详情」 -->
+                <li class="nav-item mt-3"><a class="nav-link" th:href="@{/}">返回首页</a></li>
+            </ul>
+        </nav>
+        <main class="col-md-9 col-lg-10" style="padding: 20px;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="mb-1">客户管理</h1>
+                    <p class="text-muted mb-0">从客户详情页查看浏览/加购/购买行为日志与订单历史</p>
+                </div>
+            </div>
 
-    <div class="container-fluid">
-        <div class="row">
-            <!-- 侧边栏 -->
-            <nav class="col-md-3 col-lg-2 sidebar">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/merchant/dashboard}">
-                            <i class="bi bi-grid"></i> 商品管理
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/merchant/orders}">
-                            <i class="bi bi-cart"></i> 订单管理
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/merchant/statistics}">
-                            <i class="bi bi-bar-chart"></i> 销售统计
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/merchant/customers}">
-                            <i class="bi bi-people"></i> 客户管理
-                        </a>
-                    </li>
-                    <li class="nav-item mt-3">
-                        <a class="nav-link" th:href="@{/}">
-                            <i class="bi bi-house"></i> 返回首页
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+            <div class="row g-3 mb-4">
+                <div class="col-md-3"><div class="card metric-card"><div class="card-body"><div class="text-muted">总订单</div><div class="h3" th:text="${totalOrders}">0</div></div></div></div>
+                <div class="col-md-3"><div class="card metric-card"><div class="card-body"><div class="text-muted">已完成</div><div class="h3" th:text="${completedOrders}">0</div></div></div></div>
+                <div class="col-md-3"><div class="card metric-card"><div class="card-body"><div class="text-muted">浏览/购买转化率</div><div class="h3"><span th:text="${conversionRate}">0.00</span>%</div></div></div></div>
+                <div class="col-md-3"><div class="card metric-card"><div class="card-body"><div class="text-muted">总销售额</div><div class="h3 text-success">¥<span th:text="${#numbers.formatDecimal(totalSales, 0, 'COMMA', 2, 'POINT')}">0.00</span></div></div></div></div>
+            </div>
 
-            <!-- 主内容区 -->
-            <main class="col-md-9 col-lg-10 main-content">
-                <div th:replace="${content}"></div>
-            </main>
-        </div>
+            <div class="card mb-4"><div class="card-header"><strong>销售状态</strong></div><div class="card-body row g-3"><div class="col-md-2" th:each="entry : ${salesStatus}"><div class="border rounded p-3 text-center"><div class="text-muted" th:text="${entry.key}">状态</div><div class="h4 mb-0" th:text="${entry.value}">0</div></div></div></div></div>
+
+            <div class="card mb-4"><div class="card-header"><strong>销售趋势</strong></div><div class="card-body"><div class="table-responsive"><table class="table table-sm table-hover"><thead><tr><th>日期</th><th>日志数</th></tr></thead><tbody><tr th:each="entry : ${salesTrend}"><td th:text="${entry.key}">2025-01-01</td><td th:text="${entry.value}">0</td></tr><tr th:if="${#maps.isEmpty(salesTrend)}"><td colspan="2" class="text-center text-muted">暂无趋势数据</td></tr></tbody></table></div></div></div>
+
+            <div class="card mb-4"><div class="card-header"><strong>商品排名</strong></div><div class="card-body"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>排名</th><th>商品</th><th>次数</th></tr></thead><tbody><tr th:each="item, iterStat : ${topProducts}"><td th:text="${iterStat.index + 1}">1</td><td th:text="${item.productName}">商品</td><td th:text="${item.count}">0</td></tr><tr th:if="${#lists.isEmpty(topProducts)}"><td colspan="3" class="text-center text-muted">暂无排名数据</td></tr></tbody></table></div></div></div>
+
+            <div class="card mb-4"><div class="card-header"><strong>用户浏览和购买行为</strong></div><div class="card-body"><div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th>时间</th><th>类型</th><th>商品ID</th><th>会话</th><th>页面</th></tr></thead><tbody><tr th:each="log : ${behaviorLogs}"><td th:text="${#temporals.format(log.logTime, 'yyyy-MM-dd HH:mm:ss')}">2025-01-01 12:00:00</td><td th:text="${log.actionType}">VIEW</td><td th:text="${log.productId}">1</td><td th:text="${log.user?.username ?: log.sessionId}">session</td><td class="text-truncate" style="max-width: 320px;" th:text="${log.pageUrl}">/product/1</td></tr><tr th:if="${#lists.isEmpty(behaviorLogs)}"><td colspan="5" class="text-center text-muted">暂无行为日志</td></tr></tbody></table></div></div></div>
+
+            <div class="card"><div class="card-header"><strong>异常告警</strong></div><div class="card-body"><ul class="mb-0"><li th:each="alert : ${alerts}" th:text="${alert}">告警内容</li></ul></div></div>
+        </main>
     </div>
-
-    <div th:replace="index/fragments :: footer"></div>
-    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</div>
+<div th:replace="index/fragments :: footer"></div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>
-
-
-
-
-
-
-

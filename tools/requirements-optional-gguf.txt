@@ -1,0 +1,4 @@
+# 可选：在本地进程加载 GGUF（需自行解决 Windows 下 MSVC 编译问题）。
+# 若在 pip 构建 llama-cpp-python 时出现 C4819/C2001，请勿使用本文件；
+# 改用 Ollama / llama-server 等 HTTP 后端（见 pipeline/README.md）。
+llama-cpp-python>=0.2.90

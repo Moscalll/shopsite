@@ -14,7 +14,7 @@
 
     <main class="container-fluid px-0">
         <!-- 横幅滚动大图 -->
-        <section class="mb-5 mt-3">
+        <section class="mb-5 mt-0">
             <div id="homeCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-indicators">
                     <button type="button" data-bs-target="#homeCarousel" th:each="banner, iterStat : ${banners}"
@@ -74,6 +74,42 @@
                 </div>
             </section>
 
+            <!-- 猜你喜欢 -->
+            <section class="mb-5">
+                <div class="row mb-4">
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <h2 class="text-muji-dark section-title">| 猜你喜欢 |</h2>
+                        <a th:href="@{/explore}" class="btn btn-light btn-sm" style="border: 1px solid #A5B699;">
+                            逛一逛 <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="col-12">
+                        <hr class="section-divider">
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-3 col-sm-6 col-6"
+                         th:each="p : ${guessYouLike}">
+                        <div class="card h-100 shadow-sm border-0">
+                            <img th:src="${p.imageUrl ?: '/images/placeholder.jpg'}" class="card-img-top"
+                                 th:alt="${p.name}" style="height: 200px; object-fit: cover;">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title" th:text="${p.name}">商品名称</h5>
+                                <p class="card-text text-danger fw-bold mb-2">
+                                    ¥<span th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 2, 'POINT')}">99.00</span>
+                                </p>
+                                <p class="card-text text-muted small mb-auto">库存: <span th:text="${p.stock}">10</span></p>
+                                <a th:href="@{/product/{id}(id=${p.id}, returnUrl=${currentUrl})}"
+                                   class="btn btn-outline-dark btn-sm mt-2">查看详情</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12" th:if="${guessYouLike == null or #lists.isEmpty(guessYouLike)}">
+                        <p class="text-center text-muted">猜你喜欢正在生成中...</p>
+                    </div>
+                </div>
+            </section>
+
             <!-- 新品上市 -->
             <section class="mb-5">
                 <div class="row mb-4">
@@ -103,7 +139,7 @@
                                     </p>
                                     <p class="card-text text-muted small mb-auto">库存: <span
                                             th:text="${product.stock}">10</span></p>
-                                    <a th:href="@{/product/{id}(id=${product.id})}"
+                                    <a th:href="@{/product/{id}(id=${product.id}, returnUrl=${currentUrl})}"
                                         class="btn btn-outline-dark btn-sm mt-2">查看详情</a>
                                 </div>
                             </div>
@@ -148,7 +184,7 @@
                                 </p>
                                 <p class="card-text text-muted small mb-auto">库存: <span
                                         th:text="${product.stock}">10</span></p>
-                                <a th:href="@{/product/{id}(id=${product.id})}"
+                                <a th:href="@{/product/{id}(id=${product.id}, returnUrl=${currentUrl})}"
                                     class="btn btn-outline-dark btn-sm mt-2">查看详情</a>
                             </div>
                         </div>
@@ -182,7 +218,7 @@
                                 </p>
                                 <p class="card-text text-muted small mb-auto">库存: <span
                                         th:text="${product.stock}">10</span></p>
-                                <a th:href="@{/product/{id}(id=${product.id})}"
+                                <a th:href="@{/product/{id}(id=${product.id}, returnUrl=${currentUrl})}"
                                     class="btn btn-outline-dark btn-sm mt-2">查看详情</a>
                             </div>
                         </div>

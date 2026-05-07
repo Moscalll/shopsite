@@ -31,6 +31,21 @@
                             <i class="bi bi-box-seam"></i> 商品管理
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/users}">
+                            <i class="bi bi-people"></i> 用户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/analytics}">
+                            <i class="bi bi-graph-up"></i> 管理分析
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/recommendations}">
+                            <i class="bi bi-stars"></i> 推荐系统
+                        </a>
+                    </li>
                     <li class="nav-item mt-3">
                         <a class="nav-link" th:href="@{/}">
                             <i class="bi bi-house"></i> 返回首页
@@ -87,15 +102,103 @@
 
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0">商品列表</h5>
+                        <h5 class="mb-0">登录信息</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="merchant-login-log-scroll">
+                            <table class="table table-hover mb-0 merchant-login-log-table">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>时间</th>
+                                    <th>IP 地址</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="l : ${loginLogs}">
+                                    <td th:text="${l.loginTime != null ? #temporals.format(l.loginTime, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</td>
+                                    <td th:text="${l.ip != null ? l.ip : '-'}">-</td>
+                                </tr>
+                                <tr th:if="${loginLogs == null or #lists.isEmpty(loginLogs)}">
+                                    <td colspan="2" class="text-center text-muted py-3">暂无登录记录</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">操作日志</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="merchant-login-log-scroll">
+                            <table class="table table-hover mb-0 merchant-login-log-table">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>操作时间</th>
+                                    <th>内容</th>
+                                    <th>IP</th>
+                                    <th>账号</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="op : ${operationLogs}">
+                                    <td th:text="${op.operationTime != null ? #temporals.format(op.operationTime, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</td>
+                                    <td>
+                                        <div class="small fw-semibold text-break" th:text="${op.operationType}">type</div>
+                                        <div class="text-muted small text-break" th:if="${op.content != null}" th:text="${op.content}">content</div>
+                                    </td>
+                                    <td th:text="${op.ip != null ? op.ip : '-'}">-</td>
+                                    <td th:text="${op.account != null ? op.account : '-'}">-</td>
+                                </tr>
+                                <tr th:if="${operationLogs == null or #lists.isEmpty(operationLogs)}">
+                                    <td colspan="4" class="text-center text-muted py-3">暂无操作记录</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <h5 class="mb-0">商品列表</h5>
+                            <form class="row g-2 align-items-center" method="get"
+                                  th:action="@{/admin/merchants/{id}(id=${merchant.id})}">
+                                <div class="col-auto">
+                                    <input class="form-control form-control-sm" name="productId" placeholder="商品ID"
+                                           th:value="${productId}">
+                                </div>
+                                <div class="col-auto">
+                                    <input class="form-control form-control-sm" name="productName" placeholder="商品名称"
+                                           th:value="${productName}">
+                                </div>
+                                <div class="col-auto">
+                                    <select class="form-select form-select-sm" name="categoryId">
+                                        <option value="" th:selected="${categoryId == null}">全部分类</option>
+                                        <option th:each="c : ${allCategories}" th:value="${c.id}" th:text="${c.name}"
+                                                th:selected="${categoryId != null and categoryId == c.id}">分类</option>
+                                    </select>
+                                </div>
+                                <div class="col-auto">
+                                    <button class="btn btn-sm btn-primary" type="submit">搜索</button>
+                                </div>
+                                <div class="col-auto">
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       th:href="@{/admin/merchants/{id}(id=${merchant.id})}">重置</a>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div th:if="${#lists.isEmpty(products)}" class="text-center py-3">
                             <p class="text-muted">该商户暂无商品</p>
                         </div>
-                        <div th:if="${!#lists.isEmpty(products)}" class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
+                        <div th:if="${!#lists.isEmpty(products)}" class="table-responsive merchant-products-table-scroll">
+                            <table class="table table-hover mb-0 align-middle merchant-products-table">
+                                <thead class="table-light">
                                     <tr>
                                         <th>ID</th>
                                         <th>图片</th>
@@ -114,13 +217,14 @@
                                             <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}"
                                                 style="width: 50px; height: 50px; object-fit: cover;">
                                         </td>
-                                        <td th:text="${product.name}">商品名称</td>
+                                        <td class="text-truncate" th:title="${product.name}" th:text="${product.name}">商品名称</td>
                                         <td>
                                             ¥<span
                                                 th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 2, 'POINT')}">99.00</span>
                                         </td>
                                         <td th:text="${product.stock}">10</td>
-                                        <td th:text="${product.category.name}">分类</td>
+                                        <td class="text-truncate" th:title="${product.category != null ? product.category.name : '-'}"
+                                            th:text="${product.category != null ? product.category.name : '-'}">分类</td>
                                         <td>
                                             <span class="badge"
                                                 th:classappend="${product.isAvailable} ? 'bg-success' : 'bg-secondary'">
@@ -254,6 +358,37 @@
         box-shadow: none;
         background-color: inherit;
         color: #333;
+    }
+
+    /* 商户详情 - 商品表：固定约 10 行高度 + 内部滚动 */
+    .merchant-products-table-scroll {
+        max-height: 520px; /* 约 10 行（含表头），避免整页被撑爆 */
+        overflow: auto;
+    }
+    .merchant-products-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #f8f9fa;
+    }
+    .merchant-products-table {
+        table-layout: fixed;
+    }
+
+    /* 登录日志：限定高度，多条时内部滚动 */
+    .merchant-login-log-scroll {
+        max-height: 360px;
+        overflow-y: auto;
+    }
+    .merchant-login-log-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #f8f9fa;
+    }
+    .merchant-products-table td,
+    .merchant-products-table th {
+        vertical-align: middle;
     }
 </style>
 

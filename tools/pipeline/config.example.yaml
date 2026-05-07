@@ -1,0 +1,37 @@
+# 复制为 config.yaml 后修改。敏感信息用 tools/.env（MYSQL_*）
+
+merchant_id: 467
+
+allowed_category_ids: [1, 2, 3, 4, 5, 6, 7, 8]
+
+items_per_category: 1
+
+price:
+  min: 19.0
+  max: 599.0
+
+stock_default: 100
+
+defaults:
+  stylePreset: english_minimal_wood_table_3x4
+  outputFormat: webp
+
+llm:
+  # 推荐（Windows）：使用已安装的 Ollama，无需 pip 编译 llama-cpp-python
+  # 终端执行: ollama pull qwen2.5:3b   （或你选择的中文指令微调模型）
+  backend: http
+  base_url: "http://127.0.0.1:11434/v1"
+  # api_key 留空即可（Ollama 本地多数无需 Authorization）；若服务端要求再填
+  remote_model: "qwen2.5:3b"
+
+  temperature: 0.65
+  max_tokens: 900
+
+  # --- 可选：本机 GGUF + llama-cpp-python（仅当 pip 能成功安装时再启用）---
+  # backend: gguf
+  # model_path: "D:/GitHub/StoryWithYou/resources/models/qwen2.5-3b-instruct-q4_k_m.gguf"
+  # n_ctx: 8192
+  # n_gpu_layers: 0
+
+paths:
+  out_dir: out/pipeline_run

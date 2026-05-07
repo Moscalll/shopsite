@@ -21,6 +21,9 @@
                             <a class="nav-link text-muji-dark" th:href="@{/}">首页</a>
                         </li>
                         <li class="nav-item me-4">
+                            <a class="nav-link text-muji-dark" th:href="@{/explore}">逛一逛</a>
+                        </li>
+                        <li class="nav-item me-4">
                             <a class="nav-link text-muji-dark position-relative" th:href="@{/message}">
                                 消息中心
                                 <span th:if="${unreadMessageCount != null and unreadMessageCount > 0}" 

@@ -1,0 +1,14 @@
+{
+  "name": "shopsite-frontend-perf-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "perf:collect": "node scripts/perf/collect-perf-metrics.mjs",
+    "perf:auth-collect": "node scripts/perf/collect-auth-perf-metrics.mjs",
+    "perf:compare": "node scripts/perf/compare-perf-results.mjs",
+    "perf:report": "node scripts/perf/generate-perf-report.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.59.1"
+  }
+}

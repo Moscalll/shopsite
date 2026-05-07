@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/products")
@@ -40,12 +43,37 @@ public class AdminProductController {
         }
         
         List<Category> categories = categoryService.findAllCategories();
+
+        Map<Long, List<Product>> productsByCategory = products.stream()
+                .filter(p -> p.getCategory() != null && p.getCategory().getId() != null)
+                .collect(Collectors.groupingBy(p -> p.getCategory().getId()));
+
+        List<Category> categoriesToShow = new ArrayList<>();
+        if (categoryId != null) {
+            for (Category c : categories) {
+                if (c.getId() != null && c.getId().equals(categoryId)) {
+                    categoriesToShow.add(c);
+                    break;
+                }
+            }
+        } else if (keyword != null && !keyword.trim().isEmpty()) {
+            for (Category c : categories) {
+                if (c.getId() != null && productsByCategory.containsKey(c.getId())) {
+                    categoriesToShow.add(c);
+                }
+            }
+        } else {
+            categoriesToShow = categories;
+        }
         
         model.addAttribute("products", products);
         model.addAttribute("categories", categories);
+        model.addAttribute("categoriesToShow", categoriesToShow);
+        model.addAttribute("productsByCategory", productsByCategory);
         model.addAttribute("keyword", keyword);
         model.addAttribute("categoryId", categoryId);
         model.addAttribute("pageTitle", "商品管理");
+        model.addAttribute("activeMenu", "products");
         return "admin/product_list";
     }
 }

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: '推荐系统'">推荐系统</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body th:replace="admin/layout :: layout(~{::content})">
+
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="mb-1">推荐系统模块</h1>
+            <div class="text-muted">离线计算 → 在线读取（同购 / ItemCF / 热门兜底）</div>
+        </div>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}">成功</div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}">错误</div>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>运行参数</span>
+            <form th:action="@{/admin/recommendations/recompute}" method="post" class="d-flex gap-2">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="topN" th:value="${topN}">
+                <button class="btn btn-sm btn-primary" type="submit" onclick="return confirm('确认重新计算推荐？')">重新计算</button>
+            </form>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/admin/recommendations}" method="get" class="row g-2 align-items-center">
+                <div class="col-auto"><label class="col-form-label col-form-label-sm">TopN</label></div>
+                <div class="col-auto">
+                    <select name="topN" class="form-select form-select-sm">
+                        <option value="5" th:selected="${topN == 5}">5</option>
+                        <option value="10" th:selected="${topN == 10}">10</option>
+                        <option value="20" th:selected="${topN == 20}">20</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-sm btn-outline-secondary" type="submit">应用</button>
+                </div>
+                <div class="col-12 text-muted small mt-2">
+                    指标口径（简化版）：覆盖率=有 ItemCF 推荐的用户占比；命中率=用户最近一单商品是否命中 ItemCF TopN；稳定性=连续两次 ItemCF 结果 overlap@N 的平均值。
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card"><div class="card-body">
+                <div class="text-muted">推荐覆盖率</div>
+                <div class="h3"><span th:text="${metrics.coverageRate}">0</span>%</div>
+                <div class="text-muted small">用户数：<span th:text="${metrics.totalUsers}">0</span></div>
+            </div></div>
+        </div>
+        <div class="col-md-4">
+            <div class="card"><div class="card-body">
+                <div class="text-muted">推荐命中率</div>
+                <div class="h3"><span th:text="${metrics.hitRate}">0</span>%</div>
+                <div class="text-muted small">评估用户数：<span th:text="${metrics.evalUsers}">0</span></div>
+            </div></div>
+        </div>
+        <div class="col-md-4">
+            <div class="card"><div class="card-body">
+                <div class="text-muted">召回稳定性</div>
+                <div class="h3"><span th:text="${metrics.stability}">0</span>%</div>
+                <div class="text-muted small">基于连续两次 ItemCF 结果</div>
+            </div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">在线读取接口</div>
+        <div class="card-body">
+            <div class="text-muted small mb-2">
+                `GET /api/recommendations/my?algorithm=ITEM_CF&topN=<span th:text="${topN}">10</span>`
+            </div>
+            <ul class="small mb-0">
+                <li>algorithm：CO_PURCHASE / ITEM_CF / POPULAR</li>
+                <li>topN：推荐条数</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+

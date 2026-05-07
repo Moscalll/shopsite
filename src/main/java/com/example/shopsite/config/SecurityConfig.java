@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import com.example.shopsite.security.CustomAuthenticationSuccessHandler;
+import com.example.shopsite.security.CustomAuthenticationFailureHandler;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,9 +18,12 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+    private final CustomAuthenticationFailureHandler authenticationFailureHandler;
 
-    public SecurityConfig(CustomAuthenticationSuccessHandler authenticationSuccessHandler) {
+    public SecurityConfig(CustomAuthenticationSuccessHandler authenticationSuccessHandler,
+                          CustomAuthenticationFailureHandler authenticationFailureHandler) {
         this.authenticationSuccessHandler = authenticationSuccessHandler;
+        this.authenticationFailureHandler = authenticationFailureHandler;
     }
 
     @Bean
@@ -55,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register").permitAll() // 允许注册 API 访问
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll() // 允许登录 API 访问（如果你使用自定义认证接口）
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // 允许所有人查询商品 API
+                        .requestMatchers(HttpMethod.POST, "/api/behavior/dwell").authenticated() // 登录用户上报停留（主要用于 CUSTOMER）
 
                         // 3. 用户端路由（需要认证）
                         .requestMatchers("/cart/**", "/favorites/**", "/orders/**").authenticated()
@@ -90,7 +95,7 @@ public class SecurityConfig {
                         .loginPage("/login") // 指定自定义登录页面 GET 请求
                         .loginProcessingUrl("/login") // 指定处理登录表单的 POST 请求路径
                         .successHandler(authenticationSuccessHandler) // 使用自定义成功处理器，根据角色跳转
-                        .failureUrl("/login?error") // 登录失败后跳转，带上错误参数
+                        .failureHandler(authenticationFailureHandler) // 失败时写登录日志并跳转
                         .permitAll() // 允许所有人访问登录路径
                 )
 
@@ -100,8 +105,8 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/login") // 登出后跳转到登录页
                         .permitAll())
 
-                // 允许 /api/auth/register POST 请求不携带 CSRF Token（如果你不希望为 API 客户端提供 token）
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/auth/register"));
+                // 行为停留上报可能通过 sendBeacon / fetch 调用，放宽 CSRF（仍要求登录）
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/auth/register", "/api/behavior/dwell"));
 
         return http.build();
     }

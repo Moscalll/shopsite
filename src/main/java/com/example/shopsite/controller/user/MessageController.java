@@ -1,8 +1,11 @@
 package com.example.shopsite.controller.user;
 
 import com.example.shopsite.model.Message;
+import com.example.shopsite.model.Order;
+import com.example.shopsite.model.OrderStatus;
 import com.example.shopsite.model.User;
 import com.example.shopsite.repository.MessageRepository;
+import com.example.shopsite.repository.OrderRepository;
 import com.example.shopsite.repository.UserRepository;
 import com.example.shopsite.service.MessageService;
 import org.springframework.security.core.Authentication;
@@ -21,13 +24,16 @@ public class MessageController {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final MessageService messageService;
+    private final OrderRepository orderRepository;
 
     public MessageController(MessageRepository messageRepository, 
                            UserRepository userRepository,
-                           MessageService messageService) {
+                           MessageService messageService,
+                           OrderRepository orderRepository) {
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
         this.messageService = messageService;
+        this.orderRepository = orderRepository;
     }
 
     @GetMapping
@@ -44,12 +50,31 @@ public class MessageController {
         }
 
         User user = userOpt.get();
+        if (user.getRole() != null && user.getRole().name().equals("MERCHANT")) {
+            // 商户：消息中心展示订单待办（不使用 Message 表）
+            List<Order> orders = orderRepository.findOrdersByMerchant(user);
+            List<Order> pendingShip = orders.stream().filter(o -> o.getStatus() == OrderStatus.PROCESSING).toList();
+            List<Order> pendingDeliver = orders.stream().filter(o -> o.getStatus() == OrderStatus.SHIPPED).toList();
+            List<Order> pendingConfirm = orders.stream().filter(o -> o.getStatus() == OrderStatus.PENDING_PAYMENT).toList();
+
+            model.addAttribute("pendingShip", pendingShip);
+            model.addAttribute("pendingDeliver", pendingDeliver);
+            model.addAttribute("pendingConfirm", pendingConfirm);
+            model.addAttribute("pendingShipCount", pendingShip.size());
+            model.addAttribute("pendingDeliverCount", pendingDeliver.size());
+            model.addAttribute("pendingConfirmCount", pendingConfirm.size());
+            model.addAttribute("pageTitle", "消息中心");
+            model.addAttribute("mode", "merchant");
+            return "user/message";
+        }
+
         List<Message> messages = messageRepository.findByUserOrderByCreateTimeDesc(user);
         Long unreadCount = messageRepository.countByUserAndIsReadFalse(user);
 
         model.addAttribute("messages", messages);
         model.addAttribute("unreadCount", unreadCount);
         model.addAttribute("pageTitle", "消息中心");
+        model.addAttribute("mode", "user");
         return "user/message";
     }
 

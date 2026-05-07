@@ -177,6 +177,74 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
+    public Order createOrderFromCartItems(User user, List<Long> cartItemIds) {
+        if (cartItemIds == null || cartItemIds.isEmpty()) {
+            throw new BusinessException("未选择任何商品，无法创建订单");
+        }
+
+        List<CartItem> selectedItems = cartService.getCartItems(user).stream()
+                .filter(ci -> ci != null && ci.getId() != null && cartItemIds.contains(ci.getId()))
+                .toList();
+
+        if (selectedItems.isEmpty()) {
+            throw new BusinessException("所选商品不存在或不在购物车中");
+        }
+
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        Order newOrder = Order.builder()
+                .user(user)
+                .orderDate(LocalDateTime.now())
+                .status(OrderStatus.PENDING_PAYMENT)
+                .items(new ArrayList<>())
+                .build();
+
+        for (CartItem cartItem : selectedItems) {
+            Product product = cartItem.getProduct();
+            Integer quantity = cartItem.getQuantity();
+
+            if (product == null || product.getId() == null) {
+                throw new BusinessException("购物车商品信息异常");
+            }
+            if (!product.getIsAvailable() || product.getStock() < quantity) {
+                throw new BusinessException("商品 " + product.getName() + " 库存不足或已下架");
+            }
+
+            BigDecimal itemPrice = product.getPrice().multiply(BigDecimal.valueOf(quantity));
+            totalAmount = totalAmount.add(itemPrice);
+
+            product.setStock(product.getStock() - quantity);
+            productRepository.save(product);
+
+            OrderItem orderItem = OrderItem.builder()
+                    .order(newOrder)
+                    .product(product)
+                    .quantity(quantity)
+                    .priceAtOrder(product.getPrice())
+                    .build();
+            orderItems.add(orderItem);
+        }
+
+        newOrder.setTotalAmount(totalAmount);
+        Order savedOrder = orderRepository.save(newOrder);
+
+        for (OrderItem item : orderItems) {
+            item.setOrder(savedOrder);
+            orderItemRepository.save(item);
+        }
+        savedOrder.setItems(orderItems);
+
+        // 下单后只移除本次选择的购物车项（保留未结算商品）
+        for (CartItem cartItem : selectedItems) {
+            cartService.removeFromCart(cartItem.getId(), user);
+        }
+
+        return savedOrder;
+    }
+
+    @Override
     public List<Order> findMyOrders(String username) {
         User customer = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));

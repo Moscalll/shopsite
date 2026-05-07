@@ -1,14 +1,18 @@
 package com.example.shopsite.controller.admin;
 
 import com.example.shopsite.model.Order;
+import com.example.shopsite.model.OrderStatus;
+import com.example.shopsite.repository.OrderRepository;
 import com.example.shopsite.service.OrderService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
@@ -17,9 +21,11 @@ import java.util.List;
 public class AdminOrderController {
 
     private final OrderService orderService;
+    private final OrderRepository orderRepository;
 
-    public AdminOrderController(OrderService orderService) {
+    public AdminOrderController(OrderService orderService, OrderRepository orderRepository) {
         this.orderService = orderService;
+        this.orderRepository = orderRepository;
     }
 
     /**
@@ -56,6 +62,7 @@ public class AdminOrderController {
         model.addAttribute("cancelled", cancelled);
         model.addAttribute("totalAmount", totalAmount);
         model.addAttribute("pageTitle", "全站订单管理");
+        model.addAttribute("activeMenu", "orders");
         return "admin/order_list";
     }
 
@@ -68,10 +75,51 @@ public class AdminOrderController {
             Order order = orderService.findOrderDetailsForAdmin(id);
             model.addAttribute("order", order);
             model.addAttribute("pageTitle", "订单详情");
+            model.addAttribute("activeMenu", "orders");
             return "admin/order_detail";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             return "error/404";
+        }
+    }
+
+    @PostMapping("/{id}/status")
+    public String updateStatus(@PathVariable Long id,
+                               @RequestParam OrderStatus status,
+                               RedirectAttributes ra) {
+        try {
+            Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("订单不存在"));
+            order.setStatus(status);
+            orderRepository.save(order);
+            ra.addFlashAttribute("success", "订单状态已更新");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/orders/" + id;
+    }
+
+    @PostMapping("/{id}/cancel")
+    public String cancel(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("订单不存在"));
+            order.setStatus(OrderStatus.CANCELLED);
+            orderRepository.save(order);
+            ra.addFlashAttribute("success", "订单已取消");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/orders/" + id;
+    }
+
+    @PostMapping("/{id}/delete")
+    public String delete(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            orderRepository.deleteById(id);
+            ra.addFlashAttribute("success", "订单已删除");
+            return "redirect:/admin/orders";
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/admin/orders/" + id;
         }
     }
 }

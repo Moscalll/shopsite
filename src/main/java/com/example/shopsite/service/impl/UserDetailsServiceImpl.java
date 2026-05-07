@@ -32,7 +32,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword()) // 数据库中应是 BCrypt 加密后的密码
-                .roles(user.getRole().name()) 
+                .roles(user.getRole().name())
+                .disabled(!Boolean.TRUE.equals(user.isEnabled()))
                 .build();
     }
 }

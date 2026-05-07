@@ -462,8 +462,14 @@
     border-color: #8FA882;
 }
 
-/* 允许表格内的下拉菜单溢出显示 */
-.table-responsive {
+/*
+ * 默认情况下，.table-responsive 应该保持可滚动（Bootstrap 默认 overflow-x: auto）。
+ * 之前这里的全局 overflow: visible 会导致：
+ * - 无法实现“固定高度 + 内部滚动”
+ * - 表格内容直接溢出容器
+ * 如需让下拉菜单溢出显示，请在容器上额外加 .table-responsive--allow-overflow
+ */
+.table-responsive.table-responsive--allow-overflow {
     overflow: visible !important;
 }
 
@@ -484,6 +490,7 @@ html, body {
 body {
     display: flex;
     flex-direction: column;
+    overflow-y: scroll; /* 始终保留纵向滚动条槽位，避免页面加载时宽度抖动 */
 }
 
 /* 让中间的内容区域自动撑开，把 footer 挤到底部 */

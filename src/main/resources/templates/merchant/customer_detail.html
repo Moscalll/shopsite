@@ -7,6 +7,15 @@
     <title th:text="${pageTitle} ?: '客户详情'">客户详情</title>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/custom.css}">
+    <style>
+        .scroll-table {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .scroll-table table {
+            margin-bottom: 0;
+        }
+    </style>
 </head>
 
 <body>
@@ -36,11 +45,6 @@
                     <li class="nav-item">
                         <a class="nav-link active" th:href="@{/merchant/customers}">
                             <i class="bi bi-people"></i> 客户管理
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/merchant/logs}">
-                            <i class="bi bi-clock-history"></i> 浏览/购买日志
                         </a>
                     </li>
                     <li class="nav-item mt-3">
@@ -85,6 +89,61 @@
                         </div>
                     </div>
 
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4"><div class="card"><div class="card-body"><div class="text-muted">订单数</div><div class="h3" th:text="${#lists.size(orders)}">0</div></div></div></div>
+                        <div class="col-md-4"><div class="card"><div class="card-body"><div class="text-muted">总消费</div><div class="h3 text-success">¥<span th:text="${#numbers.formatDecimal(totalSpent, 0, 'COMMA', 2, 'POINT')}">0.00</span></div></div></div></div>
+                        <div class="col-md-4"><div class="card"><div class="card-body"><div class="text-muted">浏览转化率</div><div class="h3"><span th:text="${conversionRate}">0.00</span>%</div></div></div></div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header"><h5 class="mb-0">销售状态（该客户）</h5></div>
+                        <div class="card-body row g-3">
+                            <div class="col-md-2" th:each="entry : ${salesStatus}">
+                                <div class="border rounded p-3 text-center">
+                                    <div class="text-muted" th:text="${entry.key}">状态</div>
+                                    <div class="h4 mb-0" th:text="${entry.value}">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header"><h5 class="mb-0">趋势（该客户）</h5></div>
+                        <div class="card-body p-0">
+                            <div class="scroll-table">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="table-light"><tr><th>日期</th><th>日志数</th></tr></thead>
+                                    <tbody>
+                                    <tr th:each="entry : ${salesTrend}">
+                                        <td th:text="${entry.key}">2026-01-01</td>
+                                        <td th:text="${entry.value}">0</td>
+                                    </tr>
+                                    <tr th:if="${#maps.isEmpty(salesTrend)}"><td colspan="2" class="text-center text-muted py-3">暂无趋势数据</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header"><h5 class="mb-0">商品排名（该客户）</h5></div>
+                        <div class="card-body p-0">
+                            <div class="scroll-table">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light"><tr><th>排名</th><th>商品</th><th>次数</th></tr></thead>
+                                    <tbody>
+                                    <tr th:each="item,iter : ${topProducts}">
+                                        <td th:text="${iter.index + 1}">1</td>
+                                        <td th:text="${item.productName}">商品</td>
+                                        <td th:text="${item.count}">0</td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(topProducts)}"><td colspan="3" class="text-center text-muted py-3">暂无排名数据</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card">
                         <div class="card-header">
                             <h5 class="mb-0">订单历史</h5>
@@ -93,7 +152,7 @@
                             <div th:if="${#lists.isEmpty(orders)}" class="text-center py-3">
                                 <p class="text-muted">该客户暂无订单</p>
                             </div>
-                            <div th:if="${!#lists.isEmpty(orders)}" class="table-responsive">
+                            <div th:if="${!#lists.isEmpty(orders)}" class="scroll-table">
                                 <table class="table table-hover">
                                     <thead>
                                         <tr>
@@ -141,67 +200,36 @@
                         </div>
                     </div>
 
-                    <!-- 新增：浏览/购买日志 -->
+                    <!-- 客户浏览行为（商品类别、停留时长） -->
                     <div class="card mt-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">浏览/购买日志</h5>
-                            <div>
-                                <a th:href="@{'/merchant/customers/' + ${customer.id}}"
-                                    th:classappend="${actionType == null or actionType.isEmpty()} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
-                                    class="btn btn-sm">全部</a>
-                                <a th:href="@{'/merchant/customers/' + ${customer.id} + '?actionType=VIEW'}"
-                                    th:classappend="${actionType == 'VIEW'} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
-                                    class="btn btn-sm">浏览</a>
-                                <a th:href="@{'/merchant/customers/' + ${customer.id} + '?actionType=PURCHASE'}"
-                                    th:classappend="${actionType == 'PURCHASE'} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
-                                    class="btn btn-sm">购买</a>
-                                <a th:href="@{'/merchant/customers/' + ${customer.id} + '?actionType=ADD_TO_CART'}"
-                                    th:classappend="${actionType == 'ADD_TO_CART'} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
-                                    class="btn btn-sm">加购</a>
-                            </div>
+                        <div class="card-header">
+                            <h5 class="mb-0">客户浏览行为</h5>
                         </div>
                         <div class="card-body">
-                            <div th:if="${logs == null or #lists.isEmpty(logs)}" class="text-center py-3">
-                                <p class="text-muted">该客户暂无浏览/购买日志</p>
+                            <div th:if="${behaviorLogs == null or #lists.isEmpty(behaviorLogs)}" class="text-center py-3">
+                                <p class="text-muted">暂无记录（客户在本店商品详情页产生停留后会上报）</p>
                             </div>
-                            <div th:if="${logs != null and !#lists.isEmpty(logs)}" class="table-responsive">
+                            <div th:if="${behaviorLogs != null and !#lists.isEmpty(behaviorLogs)}" class="scroll-table">
                                 <table class="table table-hover">
                                     <thead>
                                         <tr>
                                             <th>时间</th>
-                                            <th>操作类型</th>
-                                            <th>商品ID</th>
-                                            <th>操作</th>
+                                            <th>商品类别</th>
+                                            <th>停留时长（秒）</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr th:each="log : ${logs}">
-                                            <td th:text="${#temporals.format(log.logTime, 'yyyy-MM-dd HH:mm:ss')}">2025-01-01 12:00:00</td>
-                                            <td>
-                                                <span class="badge"
-                                                    th:classappend="${log.actionType == 'VIEW'} ? 'bg-info' : 
-                                                                      (${log.actionType == 'PURCHASE'} ? 'bg-success' : 
-                                                                      (${log.actionType == 'ADD_TO_CART'} ? 'bg-warning' : 'bg-secondary'))">
-                                                    <span th:switch="${log.actionType}">
-                                                        <span th:case="'VIEW'">浏览</span>
-                                                        <span th:case="'PURCHASE'">购买</span>
-                                                        <span th:case="'ADD_TO_CART'">加购</span>
-                                                        <span th:case="*">其他</span>
-                                                    </span>
-                                                </span>
-                                            </td>
-                                            <td th:text="${log.productId}">1</td>
-                                            <td>
-                                                <a th:href="@{/product/{id}(id=${log.productId})}"
-                                                    class="btn btn-sm btn-outline-primary"
-                                                    th:if="${log.productId != null}">查看商品</a>
-                                            </td>
+                                        <tr th:each="b : ${behaviorLogs}">
+                                            <td th:text="${b.eventTime != null ? #temporals.format(b.eventTime, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</td>
+                                            <td th:text="${categoryNames != null and b.categoryId != null and categoryNames.containsKey(b.categoryId)} ? ${categoryNames.get(b.categoryId)} : '-'">-</td>
+                                            <td th:text="${b.durationSeconds != null ? b.durationSeconds : '-'}">0</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </main>
         </div>

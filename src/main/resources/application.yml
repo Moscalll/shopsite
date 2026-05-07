@@ -16,7 +16,9 @@ spring:
     port: 8080
 
   profiles:
-    active: dev,init-data
+    # 默认不要启用 init-data：它会在启动时清空并重建数据库（包括登录日志）。
+    # 如需重置测试数据，请手动加上 init-data（以及你需要的其它 profile）。
+    active: dev
   # 文件上传配置
   servlet:
     multipart:
@@ -29,6 +31,8 @@ spring:
 # 服务器配置
 server:
   port: 8080
+  # 位于 Nginx / 网关 / 负载均衡之后时，按转发头解析真实地址（与 ClientIpExtractor 一起用）
+  forward-headers-strategy: framework
   # Tomcat 文件上传配置（解决 FileCountLimitExceededException）
   tomcat:
     max-swallow-size: 52428800  # 50MB in bytes

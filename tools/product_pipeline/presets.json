@@ -1,0 +1,25 @@
+{
+  "english_minimal_wood_table_3x4": {
+    "format": "english_paragraph",
+    "width": 768,
+    "height": 1024,
+    "template": "Straight-on view product photography of {detail}, standing perfectly upright{label_clause}, on a white wooden table. Background is pale grayish green. Unobstructed and complete view. Minimal, clean, neutral aesthetic. High detail, sharp focus, commercial product photo, no text, no watermark, no logo.",
+    "negative": "text, watermark, logo, typography, label text, deformed, blurry, low quality, cropped product, cut off, partial product, duplicate objects, busy background, cartoon, illustration, people, hands, clutter"
+  },
+  "muji_clean_studio": {
+    "format": "comma_join",
+    "width": 768,
+    "height": 1024,
+    "prompt_prefix": "professional product photography, clean minimal studio, soft diffused light, neutral beige-gray backdrop, subtle shadow, 85mm lens look, high detail, sharp focus on product, ecommerce hero shot, no text, no watermark, no logo",
+    "prompt_suffix": "single product centered, realistic materials, color accurate",
+    "negative": "text, watermark, logo, deformed, blurry, low quality, duplicate products, busy background, cartoon, illustration, people, hands"
+  },
+  "white_bg_catalog": {
+    "format": "comma_join",
+    "width": 768,
+    "height": 1024,
+    "prompt_prefix": "catalog product photo, pure white seamless background, even studio lighting, soft shadow under product, centered composition, sharp edges, commercial packshot",
+    "prompt_suffix": "orthographic-ish front three-quarter view, high clarity",
+    "negative": "text, watermark, logo, cluttered background, color cast, motion blur, distorted geometry, cropped product"
+  }
+}

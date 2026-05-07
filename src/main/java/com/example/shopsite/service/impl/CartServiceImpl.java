@@ -47,7 +47,10 @@ public class CartServiceImpl implements CartService {
                 throw new IllegalArgumentException("购物车中该商品数量已超过库存");
             }
             existingItem.setQuantity(newQuantity);
-            return cartItemRepository.save(existingItem);
+            CartItem saved = cartItemRepository.save(existingItem);
+            // 记录加购日志（同一商品重复加购也需要计入）
+            salesLogService.logAddToCart(productId, user);
+            return saved;
         } else {
             // 创建新的购物车项
             CartItem cartItem = CartItem.builder()
@@ -86,8 +89,14 @@ public class CartServiceImpl implements CartService {
             throw new IllegalArgumentException("数量超过商品库存");
         }
 
+        int oldQuantity = cartItem.getQuantity() == null ? 0 : cartItem.getQuantity();
         cartItem.setQuantity(quantity);
-        return cartItemRepository.save(cartItem);
+        CartItem saved = cartItemRepository.save(cartItem);
+        // 仅在数量增加时记录一次“加购”行为
+        if (quantity > oldQuantity) {
+            salesLogService.logAddToCart(cartItem.getProduct().getId(), user);
+        }
+        return saved;
     }
 
     @Override

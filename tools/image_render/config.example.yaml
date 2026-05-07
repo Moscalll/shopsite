@@ -1,0 +1,26 @@
+# 复制为 image_render/config.yaml（或传 --config）
+
+# pollinations_get | pollinations_openai | comfyui
+backend: pollinations_get
+
+# 每条请求间隔（秒），避免触发限流
+delay_seconds: 2.5
+
+pollinations:
+  base_url: "https://gen.pollinations.ai"
+  # 见 https://gen.pollinations.ai/image/models — 如 zimage、flux（部分模型可能计费不同）
+  model: zimage
+  # 新版 Pollinations 多数请求需 API Key：https://enter.pollinations.ai
+  # 设置环境变量 POLLINATIONS_API_KEY=sk_... 或 pk_...
+  use_auth: true
+
+# 仅 backend: comfyui 时使用
+comfyui:
+  base_url: "http://127.0.0.1:8188"
+  # 在 ComfyUI 中 Workflow -> Save (API Format) 导出到此路径（相对 tools/）
+  workflow_json: "image_render/workflows/exported_api.json"
+  # 每行 prompts.jsonl 写入的节点（按你导出 JSON 里的 id 修改）
+  node_positive: "6"
+  node_negative: "7"
+  node_latent: "5"
+  node_sampler: "3"

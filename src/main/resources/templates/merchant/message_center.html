@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消息中心</title>
+</head>
+<body>
+<!-- 商户消息中心已统一收敛到顶栏入口 /message -->
+<script th:inline="javascript">
+    window.location.href = /*[[@{/message}]]*/ "/message";
+</script>
+</body>
+</html>
+

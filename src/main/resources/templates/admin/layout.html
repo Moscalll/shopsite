@@ -12,6 +12,10 @@
             min-height: calc(100vh - 56px);
             background-color: #f8f9fa;
             padding: 20px 0;
+            position: sticky;
+            top: 56px; /* 顶部导航栏高度 */
+            height: calc(100vh - 56px);
+            overflow-y: auto;
         }
 
         .sidebar .nav-link {
@@ -53,18 +57,33 @@
             <nav class="col-md-3 col-lg-2 sidebar">
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/admin/merchants}">
+                        <a class="nav-link" th:classappend="${activeMenu} == 'merchants' ? ' active' : ''" th:href="@{/admin/merchants}">
                             <i class="bi bi-shop"></i> 商户管理
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/admin/orders}">
+                        <a class="nav-link" th:classappend="${activeMenu} == 'orders' ? ' active' : ''" th:href="@{/admin/orders}">
                             <i class="bi bi-receipt"></i> 订单管理
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/admin/products}">
+                        <a class="nav-link" th:classappend="${activeMenu} == 'products' ? ' active' : ''" th:href="@{/admin/products}">
                             <i class="bi bi-box-seam"></i> 商品管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${activeMenu} == 'users' ? ' active' : ''" th:href="@{/admin/users}">
+                            <i class="bi bi-people"></i> 用户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${activeMenu} == 'analytics' ? ' active' : ''" th:href="@{/admin/analytics}">
+                            <i class="bi bi-graph-up"></i> 管理分析
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${activeMenu} == 'recommendations' ? ' active' : ''" th:href="@{/admin/recommendations}">
+                            <i class="bi bi-stars"></i> 推荐系统
                         </a>
                     </li>
                     <li class="nav-item mt-3">

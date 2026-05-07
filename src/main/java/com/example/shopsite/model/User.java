@@ -40,6 +40,11 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false) // 角色不可为空
     private Role role; 
+
+    // 软禁用：被“注销”的用户不可登录，但历史数据保留
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean enabled = true;
     
     // 用户拥有的订单列表
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -63,7 +68,7 @@ public class User implements UserDetails {
     public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() { return Boolean.TRUE.equals(enabled); }
     
     // 额外的方法：返回用户名（UserDetails 接口要求）
     @Override

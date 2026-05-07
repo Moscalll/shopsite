@@ -32,6 +32,21 @@
                             <i class="bi bi-box-seam"></i> 商品管理
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/users}">
+                            <i class="bi bi-people"></i> 用户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/analytics}">
+                            <i class="bi bi-graph-up"></i> 管理分析
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/recommendations}">
+                            <i class="bi bi-stars"></i> 推荐系统
+                        </a>
+                    </li>
                     <li class="nav-item mt-3">
                         <a class="nav-link" th:href="@{/}">
                             <i class="bi bi-house"></i> 返回首页
@@ -70,14 +85,14 @@
                 </div>
 
                 <!-- 按分类分组显示 -->
-                <div th:each="category : ${categories}">
+                <div th:each="category : ${categoriesToShow}">
                     <div class="card mb-4">
                         <div class="card-header">
                             <h5 class="mb-0" th:text="${category.name}">分类名称</h5>
                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
+                        <div class="card-body p-0">
+                            <div class="scroll-table-10">
+                                <table class="table table-hover mb-0">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -91,14 +106,13 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr th:each="product : ${products}"
-                                            th:if="${product.category.id == category.id}">
+                                        <tr th:each="product : ${productsByCategory[category.id]}">
                                             <td th:text="${product.id}">1</td>
                                             <td>
                                                 <img th:src="${product.imageUrl ?: '/images/placeholder.jpg'}"
                                                     style="width: 50px; height: 50px; object-fit: cover;">
                                             </td>
-                                            <td th:text="${product.name}">商品名称</td>
+                                            <td class="text-truncate" style="max-width: 280px;" th:title="${product.name}" th:text="${product.name}">商品名称</td>
                                             <td>
                                                 ¥<span
                                                     th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 2, 'POINT')}">99.00</span>
@@ -133,6 +147,9 @@
                                                 </div>
                                             </td>
                                         </tr>
+                                        <tr th:if="${productsByCategory[category.id] == null or #lists.isEmpty(productsByCategory[category.id])}">
+                                            <td colspan="8" class="text-center text-muted py-4">暂无商品</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -145,6 +162,18 @@
 </body>
 
 <style>
+    /* 商品/订单类列表：最多约 10 行，内部滚动 */
+    .scroll-table-10{
+        max-height: 600px;
+        overflow-y: auto;
+        overflow-x: auto;
+        position: relative;
+    }
+    .scroll-table-10 table{
+        margin-bottom: 0;
+        width: 100%;
+    }
+
     .sidebar .nav-link {
         color: #333;
         padding: 12px 20px;

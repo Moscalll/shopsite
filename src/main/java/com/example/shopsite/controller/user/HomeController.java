@@ -2,23 +2,42 @@ package com.example.shopsite.controller.user;
 
 import com.example.shopsite.model.Category;
 import com.example.shopsite.model.Product;
+import com.example.shopsite.model.RecommendationAlgorithm;
+import com.example.shopsite.model.User;
+import com.example.shopsite.repository.UserRepository;
 import com.example.shopsite.service.CategoryService;
 import com.example.shopsite.service.ProductService;
+import com.example.shopsite.service.RecommendationService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.io.FileWriter;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 public class HomeController {
 
         private final ProductService productService;
         private final CategoryService categoryService;
+        private final RecommendationService recommendationService;
+        private final UserRepository userRepository;
 
-        public HomeController(ProductService productService, CategoryService categoryService) {
+        public HomeController(ProductService productService,
+                              CategoryService categoryService,
+                              RecommendationService recommendationService,
+                              UserRepository userRepository) {
                 this.productService = productService;
                 this.categoryService = categoryService;
+                this.recommendationService = recommendationService;
+                this.userRepository = userRepository;
         }
 
         /**
@@ -26,7 +45,18 @@ public class HomeController {
          * 展示横幅、分类、新品、排行榜
          */
         @GetMapping("/")
-        public String home(Model model) {
+        public String home(Model model, Authentication authentication, HttpServletRequest request) {
+                String requestUri = request != null ? request.getRequestURI() : null;
+                String queryString = request != null ? request.getQueryString() : null;
+                String currentUrl = (requestUri == null ? "/" : requestUri) + (queryString != null && !queryString.isBlank() ? "?" + queryString : "");
+                model.addAttribute("currentUrl", currentUrl);
+                // #region agent log
+                debugLog("pre-fix", "H1", "HomeController.java:home", "computed currentUrl", Map.of(
+                        "requestUri", requestUri,
+                        "hasQueryString", queryString != null && !queryString.isBlank(),
+                        "currentUrl", currentUrl
+                ));
+                // #endregion
                 // 横幅数据
                 java.util.List<java.util.Map<String, String>> banners = new java.util.ArrayList<>();
                 java.util.Map<String, String> banner1 = new java.util.HashMap<>();
@@ -93,7 +123,104 @@ public class HomeController {
                 }
                 model.addAttribute("categoryProductsMap", categoryProductsMap);
 
+                // 猜你喜欢：固定 2×4=8 个商品
+                List<Product> guessYouLike = buildGuessYouLike(categories, authentication);
+                model.addAttribute("guessYouLike", guessYouLike);
+
                 model.addAttribute("pageTitle", "首页");
                 return "user/home";
+        }
+
+        private static void debugLog(String runId, String hypothesisId, String location, String message, Map<String, Object> data) {
+                try (FileWriter fw = new FileWriter("debug-a845d9.log", true)) {
+                        String json = "{"
+                                + "\"sessionId\":\"a845d9\""
+                                + ",\"runId\":\"" + escape(runId) + "\""
+                                + ",\"hypothesisId\":\"" + escape(hypothesisId) + "\""
+                                + ",\"location\":\"" + escape(location) + "\""
+                                + ",\"message\":\"" + escape(message) + "\""
+                                + ",\"data\":" + toJson(data)
+                                + ",\"timestamp\":" + Instant.now().toEpochMilli()
+                                + "}";
+                        fw.write(json);
+                        fw.write("\n");
+                } catch (Exception ignored) {
+                }
+        }
+
+        private static String toJson(Object v) {
+                if (v == null) return "null";
+                if (v instanceof String) return "\"" + escape((String) v) + "\"";
+                if (v instanceof Number || v instanceof Boolean) return String.valueOf(v);
+                if (v instanceof Map<?, ?> m) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("{");
+                        boolean first = true;
+                        for (Map.Entry<?, ?> e : m.entrySet()) {
+                                if (!first) sb.append(",");
+                                first = false;
+                                sb.append(toJson(String.valueOf(e.getKey()))).append(":").append(toJson(e.getValue()));
+                        }
+                        sb.append("}");
+                        return sb.toString();
+                }
+                return "\"" + escape(String.valueOf(v)) + "\"";
+        }
+
+        private static String escape(String s) {
+                return s.replace("\\", "\\\\")
+                        .replace("\"", "\\\"")
+                        .replace("\r", "\\r")
+                        .replace("\n", "\\n")
+                        .replace("\t", "\\t");
+        }
+
+        private List<Product> buildGuessYouLike(List<Category> categories, Authentication authentication) {
+                // 1) 登录用户：优先读取推荐结果
+                if (authentication != null && authentication.isAuthenticated()) {
+                        Optional<User> userOpt = userRepository.findByUsername(authentication.getName());
+                        if (userOpt.isPresent()) {
+                                User user = userOpt.get();
+                                List<Long> ids = recommendationService.getRecommendations(user, RecommendationAlgorithm.ITEM_CF, 24);
+                                if (ids.isEmpty()) {
+                                        ids = recommendationService.getRecommendations(user, RecommendationAlgorithm.CO_PURCHASE, 24);
+                                }
+                                if (ids.isEmpty()) {
+                                        ids = recommendationService.getRecommendations(user, RecommendationAlgorithm.POPULAR, 24);
+                                }
+                                if (!ids.isEmpty()) {
+                                        // 用 allProducts 做一次性取数（避免给 ProductService 加新方法），再按推荐顺序排序
+                                        List<Product> all = productService.findAllProducts();
+                                        Map<Long, Product> byId = all.stream()
+                                                .filter(p -> p.getId() != null)
+                                                .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
+
+                                        List<Product> products = new ArrayList<>();
+                                        for (Long pid : ids) {
+                                                Product p = byId.get(pid);
+                                                if (p == null) continue;
+                                                if (!Boolean.TRUE.equals(p.getIsAvailable()) || p.getStock() == null || p.getStock() <= 0) continue;
+                                                products.add(p);
+                                        }
+                                        if (!products.isEmpty()) {
+                                                return products.stream().limit(8).collect(Collectors.toList());
+                                        }
+                                }
+                        }
+                }
+
+                // 2) 兜底：每个类目取 3 个（上架且有库存）
+                List<Product> fallback = new ArrayList<>();
+                if (categories != null) {
+                        for (Category c : categories) {
+                                if (c == null || c.getId() == null) continue;
+                                List<Product> picks = productService.findProductsByCategory(c.getId(), 3).stream()
+                                        .filter(p -> Boolean.TRUE.equals(p.getIsAvailable()) && p.getStock() != null && p.getStock() > 0)
+                                        .limit(3)
+                                        .collect(Collectors.toList());
+                                fallback.addAll(picks);
+                        }
+                }
+                return fallback.stream().limit(8).collect(Collectors.toList());
         }
 }

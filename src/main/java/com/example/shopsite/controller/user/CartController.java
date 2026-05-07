@@ -10,6 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,6 +60,8 @@ public class CartController {
     @PostMapping("/add")
     public String addToCart(@RequestParam Long productId,
             @RequestParam(defaultValue = "1") Integer quantity,
+            @RequestParam(required = false) String returnUrl,
+            HttpServletRequest request,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -73,12 +77,41 @@ public class CartController {
 
         try {
             cartService.addToCart(productId, quantity, userOpt.get());
-            redirectAttributes.addFlashAttribute("success", "商品已添加到购物车");
+            redirectAttributes.addFlashAttribute("cartToastSuccess", true);
+            redirectAttributes.addFlashAttribute("cartToastMessage", "已加入购物车");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("cartToastSuccess", false);
+            redirectAttributes.addFlashAttribute("cartToastMessage",
+                    e.getMessage() != null && !e.getMessage().isBlank() ? e.getMessage() : "加入购物车失败");
         }
 
-        return "redirect:/cart";
+        return resolveRedirectAfterCartAdd(request, returnUrl, productId);
+    }
+
+    /**
+     * 加购后回到来源页（或商品页），避免强制进入购物车列表。
+     */
+    private static String resolveRedirectAfterCartAdd(HttpServletRequest request, String returnUrl, Long productId) {
+        if (returnUrl != null && returnUrl.startsWith("/") && !returnUrl.startsWith("//")) {
+            return "redirect:" + returnUrl;
+        }
+        String ref = request.getHeader("Referer");
+        if (ref != null && !ref.isBlank()) {
+            try {
+                URI uri = URI.create(ref);
+                String host = uri.getHost();
+                if (host != null && host.equalsIgnoreCase(request.getServerName())) {
+                    String path = uri.getPath();
+                    if (path != null && path.startsWith("/")) {
+                        String q = uri.getRawQuery();
+                        return "redirect:" + path + (q != null ? "?" + q : "");
+                    }
+                }
+            } catch (Exception ignored) {
+                // fall through
+            }
+        }
+        return "redirect:/product/" + productId;
     }
 
     /**
