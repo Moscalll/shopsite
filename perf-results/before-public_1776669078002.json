@@ -1,0 +1,491 @@
+{
+  "baseUrl": "http://localhost:8080",
+  "version": "before-public",
+  "runs": 5,
+  "generatedAt": "2026-04-20T07:11:18.002Z",
+  "results": [
+    {
+      "version": "before-public",
+      "target": "http://localhost:8080/",
+      "runs": 5,
+      "generatedAt": "2026-04-20T07:10:59.179Z",
+      "summary": {
+        "fcpP50": 796,
+        "lcpP50": 796,
+        "clsP50": 0.00025467530134119944,
+        "loadTimeP50": 1635.8999999999069,
+        "avgImageCount": 55,
+        "avgImageSizeKB": 15267.5673828125
+      },
+      "details": [
+        {
+          "url": "http://localhost:8080/",
+          "finalUrl": "http://localhost:8080/",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:10:47.528Z",
+          "fcp": 796,
+          "lcp": 796,
+          "cls": 0.00025467530134119944,
+          "clsEntries": [
+            {
+              "value": 0.00025467530134119944,
+              "startTime": 1253.6000000000931,
+              "sources": 2
+            }
+          ],
+          "lcpEntries": [
+            {
+              "startTime": 796,
+              "size": 576000,
+              "element": "IMG",
+              "url": "http://localhost:8080/images/banners/kitchen.jpg"
+            }
+          ],
+          "domContentLoaded": 706.6000000000931,
+          "loadEventEnd": 1251.3000000002794,
+          "totalLoadTime": 1251.3000000002794,
+          "imageCount": 55,
+          "imageSizeKB": 15267.5673828125,
+          "resourceCount": 59
+        },
+        {
+          "url": "http://localhost:8080/",
+          "finalUrl": "http://localhost:8080/",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:10:49.892Z",
+          "fcp": 708,
+          "lcp": 708,
+          "cls": 0.00025467530134119944,
+          "clsEntries": [
+            {
+              "value": 0.00025467530134119944,
+              "startTime": 1232.4000000003725,
+              "sources": 2
+            }
+          ],
+          "lcpEntries": [
+            {
+              "startTime": 708,
+              "size": 576000,
+              "element": "IMG",
+              "url": "http://localhost:8080/images/banners/kitchen.jpg"
+            }
+          ],
+          "domContentLoaded": 639.9000000003725,
+          "loadEventEnd": 1230.6000000000931,
+          "totalLoadTime": 1230.6000000000931,
+          "imageCount": 55,
+          "imageSizeKB": 15267.5673828125,
+          "resourceCount": 59
+        },
+        {
+          "url": "http://localhost:8080/",
+          "finalUrl": "http://localhost:8080/",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:10:52.984Z",
+          "fcp": 724,
+          "lcp": 724,
+          "cls": 0.00025467530134119944,
+          "clsEntries": [
+            {
+              "value": 0.00025467530134119944,
+              "startTime": 1895.3999999999069,
+              "sources": 2
+            }
+          ],
+          "lcpEntries": [
+            {
+              "startTime": 724,
+              "size": 576000,
+              "element": "IMG",
+              "url": "http://localhost:8080/images/banners/kitchen.jpg"
+            }
+          ],
+          "domContentLoaded": 647.5,
+          "loadEventEnd": 1893,
+          "totalLoadTime": 1893,
+          "imageCount": 55,
+          "imageSizeKB": 15267.5673828125,
+          "resourceCount": 59
+        },
+        {
+          "url": "http://localhost:8080/",
+          "finalUrl": "http://localhost:8080/",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:10:56.391Z",
+          "fcp": 820,
+          "lcp": 820,
+          "cls": 0.00025467530134119944,
+          "clsEntries": [
+            {
+              "value": 0.00025467530134119944,
+              "startTime": 2189.7999999998137,
+              "sources": 2
+            }
+          ],
+          "lcpEntries": [
+            {
+              "startTime": 820,
+              "size": 576000,
+              "element": "IMG",
+              "url": "http://localhost:8080/images/banners/kitchen.jpg"
+            }
+          ],
+          "domContentLoaded": 742.1000000000931,
+          "loadEventEnd": 2186.7999999998137,
+          "totalLoadTime": 2186.7999999998137,
+          "imageCount": 55,
+          "imageSizeKB": 15267.5673828125,
+          "resourceCount": 59
+        },
+        {
+          "url": "http://localhost:8080/",
+          "finalUrl": "http://localhost:8080/",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:10:59.179Z",
+          "fcp": 908,
+          "lcp": 908,
+          "cls": 0.00025467530134119944,
+          "clsEntries": [
+            {
+              "value": 0.00025467530134119944,
+              "startTime": 1638.5,
+              "sources": 2
+            }
+          ],
+          "lcpEntries": [
+            {
+              "startTime": 908,
+              "size": 576000,
+              "element": "IMG",
+              "url": "http://localhost:8080/images/banners/kitchen.jpg"
+            }
+          ],
+          "domContentLoaded": 770.3999999999069,
+          "loadEventEnd": 1635.8999999999069,
+          "totalLoadTime": 1635.8999999999069,
+          "imageCount": 55,
+          "imageSizeKB": 15267.5673828125,
+          "resourceCount": 59
+        }
+      ]
+    },
+    {
+      "version": "before-public",
+      "target": "http://localhost:8080/products",
+      "runs": 5,
+      "generatedAt": "2026-04-20T07:11:12.041Z",
+      "summary": {
+        "fcpP50": 748,
+        "lcpP50": 748,
+        "clsP50": 0.00025467530134119944,
+        "loadTimeP50": 1236.2000000001863,
+        "avgImageCount": 92,
+        "avgImageSizeKB": 5903.611328125
+      },
+      "details": [
+        {
+          "url": "http://localhost:8080/products",
+          "finalUrl": "http://localhost:8080/products",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:11:01.799Z",
+          "fcp": 812,
+          "lcp": 812,
+          "cls": 0.00025467530134119944,
+          "clsEntries": [
+            {
+              "value": 0.00025467530134119944,
+              "startTime": 1452,
+              "sources": 2
+            }
+          ],
+          "lcpEntries": [
+            {
+              "startTime": 812,
+              "size": 61200,
+              "element": "IMG",
+              "url": "http://localhost:8080/images/products/tshirt.webp"
+            }
+          ],
+          "domContentLoaded": 667.5999999996275,
+          "loadEventEnd": 1449.5999999996275,
+          "totalLoadTime": 1449.5999999996275,
+          "imageCount": 92,
+          "imageSizeKB": 5903.611328125,
+          "resourceCount": 96
+        },
+        {
+          "url": "http://localhost:8080/products",
+          "finalUrl": "http://localhost:8080/products",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:11:04.115Z",
+          "fcp": 900,
+          "lcp": 900,
+          "cls": 0.00025467530134119944,
+          "clsEntries": [
+            {
+              "value": 0.00025467530134119944,
+              "startTime": 1158.7000000001863,
+              "sources": 2
+            }
+          ],
+          "lcpEntries": [
+            {
+              "startTime": 900,
+              "size": 61200,
+              "element": "IMG",
+              "url": "http://localhost:8080/images/products/tshirt.webp"
+            }
+          ],
+          "domContentLoaded": 725,
+          "loadEventEnd": 1156.9000000003725,
+          "totalLoadTime": 1156.9000000003725,
+          "imageCount": 92,
+          "imageSizeKB": 5903.611328125,
+          "resourceCount": 96
+        },
+        {
+          "url": "http://localhost:8080/products",
+          "finalUrl": "http://localhost:8080/products",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:11:07.335Z",
+          "fcp": 748,
+          "lcp": 748,
+          "cls": 0.00025467530134119944,
+          "clsEntries": [
+            {
+              "value": 0.00025467530134119944,
+              "startTime": 2028.3999999994412,
+              "sources": 2
+            }
+          ],
+          "lcpEntries": [
+            {
+              "startTime": 748,
+              "size": 61200,
+              "element": "IMG",
+              "url": "http://localhost:8080/images/products/tshirt.webp"
+            }
+          ],
+          "domContentLoaded": 604.0999999996275,
+          "loadEventEnd": 2027,
+          "totalLoadTime": 2027,
+          "imageCount": 92,
+          "imageSizeKB": 5903.611328125,
+          "resourceCount": 96
+        },
+        {
+          "url": "http://localhost:8080/products",
+          "finalUrl": "http://localhost:8080/products",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:11:09.718Z",
+          "fcp": 620,
+          "lcp": 620,
+          "cls": 0.00025467530134119944,
+          "clsEntries": [
+            {
+              "value": 0.00025467530134119944,
+              "startTime": 1237.7000000001863,
+              "sources": 2
+            }
+          ],
+          "lcpEntries": [
+            {
+              "startTime": 620,
+              "size": 61200,
+              "element": "IMG",
+              "url": "http://localhost:8080/images/products/tshirt.webp"
+            }
+          ],
+          "domContentLoaded": 474,
+          "loadEventEnd": 1236.2000000001863,
+          "totalLoadTime": 1236.2000000001863,
+          "imageCount": 92,
+          "imageSizeKB": 5903.611328125,
+          "resourceCount": 96
+        },
+        {
+          "url": "http://localhost:8080/products",
+          "finalUrl": "http://localhost:8080/products",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:11:12.041Z",
+          "fcp": 644,
+          "lcp": 644,
+          "cls": 0.00025467530134119944,
+          "clsEntries": [
+            {
+              "value": 0.00025467530134119944,
+              "startTime": 1133.7999999998137,
+              "sources": 2
+            }
+          ],
+          "lcpEntries": [
+            {
+              "startTime": 644,
+              "size": 61200,
+              "element": "IMG",
+              "url": "http://localhost:8080/images/products/tshirt.webp"
+            }
+          ],
+          "domContentLoaded": 519.5,
+          "loadEventEnd": 1131.8999999994412,
+          "totalLoadTime": 1131.8999999994412,
+          "imageCount": 92,
+          "imageSizeKB": 5903.611328125,
+          "resourceCount": 96
+        }
+      ]
+    },
+    {
+      "version": "before-public",
+      "target": "http://localhost:8080/product/1",
+      "runs": 5,
+      "generatedAt": "2026-04-20T07:11:18.002Z",
+      "summary": {
+        "fcpP50": 96,
+        "lcpP50": 96,
+        "clsP50": 0,
+        "loadTimeP50": 47.299999999813735,
+        "avgImageCount": 0,
+        "avgImageSizeKB": 0
+      },
+      "details": [
+        {
+          "url": "http://localhost:8080/product/1",
+          "finalUrl": "http://localhost:8080/product/1",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:11:13.216Z",
+          "fcp": 96,
+          "lcp": 96,
+          "cls": 0,
+          "clsEntries": [],
+          "lcpEntries": [
+            {
+              "startTime": 96,
+              "size": 1033722,
+              "element": "DIV",
+              "url": null
+            }
+          ],
+          "domContentLoaded": 46.200000000186265,
+          "loadEventEnd": 46.60000000055879,
+          "totalLoadTime": 46.60000000055879,
+          "imageCount": 0,
+          "imageSizeKB": 0,
+          "resourceCount": 0
+        },
+        {
+          "url": "http://localhost:8080/product/1",
+          "finalUrl": "http://localhost:8080/product/1",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:11:14.388Z",
+          "fcp": 88,
+          "lcp": 88,
+          "cls": 0,
+          "clsEntries": [],
+          "lcpEntries": [
+            {
+              "startTime": 88,
+              "size": 1033722,
+              "element": "DIV",
+              "url": null
+            }
+          ],
+          "domContentLoaded": 72.40000000037253,
+          "loadEventEnd": 72.5,
+          "totalLoadTime": 72.5,
+          "imageCount": 0,
+          "imageSizeKB": 0,
+          "resourceCount": 0
+        },
+        {
+          "url": "http://localhost:8080/product/1",
+          "finalUrl": "http://localhost:8080/product/1",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:11:15.570Z",
+          "fcp": 96,
+          "lcp": 96,
+          "cls": 0,
+          "clsEntries": [],
+          "lcpEntries": [
+            {
+              "startTime": 96,
+              "size": 1033722,
+              "element": "DIV",
+              "url": null
+            }
+          ],
+          "domContentLoaded": 46.89999999944121,
+          "loadEventEnd": 47.299999999813735,
+          "totalLoadTime": 47.299999999813735,
+          "imageCount": 0,
+          "imageSizeKB": 0,
+          "resourceCount": 0
+        },
+        {
+          "url": "http://localhost:8080/product/1",
+          "finalUrl": "http://localhost:8080/product/1",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:11:16.824Z",
+          "fcp": 100,
+          "lcp": 100,
+          "cls": 0,
+          "clsEntries": [],
+          "lcpEntries": [
+            {
+              "startTime": 100,
+              "size": 1033722,
+              "element": "DIV",
+              "url": null
+            }
+          ],
+          "domContentLoaded": 80.40000000037253,
+          "loadEventEnd": 80.5,
+          "totalLoadTime": 80.5,
+          "imageCount": 0,
+          "imageSizeKB": 0,
+          "resourceCount": 0
+        },
+        {
+          "url": "http://localhost:8080/product/1",
+          "finalUrl": "http://localhost:8080/product/1",
+          "redirectedToLogin": false,
+          "observerEnabled": true,
+          "timestamp": "2026-04-20T07:11:18.002Z",
+          "fcp": 84,
+          "lcp": 84,
+          "cls": 0,
+          "clsEntries": [],
+          "lcpEntries": [
+            {
+              "startTime": 84,
+              "size": 1033722,
+              "element": "DIV",
+              "url": null
+            }
+          ],
+          "domContentLoaded": 29,
+          "loadEventEnd": 29.399999999441206,
+          "totalLoadTime": 29.399999999441206,
+          "imageCount": 0,
+          "imageSizeKB": 0,
+          "resourceCount": 0
+        }
+      ]
+    }
+  ]
+}
