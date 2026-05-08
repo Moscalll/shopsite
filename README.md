@@ -1,481 +1,242 @@
 # ShopSite 电商平台
 
-一个基于 Spring Boot 4.0 开发的全功能电商平台，支持多角色管理（用户、商家、管理员），提供完整的购物流程、订单管理和商家后台功能。
+基于 **Spring Boot 4**、**Java 21** 的多角色电商演示项目：普通用户购物、商家运营、平台管理员治理。页面以 **Thymeleaf 服务端渲染**为主，并辅以 **`/api/**` REST 接口**（注册、登录 JWT、商品与订单 JSON、行为上报、推荐查询等），并非独立前端 SPA 与后端完全分离的架构。
 
 ## 1. 项目简介
 
-ShopSite 是一个现代化的电商平台系统，采用前后端分离的设计理念，后端使用 Spring Boot 构建 RESTful API，前端使用 Thymeleaf 模板引擎渲染页面。系统支持三种角色：普通用户（购物）、商家（商品管理）、管理员（平台管理）。
+- **呈现方式**：浏览器访问由 Spring MVC + Thymeleaf 返回 HTML；AJAX / 移动端可调用同进程的 REST API。
+- **角色**：`ROLE_CUSTOMER`（购物）、`ROLE_MERCHANT`（店铺与商品）、`ROLE_ADMIN`（平台与审计）。
+- **安全**：主路径为 **Session 表单登录**（`/login`）；同时提供 **`POST /api/auth/login` 返回 JWT**，便于接口联调；密码 **BCrypt**。
+- **调度**：`@EnableScheduling`，内置推荐结果定时重算任务。
+- **观测**：引入 **Spring Boot Actuator**（可按需暴露健康检查等端点）。
 
 ## 2. 功能特性
 
-### 用户端功能
+### 用户端（`/`，`/product/**`，`/cart`，`/orders`，`/profile` 等）
 
-- 用户注册与登录（基于 Spring Security）
-- 商品浏览与搜索
-- 商品分类筛选
-- 购物车管理
-- 商品收藏功能
-- 订单创建与查询
-- 个人资料管理
-- 订单状态跟踪
+- 注册与登录（页面表单 + `/api/auth/register`、`/api/auth/login`）
+- 首页、分类列表、搜索、商品详情
+- 探索 / 新品 / 热销 等导购视图
+- 购物车、收藏、结算与支付页（演示流程）
+- 订单列表与详情、站内消息（`/message`）
+- 个性化推荐（服务端计算 + `/api/recommendations`）
+- 登录用户可上报页面停留等行为（`/api/behavior/dwell`，配合前端 beacon）
 
-### 商家端功能
+### 商家端（`/merchant/**`，需 `ROLE_MERCHANT` 或 `ROLE_ADMIN`）
 
-- 商品管理（增删改查）
-- 商品上架/下架
-- 订单处理（发货、状态更新）
-- 销售统计与报表
-- 客户管理
-- 销售日志记录
+- 控制台、商品维护、订单处理
+- 客户列表与详情、销售与统计
+- 消息中心、操作与销售日志视图
 
-### 管理员端功能
+### 管理员端（`/admin/**`，需 `ROLE_ADMIN`）
 
-- 商家管理（查看、审核）
-- 商品审核与管理
-- 订单监控
-- 系统数据统计
-- 平台管理
+- 控制台、用户 / 商家 / 商品 / 订单管理
+- 数据分析看板、推荐算法与结果管理
+- 登录日志、用户行为日志、管理员操作日志（页面 + REST 查询）
+
+### 横切能力
+
+- **初始化数据**：`dev` / `init-data` 等 Profile 下可通过 `TestDataInitializer`、`CategoryInitializer`、`ProductInitializer` 等补齐演示数据。
+- **日志与审计**：`AuthLoginLog`、`UserBehaviorLog`、`AdminOperationLog`、`SalesLog` 等实体及对应服务。
+- **地域推断（可选）**：依赖 **ip2region**，可将 `ip2region_v4.xdb` 置于 `src/main/resources/geo/`（参见该目录下说明），用于画像等展示。
 
 ## 3. 技术栈
 
-### 后端框架
+| 类别 | 技术 |
+|------|------|
+| 运行时 | Java 21 |
+| 框架 | Spring Boot 4.0.x（Web MVC、Validation、Security、Data JPA、Thymeleaf、Mail、Actuator） |
+| 安全 | Spring Security（表单登录 + 方法级 `@EnableMethodSecurity`）、JJWT（API 登录令牌） |
+| 持久化 | Spring Data JPA、Hibernate、MySQL 8 |
+| 模板与样式 | Thymeleaf、Bootstrap、自定义 `static/css/custom.css` |
+| 工具 | Lombok、Maven |
 
-- **Spring Boot** 4.0.0
-- **Spring MVC** - Web 层框架
-- **Spring Data JPA** - 数据持久化
-- **Spring Security** - 安全认证
-- **Spring Validation** - 数据校验
-- **Spring Mail** - 邮件服务
+其他：**Tomcat** 嵌入式容器；**Docker Compose** 编排应用与 MySQL。
 
-### 数据库
+## 4. 架构说明
 
-- **MySQL** 8.0
-- **Hibernate** - ORM 框架
+```
+浏览器 ──HTTP──► Spring MVC
+                    │
+                    ├─► Controller（页面：返回视图名；API：JSON）
+                    ├─► Service（业务 / 推荐 / 日志）
+                    ├─► Repository（JPA）
+                    └─► MySQL
 
-### 前端技术
+拦截器：MessageInterceptor（全局）；OperationLogInterceptor（商家/管理员/个人资料部分路径）
+安全：SecurityFilterChain 声明式授权；可选 JwtTokenProvider 用于 API 登录响应
+定时任务：RecommendationRecomputeJob 周期性刷新推荐结果
+```
 
-- **Thymeleaf** - 服务端模板引擎
-- **Bootstrap** 5.x - CSS 框架
-- **JavaScript** - 前端交互
+**分层包结构（`com.example.shopsite`）**
 
-### 开发工具
+- **`config`**：`SecurityConfig`、`WebConfig`（上传目录映射、`MessageInterceptor`）、`WebMvcConfig`（后台操作日志拦截）、各类 **`*Initializer`** 测试数据 / 分类 / 商品初始化。
+- **`controller`**：根级 REST（如 `AuthController`、`ProductController`、`OrderController`）；子包 **`user`** / **`merchant`** / **`admin`**（页面流）；**`api`**（如行为上报 `BehaviorDwellRestController`）。
+- **`service`** / **`service.impl`**：业务实现。
+- **`repository`**：JPA 接口。
+- **`model`**：领域实体（含订单、购物车、收藏、消息、各类日志、推荐结果等）。
+- **`dto`**：请求 / 传输对象。
+- **`security`**：认证成功/失败处理、JWT 组件等。
+- **`interceptor`**：消息未读数等通用拦截。
+- **`job`**：定时推荐重算。
+- **`support`**：客户端 IP、类目文案等辅助逻辑。
+- **`exception`** / **`handler`**：业务异常与全局处理。
 
-- **Maven** - 项目构建工具
-- **Lombok** - 代码简化
-- **Docker** - 容器化部署
-- **Docker Compose** - 多容器编排
+**模板目录（`src/main/resources/templates`）**
 
-### 其他
+- **`layout`**、`index`：站点壳层与首页片段。
+- **`auth`**：登录 / 注册。
+- **`user`**、`merchant`**、`admin`**：各角色页面。
+- **`product`**：部分列表视图。
 
-- **Java** 21 (LTS)
-- **JWT** - 身份认证（可选）
-- **BCrypt** - 密码加密
+静态资源在 **`static/`**；上传文件通过配置项映射到 **`/uploads/**`**（默认目录 `uploads/`）。
 
-## 4. 项目结构
+## 5. 项目结构（精简）
 
 ```
 shopsite/
-├── src/
-│ ├── main/
-│ │ ├── java/com/example/shopsite/
-│ │ │ ├── config/ # 配置类（安全、初始化等）
-│ │ │ ├── controller/ # 控制器层
-│ │ │ │ ├── admin/ # 管理员控制器
-│ │ │ │ ├── merchant/ # 商家控制器
-│ │ │ │ └── user/ # 用户控制器
-│ │ │ ├── dto/ # 数据传输对象
-│ │ │ ├── exception/ # 异常类
-│ │ │ ├── handler/ # 异常处理器
-│ │ │ ├── interceptor/ # 拦截器
-│ │ │ ├── model/ # 实体类（User, Product, Order等）
-│ │ │ ├── repository/ # 数据访问层
-│ │ │ ├── security/ # 安全配置
-│ │ │ ├── service/ # 业务逻辑层
-│ │ │ │ └── impl/ # 服务实现类
-│ │ │ └── ShopsiteApplication.java
-│ │ └── resources/
-│ │ ├── application.yml # 主配置文件
-│ │ ├── application-dev.yml
-│ │ ├── application-prod.yml
-│ │ ├── db/
-│ │ │ └── init.sql # 数据库初始化脚本
-│ │ ├── static/ # 静态资源（CSS、JS、图片）
-│ │ └── templates/ # Thymeleaf 模板
-│ └── test/ # 测试代码
-├── uploads/ # 文件上传目录
-├── docker-compose.yml # Docker Compose 配置
-├── Dockerfile # Docker 镜像构建文件
-├── pom.xml # Maven 配置文件
-└── README.md # 项目说明文档
+├── src/main/java/com/example/shopsite/
+│   ├── config/           # 安全、Web、初始化器
+│   ├── controller/       # 页面控制器 + REST（含 admin / merchant / user / api）
+│   ├── dto/
+│   ├── exception/
+│   ├── handler/
+│   ├── interceptor/
+│   ├── job/              # 定时任务（推荐）
+│   ├── model/
+│   ├── repository/
+│   ├── security/
+│   ├── service/ + impl/
+│   ├── support/
+│   └── ShopsiteApplication.java
+├── src/main/resources/
+│   ├── db/init.sql       # Docker 首次初始化挂载脚本（与 JPA 协同，保持幂等）
+│   ├── templates/
+│   ├── static/
+│   └── geo/              # 可选 ip2region 数据文件说明
+├── uploads/              # 本地上传目录（运行时可配置）
+├── docker-compose.yml
+├── Dockerfile
+├── pom.xml
+└── README.md
 ```
 
-## 5. 环境要求
+在仓库中若未看到 `application.yml`，请在本地 **`src/main/resources/`** 自行添加主配置或 **`application-dev.yml` / `application-prod.yml`**，并通过环境变量或 Profile 注入数据源等（与 Docker Compose 中的 `SPRING_PROFILES_ACTIVE`、`PROD_DB_*` 等对应）。
 
-### 必需环境
+## 6. 环境要求
 
-- **JDK** 21 或更高版本
-- **Maven** 3.6+（或使用项目自带的 Maven Wrapper）
+- **JDK** 21+
+- **Maven** 3.6+（或使用 `mvnw`）
 - **MySQL** 8.0
-- **Docker** 和 **Docker Compose**（推荐用于快速部署）
+- **Docker** / **Docker Compose**（可选，用于一键启动）
 
-### 可选工具
+## 7. 快速开始
 
-- **IntelliJ IDEA** / **Eclipse** / **VS Code**（IDE）
-- **Postman** / **Thunder Client**（API 测试）
-- **MySQL Workbench** / **Navicat**（数据库管理）
+### 方式一：Docker Compose
 
-## 6. 快速开始
+1. 克隆仓库并进入项目根目录。
+2. 创建 `.env`（示例与 README 历史版本一致），包含 MySQL 与应用库账号、`PROD_DB_URL` 等。
+3. 构建：`mvnw clean package -DskipTests`（Windows 使用 `.\mvnw`）。
+4. 启动：`docker-compose up -d`  
+   - Compose 中应用使用 **`SPRING_PROFILES_ACTIVE=prod,init-data`**，数据库挂载 **`src/main/resources/db`** 到初始化目录。
+5. 访问：**http://localhost:8080**，MySQL 映射端口 **3307**。
 
-### 方式一：Docker Compose 部署（推荐）
+### 方式二：本地运行
 
-#### 1. 克隆项目
+1. 启动 MySQL（可用 Docker 映射 `3307:3306`）。
+2. 配置 **`spring.datasource.*`** 指向你的实例（示例端口可与上文一致）。
+3. 运行：
 
-`git clone <项目地址>
-cd shopsite`
-
-#### 2. 创建环境配置文件
-
-在项目根目录创建 `.env` 文件：
-
-##### MySQL 数据库配置
-
-```
-MYSQL_ROOT_PASSWORD=root123
-MYSQL_DATABASE=shopsite_db
-MYSQL_USER=shopuser
-MYSQL_PASSWORD=shoppass123
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev,init-data
 ```
 
-##### 应用数据库连接配置
+Windows：`.\mvnw spring-boot:run "-Dspring-boot.run.profiles=dev,init-data"`
 
-```
-DB_USERNAME=shopuser
-DB_PASSWORD=shoppass123
-```
+IDE 中在 **Active profiles** 填入 **`dev,init-data`**。`init-data` 会在数据为空时写入演示分类与商品等（逻辑见 `TestDataInitializer` 等）。
 
-##### 生产环境数据库连接
+## 8. 测试账号
 
-```
-PROD_DB_URL=jdbc:mysql://shopsite-mysql:3306/shopsite_db?useSSL=false&serverTimezone=UTC
-PROD_DB_USERNAME=shopuser
-PROD_DB_PASSWORD=shoppass123
-```
+启动并初始化后，可使用（具体以 `TestDataInitializer` / 数据库为准）：
 
-#### 3. 构建项目
+| 角色 | 用户名 | 密码 | 说明 |
+|------|--------|------|------|
+| 管理员 | `platformadmin` | `AdminSecurePassword123` | 平台管理员 |
+| 管理员 | `admin` | `admin123` | 备用 |
+| 商家 | `testmerchant` | `testmerchantPASSWORD` | 演示店铺 |
+| 用户 | `clientuser` | `ClientSecurePassword789` | 演示买家 |
 
-**Windows**
+## 9. 配置与安全要点
 
-`.\mvnw clean package -DskipTests`
+- **端口**：默认 **8080**（可通过配置修改）。
+- **上传**：应用启动类中调整了 Tomcat 表单 POST 与参数数量上限；Spring 侧可配合 `multipart` 大小限制。
+- **CSRF**：对 **`/api/auth/register`**、**`/api/behavior/dwell`** 忽略 CSRF，其余仍遵循表单 / 会话策略。
+- **路径授权摘要**（详见 `SecurityConfig`）：匿名可访问首页、商品浏览、`/login`、`/register`、静态资源、部分 GET **`/api/products/**`**；**`/merchant/**`** 需商家或管理员；**`/admin/**`** 需管理员；下单等接口绑定 **`ROLE_CUSTOMER`**。
 
-**Linux/Mac**
+## 10. 主要 HTTP 接口（节选）
 
-`./mvnw clean package -DskipTests`
+以下为常见的 REST 前缀；完整列表以各 Controller 注解为准。
 
-#### 4. 启动服务
+| 前缀 | 说明 |
+|------|------|
+| `POST /api/auth/register` | 注册 |
+| `POST /api/auth/login` | 登录，响应中含 JWT |
+| `GET/POST/PUT/DELETE /api/products/**` | 商品 CRUD（写操作需商家或管理员） |
+| `GET /api/categories` | 分类 |
+| `POST /api/orders`、`GET /api/orders/**` | 订单（创建对客户角色有约束） |
+| `GET /api/recommendations` | 推荐 |
+| `POST /api/behavior/dwell` | 停留等行为上报（需登录） |
+| `GET /api/admin/orders/{id}` | 管理员订单 JSON |
+| `GET/POST /api/admin/logs/**` | 日志查询 API |
 
-`docker-compose up -d`
+页面型路由示例：**`/cart/**`**、**`/orders/**`**、**`/merchant/**`**、**`/admin/**`**、**`/profile/**`**、**`/checkout`**、**`/payment`**。
 
-#### 5. 查看日志
+## 11. 数据库与领域模型
 
-###### 查看应用日志
+表结构主要由 **JPA** 维护；`db/init.sql` 用于 Docker 首次建库时的安全补充。核心实体包括：
 
-`docker-compose logs -f shopsite_app`
+`User`、`Product`、`Category`、`Order` / `OrderItem`、`CartItem`、`Favorite`、`Message`；以及 **`UserBehaviorLog`**、**`AuthLoginLog`**、**`AdminOperationLog`**、**`SalesLog`**、**`RecommendationResult`** 等。
 
-##### 查看数据库日志
+## 12. 测试与构建
 
-`docker-compose logs -f mysql_db`
-
-#### 6. 访问应用
-
-- 应用地址：http://localhost:8080
-- 数据库端口：3307（映射到宿主机）
-
-### 方式二：本地开发运行
-
-#### 1. 启动 MySQL 数据库
-
-**使用 Docker 启动 MySQL**
-
-```
-docker run -d --name shopsite-mysql \
-  -e MYSQL_ROOT_PASSWORD=root123 \
-  -e MYSQL_DATABASE=shopsite_db \
-  -e MYSQL_USER=shopuser \
-  -e MYSQL_PASSWORD=shoppass123 \
-  -p 3307:3306 \
-  mysql:8.0
+```bash
+./mvnw test
+./mvnw test -Dtest=YourTestClass
 ```
 
-#### 2. 配置数据库连接
+项目可选 **Spring Boot DevTools**，开发模式下保存变更可触发热重启。
 
-修改 `src/main/resources/application.yml`：
+## 13. Docker 镜像（可选）
 
-```yml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3307/shopsite_db?useSSL=false&serverTimezone=UTC
-    username: shopuser
-    password: shoppass123
+```bash
+docker build -t shopsite:latest .
+docker-compose up -d
+docker-compose down
 ```
 
-#### 3. 运行应用
+数据卷 **`db_data`** 持久化 MySQL 数据。
 
-##### Windows
+## 14. 常见问题
 
-`.\mvnw spring-boot:run -Dspring-boot.run.profiles=dev,init-data`
+- **端口占用**：Windows `netstat -ano | findstr :8080`；Linux/macOS `lsof -i :8080`。
+- **数据库连不上**：检查 MySQL 是否监听、账号密码、URL 中的主机名（Docker 网络内用服务名）。
+- **上传失败**：确认 **`file.upload.dir`** 对应目录存在且进程可写。
 
-##### Linux/Mac
-
-`./mvnw spring-boot:run -Dspring-boot.run.profiles=dev,init-data`
-
-##### IDE 设置 (VS Code / IntelliJ)
-
-- **VS Code**: 在 `launch.json` 的 `args` 中添加 `"--spring.profiles.active=dev,init-data"`。
-  
-- **IntelliJ**: 在 `Run Configuration` -> `Active Profiles` 中填写 `dev,init-data`。
-  
-
-> **注意**：`init-data` Profile 会在每次启动时检测数据库。如果 `category` 表为空，它将自动插入初始分类和测试商品。
-
-#### 4. 访问应用
-
-浏览器打开：http://localhost:8080
-
-## 7. 测试账号
-
-系统启动后会自动初始化以下测试账号：
-
-| 角色  | 用户名 | 密码  | 邮箱  | 说明  |
-| --- | --- | --- | --- | --- |
-| **管理员** | `platformadmin` | `AdminSecurePassword123` | admin@shopsite.com | 平台管理员 |
-| **管理员** | `admin` | `admin123` | admin@shopsite.com | 备用管理员 |
-| **商家** | `testmerchant` | `testmerchantPASSWORD` | merchant@shopsite.com | 测试商家（已有96件商品） |
-| **普通用户** | `clientuser` | `ClientSecurePassword789` | client@shopsite.com | 测试用户 |
-
-## 8. 配置说明
-
-### 应用配置
-
-主要配置文件位于 `src/main/resources/`：
-
-- **application.yml** - 主配置文件
-- **application-dev.yml** - 开发环境配置
-- **application-prod.yml** - 生产环境配置
-
-### 关键配置项
-
-#### 服务器端口
-
-```
-server:
-  port: 8080
-```
-
-### 数据库配置
-
-```
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/shopsite_db
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-```
-
-### JPA 配置
-
-```
-  jpa:
-    hibernate:
-      ddl-auto: update  # 开发环境使用 update，生产环境使用 validate
-    show-sql: true      # 显示 SQL 语句
-```
-
-### 文件上传配置
-
-```
-spring:
-  servlet:
-    multipart:
-      max-file-size: 50MB
-      max-request-size: 50MB
-```
-
-### 文件上传目录
-
-```
-file:
-  upload:
-    dir: uploads/
-```
-
-## 9. 安全配置
-
-### Spring Security 配置
-
-系统使用 Spring Security 进行认证和授权：
-
-- **认证方式**：基于 Session 的表单登录
-- **密码加密**：BCrypt 算法
-- **角色权限**：
-  - `ROLE_CUSTOMER` - 普通用户
-  - `ROLE_MERCHANT` - 商家
-  - `ROLE_ADMIN` - 管理员
-
-### 访问控制
-
-- 公开访问：首页、商品列表、商品详情、登录/注册页面
-- 需要认证：购物车、订单、个人中心
-- 商家权限：商品管理、订单处理、销售统计
-- 管理员权限：商家管理、商品审核、订单监控
-
-## 10. API 文档
-
-### 主要 API 端点
-
-**认证相关**
-
-- `POST /api/auth/register` - 用户注册
-- `POST /api/auth/login` - 用户登录（表单登录）
-
-**商品相关**
-
-- `GET /api/products` - 获取所有商品
-- `GET /api/products/{id}` - 获取商品详情
-- `POST /api/products` - 创建商品（商家/管理员）
-- `PUT /api/products/{id}` - 更新商品（商家/管理员）
-- `DELETE /api/products/{id}` - 删除商品（商家/管理员）
-
-**订单相关**
-
-- `POST /api/orders` - 创建订单（用户）
-- `GET /api/orders` - 获取订单列表
-- `GET /api/orders/{id}` - 获取订单详情
-
-## 11. 测试
-
-### 运行单元测试
-
-```
-.\mvnw test ### 运行特定测试类
-.\mvnw test -Dtest=ProductServiceTest 
-```
-
-## 12. Docker 部署
-
-**构建 Docker 镜像**
-
-```
-docker build -t shopsite:latest . 
-```
-
-**启动所有服务**
-
-`docker-compose up -d`
-
-**停止所有服务**
-
-`docker-compose down`
-
-**查看服务状态**
-
-`docker-compose ps`
-
-**查看日志**
-
-`docker-compose logs -f`
-
-**数据持久化**
-
-数据库数据存储在 Docker Volume `db_data` 中，即使容器删除，数据也会保留。
-
-## 13. 数据库设计
-
-### 核心表结构
-
-- **user** - 用户表（支持多角色）
-- **product** - 商品表
-- **category** - 分类表
-- **shop_order** - 订单表
-- **order_item** - 订单项表
-- **cart_item** - 购物车表
-- **favorite** - 收藏表
-- **message** - 消息表
-- **sales_log** - 销售日志表
-
-### 数据库初始化
-
-数据库初始化脚本位于 `src/main/resources/db/init.sql`，Docker 容器启动时会自动执行。
-
-## 14. 开发指南
-
-### 代码规范
-
-- 使用 **Lombok** 简化代码（`@Data`、`@Builder` 等）
-- 遵循 **RESTful API** 设计规范
-- 使用 **DTO** 进行数据传输
-- 使用 **@Transactional** 管理事务
-
-### 添加新功能
-
-1. 在 `model/` 中创建实体类
-2. 在 `repository/` 中创建 Repository 接口
-3. 在 `service/` 中创建 Service 接口和实现
-4. 在 `controller/` 中创建 Controller
-5. 在 `templates/` 中创建前端页面（如需要）
-
-### 热部署
-
-项目已配置 Spring Boot DevTools，修改代码后会自动重启（开发环境）。
-
-## 15. 常见问题
-
-### 1. 端口被占用
-
-**Windows 查看端口占用**
-
-`netstat -ano | findstr :8080`
-
-**Linux/Mac 查看端口占用**
-
-`lsof -i :8080`
-
-### 2. 数据库连接失败
-
-- 检查 MySQL 是否启动
-- 检查数据库连接配置是否正确
-- 检查防火墙设置
-
-### 3. 文件上传失败
-
-- 检查 `uploads/` 目录是否存在
-- 检查文件大小是否超过 50MB
-- 检查文件权限
-
-### 4. Docker 容器启动失败
-
-**查看容器日志**
-
-`docker-compose logs shopsite_app`
-
-**重启容器**
-
-`docker-compose restart shopsite_app`
-
-## 16. 许可证
+## 15. 许可证
 
 本项目仅用于学习和教育目的。
 
-## 17. 作者
+## 16. 作者
 
 华南理工大学2023级网络工程班 202330451132 刘玥
 
-## 18. 致谢
+## 17. 致谢
 
-- Spring Boot 团队
-- Bootstrap 团队
-- Cursor，Gemini，Deepseek，Tongyi
-- 所有开源贡献者
+- Spring Boot 团队  
+- Bootstrap 团队  
+- Cursor，Gemini，Deepseek，Tongyi  
+- 所有开源贡献者  
 
 ---
 
-**注意**：本项目为学习项目，请勿用于生产环境。生产环境部署前请进行安全加固和性能优化。
+**注意**：本项目为学习演示用途；若用于真实生产，请进行安全加固、审计与性能评估。
