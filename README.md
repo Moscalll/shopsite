@@ -2,9 +2,33 @@
 
 一个基于 Spring Boot 4.0 开发的全功能电商平台，支持多角色管理（用户、商家、管理员），提供完整的购物流程、订单管理和商家后台功能。
 
+**亮点速览**：除多角色电商业务与 **Thymeleaf + React（Vite）+ JWT API** 前后端能力外，仓库自带 **`tools/` 批量商品上新自动化工具链**——从 MySQL 读取分类与已有商品、由 **LLM（推荐 Ollama）** 生成新品规格与主图 **prompt / catalog**、通过 **ComfyUI**（HTTP API 工作流）或 **Pollinations** 等批量出图，再 **`INSERT` 写入数据库**并将图片同步至 **`uploads/`**；支持 PowerShell 一键脚本 **`batch_new_products.ps1`**（控制条数、可跳过出图/导入、同名跳过防重复）。完整说明见下文 **[第 15 节：批量商品上新自动化工具链](#readme-tools)** 与 [`tools/README.md`](tools/README.md)。
+
+## 目录
+
+- [1. 项目简介](#1-项目简介)
+- [2. 功能特性](#2-功能特性)
+- [3. 技术栈](#3-技术栈)
+- [4. 项目结构](#4-项目结构)
+- [5. 环境要求](#5-环境要求)
+- [6. 快速开始](#6-快速开始)
+- [7. 测试账号](#7-测试账号)
+- [8. 配置说明](#8-配置说明)
+- [9. 安全配置](#9-安全配置)
+- [10. API 文档](#10-api-文档)
+- [11. 测试](#11-测试)
+- [12. Docker 部署](#12-docker-部署)
+- [13. 数据库设计](#13-数据库设计)
+- [14. 开发指南](#14-开发指南)
+- [15. 批量商品上新自动化工具链（tools/）](#readme-tools)
+- [16. 常见问题](#16-常见问题)
+- [17. 许可证](#17-许可证)
+- [18. 作者](#18-作者)
+- [19. 致谢](#19-致谢)
+
 ## 1. 项目简介
 
-ShopSite 是一个现代化的电商平台系统，采用前后端分离的设计理念，后端使用 Spring Boot 构建 RESTful API，前端使用 Thymeleaf 模板引擎渲染页面。系统支持三种角色：普通用户（购物）、商家（商品管理）、管理员（平台管理）。
+ShopSite 是一个现代化的电商平台系统：**后端**使用 Spring Boot 提供 RESTful API 与传统 MVC 页面；**前端**同时保留 **Thymeleaf** 服务端渲染页面，并在 `frontend/` 目录提供基于 **Vite + React** 的单页应用（SPA），用于登录、商品浏览与商家商品管理等场景，通过 **JWT（Bearer Token）** 调用 `/api` 接口。系统支持三种角色：普通用户（购物）、商家（商品管理）、管理员（平台管理）。
 
 <img width="1280" height="730" alt="chrome_HYlAGvybQV" src="https://github.com/user-attachments/assets/7b60621c-a22c-4f74-9e34-e5a6acb170c1" />
 
@@ -12,7 +36,7 @@ ShopSite 是一个现代化的电商平台系统，采用前后端分离的设�
 
 ### 用户端功能
 
-- 用户注册与登录（基于 Spring Security）
+- 用户注册与登录（Spring Security；Web 表单登录 + API 的 JWT 登录）
 - 商品浏览与搜索
 - 商品分类筛选
 - 购物车管理
@@ -56,9 +80,13 @@ ShopSite 是一个现代化的电商平台系统，采用前后端分离的设�
 
 ### 前端技术
 
-- **Thymeleaf** - 服务端模板引擎
-- **Bootstrap** 5.x - CSS 框架
-- **JavaScript** - 前端交互
+- **Thymeleaf** - 服务端模板引擎（传统页面与表单登录）
+- **Bootstrap** 5.x - CSS 框架（与模板页配套）
+- **React** 19 + **TypeScript** + **Vite** - `frontend/` SPA 开发与构建
+- **Ant Design** - SPA UI 组件库
+- **Axios** - HTTP 客户端（请求拦截器附加 `Authorization: Bearer <token>`）
+- **Zustand** - 前端状态管理
+- **React Router** - SPA 路由
 
 ### 开发工具
 
@@ -70,45 +98,49 @@ ShopSite 是一个现代化的电商平台系统，采用前后端分离的设�
 ### 其他
 
 - **Java** 21 (LTS)
-- **JWT** - 身份认证（可选）
+- **JWT（jjwt）** - SPA / JSON API 请求的身份认证（`Authorization: Bearer`）
 - **BCrypt** - 密码加密
+
+需在配置中提供 JWT 相关属性（例如环境变量或 YAML）：`jwt.secret`（Base64 编码的密钥）、`jwt.expiration`（毫秒，过期时间）。
 
 ## 4. 项目结构
 
 ```
-shopsite/
+shopsite-v2/
+├── frontend/                 # React SPA（Vite）
+│   ├── src/                  # 页面、路由、状态、HTTP 封装等
+│   ├── package.json
+│   └── vite.config.ts        # 开发代理：将 /api 转发到后端（默认 http://localhost:8080）
+├── tools/                    # 批量商品上新自动化工具链（Python，详见本章与 tools/README.md）
 ├── src/
 │ ├── main/
 │ │ ├── java/com/example/shopsite/
-│ │ │ ├── config/ # 配置类（安全、初始化等）
-│ │ │ ├── controller/ # 控制器层
-│ │ │ │ ├── admin/ # 管理员控制器
-│ │ │ │ ├── merchant/ # 商家控制器
-│ │ │ │ └── user/ # 用户控制器
-│ │ │ ├── dto/ # 数据传输对象
-│ │ │ ├── exception/ # 异常类
-│ │ │ ├── handler/ # 异常处理器
-│ │ │ ├── interceptor/ # 拦截器
-│ │ │ ├── model/ # 实体类（User, Product, Order等）
-│ │ │ ├── repository/ # 数据访问层
-│ │ │ ├── security/ # 安全配置
-│ │ │ ├── service/ # 业务逻辑层
-│ │ │ │ └── impl/ # 服务实现类
+│ │ │ ├── config/             # 配置类（安全、初始化等）
+│ │ │ ├── controller/         # 控制器层（含 REST `/api/*`）
+│ │ │ ├── dto/                # 数据传输对象
+│ │ │ ├── exception/          # 异常类
+│ │ │ ├── handler/            # 异常处理器
+│ │ │ ├── interceptor/        # 拦截器
+│ │ │ ├── model/              # 实体类（User, Product, Order 等）
+│ │ │ ├── repository/         # 数据访问层
+│ │ │ ├── security/           # JWT 过滤器、Token 提供者等
+│ │ │ ├── service/            # 业务逻辑层
+│ │ │ │ └── impl/             # 服务实现类
 │ │ │ └── ShopsiteApplication.java
 │ │ └── resources/
-│ │ ├── application.yml # 主配置文件
+│ │ ├── application.yml       # 主配置文件
 │ │ ├── application-dev.yml
 │ │ ├── application-prod.yml
 │ │ ├── db/
-│ │ │ └── init.sql # 数据库初始化脚本
-│ │ ├── static/ # 静态资源（CSS、JS、图片）
-│ │ └── templates/ # Thymeleaf 模板
-│ └── test/ # 测试代码
-├── uploads/ # 文件上传目录
-├── docker-compose.yml # Docker Compose 配置
-├── Dockerfile # Docker 镜像构建文件
-├── pom.xml # Maven 配置文件
-└── README.md # 项目说明文档
+│ │ │ └── init.sql            # 数据库初始化脚本
+│ │ ├── static/               # 静态资源（CSS、JS、图片）
+│ │ └── templates/            # Thymeleaf 模板
+│ └── test/                   # 测试代码
+├── uploads/                  # 文件上传目录
+├── docker-compose.yml
+├── Dockerfile
+├── pom.xml
+└── README.md
 ```
 
 ## 5. 环境要求
@@ -122,6 +154,7 @@ shopsite/
 
 ### 可选工具
 
+- **Node.js** LTS + **npm**（构建与调试 `frontend/` SPA）
 - **IntelliJ IDEA** / **Eclipse** / **VS Code**（IDE）
 - **Postman** / **Thunder Client**（API 测试）
 - **MySQL Workbench** / **Navicat**（数据库管理）
@@ -133,7 +166,7 @@ shopsite/
 #### 1. 克隆项目
 
 `git clone <项目地址>
-cd shopsite`
+cd shopsite-v2`
 
 #### 2. 创建环境配置文件
 
@@ -222,30 +255,46 @@ spring:
 
 #### 3. 运行应用
 
+日常开发可直接使用默认 profile（根目录 `application.yml` 已激活 `dev`），或显式指定：
+
 ##### Windows
 
-`.\mvnw spring-boot:run -Dspring-boot.run.profiles=dev,init-data`
+`.\mvnw spring-boot:run -Dspring-boot.run.profiles=dev`
 
 ##### Linux/Mac
 
-`./mvnw spring-boot:run -Dspring-boot.run.profiles=dev,init-data`
+`./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`
 
-##### IDE 设置 (VS Code / IntelliJ)
+##### IDE 设置 (VS Code / IntelliJ)
 
-- **VS Code**: 在 `launch.json` 的 `args` 中添加 `"--spring.profiles.active=dev,init-data"`。
-  
-- **IntelliJ**: 在 `Run Configuration` -> `Active Profiles` 中填写 `dev,init-data`。
-  
+- **VS Code**: 在 `launch.json` 的 `args` 中添加 `"--spring.profiles.active=dev"`（按需追加 `,init-data`）。
+- **IntelliJ**: 在 `Run Configuration` -> `Active Profiles` 中填写 `dev`（按需追加 `init-data`）。
 
-> **注意**：`init-data` Profile 会在每次启动时检测数据库。如果 `category` 表为空，它将自动插入初始分类和测试商品。
+> **注意**：**不要**在日常开发中频繁启用 `init-data`：该 profile 会重置测试数据（包括登录日志等）。仅在需要一键重置演示数据时，在启动参数中显式使用 `dev,init-data`。
 
-#### 4. 访问应用
+#### 4. （可选）启动 React 前端开发服务
 
-浏览器打开：http://localhost:8080
+在另一个终端进入 `frontend/` 目录，安装依赖并启动 Vite（默认端口一般为 `5173`，`/api` 会代理到后端 `8080`）：
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+可通过环境变量配置代理目标与 API 根路径，例如：
+
+- `frontend/.env.development` 中设置 `VITE_API_PROXY_TARGET=http://127.0.0.1:8080`（后端地址）
+- 若希望 Axios 直接请求完整后端 URL，可设置 `VITE_API_BASE_URL`（与代理二选一或按需组合）
+
+#### 5. 访问应用
+
+- **后端（Thymeleaf / 同一端口上的 API）**：http://localhost:8080  
+- **仅开发 SPA 时**：一般以 Vite 提示的本地地址为准（如 http://localhost:5173），接口经代理访问后端
 
 ## 7. 测试账号
 
-系统启动后会自动初始化以下测试账号：
+在完成数据库初始化（例如使用 `init-data` profile 或执行 `db/init.sql` 等流程）后，可使用下列内置测试账号：
 
 | 角色  | 用户名 | 密码  | 邮箱  | 说明  |
 | --- | --- | --- | --- | --- |
@@ -266,7 +315,17 @@ spring:
 
 ### 关键配置项
 
-#### 服务器端口
+#### JWT（启动前需配置）
+
+应用中的 `JwtTokenProvider` 使用以下配置项（请放在可被 Spring 加载的 YAML 或环境变量中）：
+
+```
+jwt:
+  secret: <Base64 编码的密钥>
+  expiration: 86400000   # 示例：毫秒，如 24 小时
+```
+
+#### 服务器端口
 
 ```
 server:
@@ -314,21 +373,26 @@ file:
 
 ### Spring Security 配置
 
-系统使用 Spring Security 进行认证和授权：
+系统使用 Spring Security 进行认证和授权，并采用 **双通道** 设计：
 
-- **认证方式**：基于 Session 的表单登录
-- **密码加密**：BCrypt 算法
+- **浏览器 / Thymeleaf**：基于 **Session** 的表单登录（`/login`），登录页等仍受 **CSRF** 保护。
+- **SPA 与 JSON API**：`POST /api/auth/login` 校验用户名密码后返回 **JWT**；客户端在后续请求头中携带 `Authorization: Bearer <token>`。`JwtAuthenticationFilter` 在表单认证之前解析 JWT 并建立安全上下文。`/api/**` 路径在 CSRF 上单独放宽，以便无 Session 的 API 调用。
+
+- **密码加密**：BCrypt 算法  
 - **角色权限**：
   - `ROLE_CUSTOMER` - 普通用户
   - `ROLE_MERCHANT` - 商家
   - `ROLE_ADMIN` - 管理员
 
-### 访问控制
+### 访问控制（与代码一致的主要规则）
 
-- 公开访问：首页、商品列表、商品详情、登录/注册页面
-- 需要认证：购物车、订单、个人中心
-- 商家权限：商品管理、订单处理、销售统计
-- 管理员权限：商家管理、商品审核、订单监控
+- **匿名可访问**：静态资源、部分页面路径、`POST /api/auth/register`、`POST /api/auth/login`，以及 **GET** `/api/categories/**`、**GET** `/api/recommendations/**`、**GET** `/api/products/**`（含分页列表）等。
+- **商家/管理员**：**GET** `/api/products/mine`（当前商家的商品分页）。
+- **商家或管理员**：**POST/PUT/DELETE** `/api/products` 及子路径（创建/修改/删除商品）。
+- **普通用户**：**POST** `/api/orders`（下单）。
+- **已登录用户**：购物车、收藏、订单页面路径、`/api/orders/**` 等；`/merchant/**`、`/admin/**` 按角色限制。
+
+具体以 `SecurityConfig` 中 `authorizeHttpRequests` 为准。
 
 ## 10. API 文档
 
@@ -336,14 +400,18 @@ file:
 
 **认证相关**
 
-- `POST /api/auth/register` - 用户注册
-- `POST /api/auth/login` - 用户登录（表单登录）
+- `POST /api/auth/register` - 用户注册（JSON）
+- `POST /api/auth/login` - **JSON 登录**，成功返回 `accessToken`、`tokenType`（如 `Bearer`）、`expiresIn`（秒），供 SPA 存储并在后续请求头中使用 `Authorization: Bearer <accessToken>`
+
+**用户相关**
+
+- `GET /api/users/me` - 当前登录用户信息（需认证；JWT 或 Session 均可）
 
 **商品相关**
 
-- `GET /api/products` - 获取所有商品
-- `GET /api/products/{id}` - 获取商品详情
-- `POST /api/products` - 创建商品（商家/管理员）
+- `GET /api/products` - 在售商品分页列表（默认按 `id` 降序，每页 12 条，支持 Spring Data 分页参数）
+- `GET /api/products/mine` - 当前登录 **商家/管理员** 的商品分页（默认每页 10 条）
+- `POST /api/products?categoryId=` - 创建商品（商家/管理员；请求体为商品 JSON）
 - `PUT /api/products/{id}` - 更新商品（商家/管理员）
 - `DELETE /api/products/{id}` - 删除商品（商家/管理员）
 
@@ -352,6 +420,8 @@ file:
 - `POST /api/orders` - 创建订单（用户）
 - `GET /api/orders` - 获取订单列表
 - `GET /api/orders/{id}` - 获取订单详情
+
+更多端点以各 `Controller` 与 `SecurityConfig` 中的放行规则为准。
 
 ## 11. 测试
 
@@ -422,14 +492,50 @@ docker build -t shopsite:latest .
 1. 在 `model/` 中创建实体类
 2. 在 `repository/` 中创建 Repository 接口
 3. 在 `service/` 中创建 Service 接口和实现
-4. 在 `controller/` 中创建 Controller
-5. 在 `templates/` 中创建前端页面（如需要）
+4. 在 `controller/` 中创建 Controller（REST 需在 `SecurityConfig` 中配置访问规则）
+5. 在 `templates/` 中创建 Thymeleaf 页面，或在 `frontend/src/` 中开发 SPA 页面并接入 `/api`
 
 ### 热部署
 
 项目已配置 Spring Boot DevTools，修改代码后会自动重启（开发环境）。
 
-## 15. 常见问题
+<a id="readme-tools"></a>
+
+## 15. 批量商品上新自动化工具链（`tools/`）
+
+仓库下的 **`tools/`** 目录提供与主应用 **解耦** 的 Python 工具链：批量生成商品规格与主图提示词、（可选）通过 **ComfyUI HTTP API** 或 **Pollinations** 等批量出图，再使用 **`INSERT`** 写入 MySQL，并把图片拷贝到站点运行时目录（默认 **`uploads/`**），用于 **自动化上新**。该工具链 **不修改** Java / 前端源码。
+
+### 流水线在做什么
+
+1. **（可选）读取数据库**：`pipeline/fetch_existing.py` 拉取分类与该商户已有商品信息，供 LLM 生成「不撞车」的新品提案。
+2. **生成商品数据**：手工编写 `product_spec.jsonl`，或由 **`generate_candidates_llm.py`**（需配置 LLM，**Windows 上推荐 Ollama HTTP**，见 `pipeline/config.example.yaml`）自动生成 `product_spec.auto.jsonl`。
+3. **生成提示词与目录**：`product_pipeline/generate.py` 产出 **`prompts.jsonl`**、**`catalog.jsonl`**（主图文件名与导入字段对齐）。
+4. **出图**：`image_render/render_batch.py` 按提示词批量保存图片；一键脚本里可用 `-SkipRender` 跳过。
+5. **入库**：`db_import/import_products.py` 写入数据库并拷贝图片；建议上新时使用 **`--skip-if-name-exists`**，避免同一商户下 **商品名重复**。
+
+一键脚本 **`pipeline/batch_new_products.ps1`** 会串联上述步骤（默认含导入，除非 `-SkipImport`）；**`pipeline/run_all.ps1`** 侧重生成链路，若设置环境变量 **`SHOPSITE_AUTO_RENDER=1`** 且已配置 **`image_render/config.yaml`**，可在生成 `prompts.jsonl` 后继续自动出图。
+
+### 快速接入
+
+```powershell
+cd tools
+python -m venv .venv
+.\.venv\Scripts\activate   # Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+copy .env.example .env   # 填写 MYSQL_*、SHOPSITE_UPLOAD_DIR 等；Unix: cp .env.example .env
+copy pipeline\config.example.yaml pipeline\config.yaml   # Unix: cp pipeline/config.example.yaml pipeline/config.yaml
+.\pipeline\batch_new_products.ps1 -MaxProducts 8
+```
+
+**说明**：`batch_new_products.ps1` 为 **Windows PowerShell** 脚本；在 Linux / macOS 上请按 [`tools/pipeline/README.md`](tools/pipeline/README.md) 中的等价命令 **分步执行** Python 脚本。
+
+参数说明（如 `-MaxProducts`、`-SkipRender`、`-SkipImport`、`-NonInteractive`）与 **Ollama / ComfyUI / 手动 Colab** 等细节，以 **[`tools/README.md`](tools/README.md)**、**[`tools/pipeline/README.md`](tools/pipeline/README.md)**、`tools/image_render/README.md`、`tools/comfyui/README.md` 为准。
+
+### 上架可见条件
+
+导入脚本默认 **`is_available = true`**；站点前台展示可售商品通常还要求 **`stock >= 1`**（与 `ProductRepository` 等查询一致），请在规格或导入逻辑中保证库存字段合理。
+
+## 16. 常见问题
 
 ### 1. 端口被占用
 
@@ -463,20 +569,33 @@ docker build -t shopsite:latest .
 
 `docker-compose restart shopsite_app`
 
-## 16. 许可证
+## 17. 许可证
 
 本项目仅用于学习和教育目的。
 
-## 17. 作者
+## 18. 作者
 
 华南理工大学2023级网络工程班 202330451132 刘玥
 
-## 18. 致谢
+## 19. 致谢
 
-- Spring Boot 团队
-- Bootstrap 团队
-- Cursor，Gemini，Deepseek，Tongyi
-- 所有开源贡献者
+### 应用与基础设施
+
+- **Spring Boot** 及 Spring 生态维护者
+- **React**、**Vite**、**Ant Design** 等前端开源项目
+- **Bootstrap** 团队
+
+### 自动化上新与生成式工具链（`tools/`）
+
+- **[ComfyUI](https://github.com/comfyanonymous/ComfyUI)** 与工作流社区——本仓库通过 HTTP API 批量出主图
+- **[Ollama](https://ollama.com)**——本地 LLM 推理，用于流水线中的新品文案/规格生成（推荐部署方式）
+- **[Pollinations](https://pollinations.ai)**——可选云端图像生成接口（见 `tools/image_render`）
+- **Python** 生态（**PyTorch** 等与 ComfyUI / 本地推理相关的上游项目）
+
+### 开发与协作
+
+- **Cursor**，**Gemini**，**Deepseek**，**通义（Tongyi）** 等在开发与文档整理中的协助
+- 所有为本项目依赖做出贡献的**开源作者与社区**
 
 ---
 
