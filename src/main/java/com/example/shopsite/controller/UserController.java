@@ -1,7 +1,10 @@
 package com.example.shopsite.controller;
 
+import com.example.shopsite.dto.UserMeResponse;
+import com.example.shopsite.model.User;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,20 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/users")
 public class UserController {
 
-    /**
-     * GET /api/users/me
-     * 访问此接口需要有效的JWT。
-     * 假设这是一个需要基础用户权限的接口。
-     */
     @GetMapping("/me")
-    // Controller 级别不限制权限，让 SecurityConfig 统一处理
-    public ResponseEntity<String> getCurrentUser() {
-        // 成功访问，意味着JWT过滤器和授权检查通过。
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        
-        // 打印用户的权限，用于调试角色问题
-        String roles = SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString();
-
-        return ResponseEntity.ok("访问成功! 当前登录用户: " + username + ", 权限: " + roles);
+    public ResponseEntity<UserMeResponse> getCurrentUser(@AuthenticationPrincipal User user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(new UserMeResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getRole().name()
+        ));
     }
 }

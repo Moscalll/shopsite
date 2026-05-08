@@ -25,6 +25,12 @@ public interface ProductService {
 
     // 5. 查询所有可售商品 (前台列表)
     List<Product> findAllAvailableProducts();
+
+    Page<Product> findAllAvailableProducts(Pageable pageable);
+
+    Page<Product> findProductsByMerchant(User merchant, Pageable pageable);
+
+    void deleteProduct(Long productId, User actor);
     
     // 6. (如果您需要保留 DTO 版本的 createProduct)
     Product createProduct(ProductCreationRequest request, String username);

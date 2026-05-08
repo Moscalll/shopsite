@@ -51,6 +51,11 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
+    /** JWT 过期时间（秒），供 LoginResponse 使用 */
+    public long getExpiresInSeconds() {
+        return jwtExpiration / 1000;
+    }
+
     // 4. 验证 Token 是否有效
     public boolean validateToken(String token) {
         try {

@@ -1,7 +1,10 @@
 package com.example.shopsite.controller;
 
+import com.example.shopsite.dto.ApiMessageResponse;
+import com.example.shopsite.dto.LoginResponse;
 import com.example.shopsite.dto.UserLoginDto;
 import com.example.shopsite.dto.UserRegistrationRequest;
+import com.example.shopsite.security.JwtTokenProvider;
 import com.example.shopsite.model.AuthLoginLog;
 import com.example.shopsite.model.User;
 import com.example.shopsite.repository.UserRepository;
@@ -24,13 +27,16 @@ public class AuthController {
     private final UserService userService;
     private final AuthLoginLogService authLoginLogService;
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public AuthController(UserService userService,
                           AuthLoginLogService authLoginLogService,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          JwtTokenProvider jwtTokenProvider) {
         this.userService = userService;
         this.authLoginLogService = authLoginLogService;
         this.userRepository = userRepository;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     /**
@@ -82,8 +88,7 @@ public class AuthController {
                 log.warn("JWT 登录成功但写入 AuthLoginLog 失败: {}", ex.getMessage(), ex);
             }
 
-            // 登录成功，返回 200 OK，并在响应体中返回 JWT/Token
-            return new ResponseEntity<>("登录成功，Token: " + jwtToken, HttpStatus.OK);
+            return ResponseEntity.ok(LoginResponse.bearer(jwtToken, jwtTokenProvider.getExpiresInSeconds()));
 
         } catch (RuntimeException e) {
             // 记录失败登录
@@ -106,8 +111,8 @@ public class AuthController {
             } catch (Exception ex) {
                 log.warn("JWT 登录失败且写入 AuthLoginLog 失败: {}", ex.getMessage(), ex);
             }
-            // 登录失败（用户名不存在或密码错误），返回 401 Unauthorized
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiMessageResponse(e.getMessage() != null ? e.getMessage() : "登录失败"));
         }
     }
 

@@ -1,8 +1,13 @@
 package com.example.shopsite.service.impl;
 
 import com.example.shopsite.dto.ProductCreationRequest;
+import com.example.shopsite.model.CartItem;
+import com.example.shopsite.model.Favorite;
+import com.example.shopsite.model.OrderItem;
 import com.example.shopsite.model.Product;
 import com.example.shopsite.model.User;
+import com.example.shopsite.repository.CartItemRepository;
+import com.example.shopsite.repository.FavoriteRepository;
 import com.example.shopsite.repository.ProductRepository;
 import com.example.shopsite.repository.UserRepository;
 import com.example.shopsite.repository.OrderItemRepository;
@@ -26,13 +31,18 @@ public class ProductServiceImpl implements ProductService {
     private final UserRepository userRepository;
     private final CategoryService categoryService;
     private final OrderItemRepository orderItemRepository;
+    private final CartItemRepository cartItemRepository;
+    private final FavoriteRepository favoriteRepository;
 
     public ProductServiceImpl(ProductRepository productRepository, UserRepository userRepository,
-            CategoryService categoryService, OrderItemRepository orderItemRepository) {
+            CategoryService categoryService, OrderItemRepository orderItemRepository,
+            CartItemRepository cartItemRepository, FavoriteRepository favoriteRepository) {
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.categoryService = categoryService;
         this.orderItemRepository = orderItemRepository;
+        this.cartItemRepository = cartItemRepository;
+        this.favoriteRepository = favoriteRepository;
     }
 
     @Override
@@ -79,6 +89,45 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> findAllAvailableProducts() {
         return productRepository.findByIsAvailableTrueAndStockGreaterThan(0);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Product> findAllAvailableProducts(Pageable pageable) {
+        return productRepository.findByIsAvailableTrueAndStockGreaterThan(0, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Product> findProductsByMerchant(User merchant, Pageable pageable) {
+        return productRepository.findByMerchantOrderByIdDesc(merchant, pageable);
+    }
+
+    @Override
+    @Transactional
+    public void deleteProduct(Long productId, User actor) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found."));
+        boolean isAdmin = actor.getRole() == Role.ADMIN;
+        if (!isAdmin && !product.getMerchant().getId().equals(actor.getId())) {
+            throw new SecurityException("Access denied: cannot delete this product.");
+        }
+        List<OrderItem> orderItems = orderItemRepository.findByProduct(product);
+        if (!orderItems.isEmpty()) {
+            product.setIsAvailable(false);
+            product.setStock(0);
+            productRepository.save(product);
+            return;
+        }
+        List<CartItem> cartItems = cartItemRepository.findByProduct(product);
+        if (!cartItems.isEmpty()) {
+            cartItemRepository.deleteAll(cartItems);
+        }
+        List<Favorite> favorites = favoriteRepository.findByProduct(product);
+        if (!favorites.isEmpty()) {
+            favoriteRepository.deleteAll(favorites);
+        }
+        productRepository.delete(product);
     }
 
     // 4: 更新商品 

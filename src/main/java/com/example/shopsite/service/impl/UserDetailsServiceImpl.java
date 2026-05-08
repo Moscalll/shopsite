@@ -8,8 +8,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.stream.Collectors;
-
 @Service // 必须标记为 @Service 或 @Component，让 Spring 扫描到
 public class UserDetailsServiceImpl implements UserDetailsService {
 
@@ -24,16 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 1. 从数据库查找用户
-        User user = userRepository.findByUsername(username)
+        return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("用户未找到: " + username));
-
-        // 2. 将用户角色转换为 Spring Security 要求的 GrantedAuthority 集合
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername())
-                .password(user.getPassword()) // 数据库中应是 BCrypt 加密后的密码
-                .roles(user.getRole().name())
-                .disabled(!Boolean.TRUE.equals(user.isEnabled()))
-                .build();
     }
 }
