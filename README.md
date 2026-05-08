@@ -6,6 +6,8 @@
 
 ShopSite 是一个现代化的电商平台系统，采用前后端分离的设计理念，后端使用 Spring Boot 构建 RESTful API，前端使用 Thymeleaf 模板引擎渲染页面。系统支持三种角色：普通用户（购物）、商家（商品管理）、管理员（平台管理）。
 
+<img width="2560" height="1453" alt="SLBrowser_c7Me1cjx4f" src="https://github.com/user-attachments/assets/63e20f6e-cd14-4a4d-94e9-35e4f38568a8" />
+
 ## 2. 功能特性
 
 ### 用户端功能
