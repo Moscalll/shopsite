@@ -5,12 +5,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import com.example.shopsite.security.CustomAuthenticationSuccessHandler;
 import com.example.shopsite.security.CustomAuthenticationFailureHandler;
+import com.example.shopsite.security.JwtAuthenticationFilter;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -19,11 +21,14 @@ public class SecurityConfig {
 
     private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
     private final CustomAuthenticationFailureHandler authenticationFailureHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     public SecurityConfig(CustomAuthenticationSuccessHandler authenticationSuccessHandler,
-                          CustomAuthenticationFailureHandler authenticationFailureHandler) {
+                          CustomAuthenticationFailureHandler authenticationFailureHandler,
+                          JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.authenticationSuccessHandler = authenticationSuccessHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -59,6 +64,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register").permitAll() // 允许注册 API 访问
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll() // 允许登录 API 访问（如果你使用自定义认证接口）
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // 允许所有人查询商品 API
+                        .requestMatchers(HttpMethod.GET, "/api/categories").permitAll() // 允许所有人查询分类 API
                         .requestMatchers(HttpMethod.POST, "/api/behavior/dwell").authenticated() // 登录用户上报停留（主要用于 CUSTOMER）
 
                         // 3. 用户端路由（需要认证）
@@ -106,7 +112,12 @@ public class SecurityConfig {
                         .permitAll())
 
                 // 行为停留上报可能通过 sendBeacon / fetch 调用，放宽 CSRF（仍要求登录）
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/auth/register", "/api/behavior/dwell"));
+                .csrf(csrf -> csrf.ignoringRequestMatchers(
+                        "/api/auth/register",
+                        "/api/auth/login",
+                        "/api/behavior/dwell"));
+
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -185,6 +185,38 @@ public class TestDataInitializer implements CommandLineRunner {
                 "ClientSecurePassword789",
                 Role.CUSTOMER
         );
+
+        // 用于推荐系统测试的额外用户（建议配合不同浏览/收藏/下单行为进行测试）
+        createUser(
+                "alice_test",
+                "alice_test@shopsite.com",
+                "AliceTestPassword123",
+                Role.CUSTOMER
+        );
+        createUser(
+                "bob_test",
+                "bob_test@shopsite.com",
+                "BobTestPassword123",
+                Role.CUSTOMER
+        );
+        createUser(
+                "carol_test",
+                "carol_test@shopsite.com",
+                "CarolTestPassword123",
+                Role.CUSTOMER
+        );
+        createUser(
+                "david_test",
+                "david_test@shopsite.com",
+                "DavidTestPassword123",
+                Role.CUSTOMER
+        );
+        createUser(
+                "eve_test",
+                "eve_test@shopsite.com",
+                "EveTestPassword123",
+                Role.CUSTOMER
+        );
         
         // 管理员 platformadmin
         createUser(

@@ -6,7 +6,10 @@
     "perf:collect": "node scripts/perf/collect-perf-metrics.mjs",
     "perf:auth-collect": "node scripts/perf/collect-auth-perf-metrics.mjs",
     "perf:compare": "node scripts/perf/compare-perf-results.mjs",
-    "perf:report": "node scripts/perf/generate-perf-report.mjs"
+    "perf:report": "node scripts/perf/generate-perf-report.mjs",
+    "test:api": "node scripts/functional/run-api-smoke-tests.mjs",
+    "test:functional": "node scripts/functional/run-functional-tests.mjs",
+    "test:all": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-all-tests.ps1 -SkipMaven"
   },
   "devDependencies": {
     "playwright": "^1.59.1"

@@ -34,7 +34,7 @@
 
 脚本：**[`batch_new_products.ps1`](batch_new_products.ps1)**（在 `tools` 目录执行）
 
-- **`-MaxProducts N`**：最多生成 **N** 条 LLM 商品（传给 `generate_candidates_llm.py --max-products`）。与 `config.yaml` 里 `items_per_category` × `allowed_category_ids` 的关系：**`--max-products` 为硬上限**，循环仍按配置顺序走，写满 `N` 条即停；若配置理论条数不足 `N`，则写满理论条数为止。
+- **`-MaxProducts N`**：最多生成 **N** 条 LLM 商品（传给 `generate_candidates_llm.py --max-products`）。**理论条数** = 各 `allowed_category_ids` 对应条数之和：可用全局 `items_per_category`，或用 **`items_per_category_each`**（与类目列表等长的整数列表）、**`items_per_category_by_id`**（按类目 id 覆盖、缺省用 `items_per_category`），详见 `config.example.yaml`。**`--max-products` 为硬上限**，写满 `N` 条即停；若配置理论条数不足 `N`，则只写满理论条数。
 - **`-SkipRender`**：跳过 ComfyUI / `render_batch.py`。
 - **`-SkipImport`**：跳过 `import_products.py`（脚本末尾会打印手动导入命令）。
 - **`-NonInteractive`**：不在 prompts 与出图后 `Read-Host` 暂停。
@@ -87,4 +87,5 @@ llm:
 - **`remote_model` 与已装模型名不一致**：把 `config.yaml` 里 `remote_model` 改成 `ollama list` 里显示的名称（区分大小写与 tag）。
 - **模型输出非 JSON**：降低 `temperature` 或保持 `items_per_category: 1`；查看终端里脚本打印的原始输出。
 - **每条都像「纯棉 T 恤」**：脚本已按类目名识别是否服饰类，并在非服饰类目下禁止服装主体 + 轮换「多样性提示」。若类目名本身含「服饰/鞋」等仍总撞款，可把 `llm.temperature` 提到 `0.8` 左右或换更大模型；并务必每次先 `fetch_existing.py` 再生成。
+- **同批 8 条仍雷同**：`generate_candidates_llm.py` 会把本批已生成标题+英文摘要写入下一轮 user 提示，并对「过短 / 与同批英文前缀高度重复 / 重名」做校验与自动重试（次数见 `config.yaml` 里 `llm.max_retries_per_slot`，示例见 `config.example.yaml`）。仍不够时可略提高 `llm.temperature` 或增大 `max_tokens`。
 - **名称仍与已有冲突**：导入时使用 `--skip-if-name-exists`。

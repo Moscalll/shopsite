@@ -36,6 +36,7 @@ build/
 ### Logs ###
 *.log
 logs/
+debug-fcad12.log
 
 # Operating System
 .DS_Store
@@ -62,6 +63,9 @@ coverage/
 ### 性能采集脚本输出（见 scripts/perf 默认 OUT_DIR） ###
 perf-results/
 
+### 功能 / API 自动化测试报告（scripts/functional 默认 OUT_DIR） ###
+test-results/
+
 ### Python（仓库内脚本 / tools 子目录外也可能有） ###
 .venv/
 venv/
@@ -72,6 +76,8 @@ __pycache__/
 
 ### 工具链生成物（与 tools/.gitignore 的 out/ 一致，根目录显式列出便于识别） ###
 tools/out/
+tools/pipeline/config.yaml
+tool/image_render/config.yaml
 
 ### 临时与编辑器备份 ###
 *.tmp

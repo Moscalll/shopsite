@@ -168,7 +168,13 @@ IDE 中在 **Active profiles** 填入 `**dev,init-data`**。`init-data` 会在�
 | 管理员 | `admin`         | `admin123`                | 备用    |
 | 商家  | `testmerchant`  | `testmerchantPASSWORD`    | 演示店铺  |
 | 用户  | `clientuser`    | `ClientSecurePassword789` | 演示买家  |
+| 用户  | `alice_test`    | `AliceTestPassword123`    | 测试账号（偏服饰） |
+| 用户  | `bob_test`      | `BobTestPassword123`      | 测试账号（偏家居） |
+| 用户  | `carol_test`    | `CarolTestPassword123`    | 测试账号（偏文具） |
+| 用户  | `david_test`    | `DavidTestPassword123`    | 测试账号（偏零食） |
+| 用户  | `eve_test`      | `EveTestPassword123`      | 测试账号（冷启动/对照） |
 
+建议在做推荐系统测试时，分别使用上述账号模拟不同兴趣轨迹，例如浏览、收藏、加购和下单，以便对比推荐结果是否随行为变化而调整。
 
 ## 9. 配置与安全要点
 
@@ -205,9 +211,20 @@ IDE 中在 **Active profiles** 填入 `**dev,init-data`**。`init-data` 会在�
 
 ## 12. 测试与构建
 
+完整测试方法（黑盒、功能、性能、一键脚本）见 **[docs/TEST-GUIDE.md](docs/TEST-GUIDE.md)**。
+
 ```bash
 ./mvnw test
 ./mvnw test -Dtest=YourTestClass
+```
+
+**一键自动化（需站点已在 8080 运行）：**
+
+```powershell
+npm install
+npx playwright install chromium
+.\scripts\run-all-tests.ps1 -SkipMaven          # API + 页面功能
+.\scripts\run-all-tests.ps1 -IncludePerf        # 含首屏性能
 ```
 
 项目可选 **Spring Boot DevTools**，开发模式下保存变更可触发热重启。
@@ -222,7 +239,94 @@ docker-compose down
 
 数据卷 `**db_data**` 持久化 MySQL 数据。
 
-## 14. 常见问题
+## 14. 阿里云服务器部署上线指南
+
+下面给出适合本项目的上线方式：**阿里云 ECS + Docker Compose + MySQL 8**。如果你已经在本地验证通过，推荐沿用这一套，部署最稳定、回滚也最方便。
+
+### 14.1 部署前准备
+
+- 一台阿里云 ECS，建议至少 **2 核 4G**。
+- 已安装 `Docker`、`Docker Compose`、`Git`。
+- 安全组放行端口：`22`、`80`、`443`、`8080`、`3307`（若 MySQL 对外映射）。
+- 准备好数据库名、用户名、密码等生产环境参数。
+
+### 14.2 推荐部署方式
+
+建议直接使用仓库中的 `docker-compose.yml` 来启动应用与数据库。
+
+#### 步骤 1：登录服务器并拉取代码
+
+```bash
+git clone <你的仓库地址>
+cd shopsite
+```
+
+#### 步骤 2：准备环境变量
+
+在项目根目录创建 `.env`，至少配置以下内容：
+
+- `SPRING_PROFILES_ACTIVE=prod,init-data`
+- `PROD_DB_URL`
+- `PROD_DB_USERNAME`
+- `PROD_DB_PASSWORD`
+- `MYSQL_ROOT_PASSWORD`
+- `MYSQL_DATABASE`
+- `MYSQL_USER`
+- `MYSQL_PASSWORD`
+
+如果你希望首次上线时不重新初始化演示数据，可以先用 `prod`，等确认稳定后再切换到 `prod,init-data`。
+
+#### 步骤 3：打包项目
+
+```bash
+./mvnw clean package -DskipTests
+```
+
+Windows 本地可用：
+
+```powershell
+.\mvnw.cmd clean package -DskipTests
+```
+
+#### 步骤 4：启动服务
+
+```bash
+docker-compose up -d
+```
+
+#### 步骤 5：检查运行状态
+
+```bash
+docker ps
+docker logs -f <应用容器名>
+```
+
+#### 步骤 6：访问站点
+
+- `http://服务器IP:8080`
+- 如果前面加了 Nginx，则访问域名即可
+
+### 14.3 上线检查清单
+
+上线后建议按下面顺序检查：
+
+1. 首页是否能打开
+2. 登录页是否正常
+3. 商品列表是否正常
+4. 客户登录后能否进入 `/cart`、`/orders`、`/profile`
+5. 商家是否能进入 `/merchant/**`
+6. 管理员是否能进入 `/admin/**`
+7. `POST /api/auth/login`、`GET /api/products` 等接口是否正常
+8. 如果启用了 `init-data`，确认测试账号是否已写入数据库
+
+### 14.4 生产环境建议
+
+- 生产环境建议使用独立 MySQL，不要长期用 root 直接连接。
+- 密码请放在 `.env` 中，不要提交到 Git。
+- 如果使用域名，建议再加 Nginx 反向代理与 HTTPS。
+- 上线前最好先跑一次功能测试，确保账号、登录、页面和接口都正常。
+
+## 15. 常见问题
 
 - **端口占用**：Windows `netstat -ano | findstr :8080`；Linux/macOS `lsof -i :8080`。
 - **数据库连不上**：检查 MySQL 是否监听、账号密码、URL 中的主机名（Docker 网络内用服务名）。
